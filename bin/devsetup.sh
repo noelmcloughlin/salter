@@ -149,7 +149,7 @@ CWD=$(pwd)
 bash /tmp/saltdesktop_workarounds.cmd 2>/dev/null
 
 # Forked formulas
-CURRENT_FORKS="sun-java docker tomcat"
+CURRENT_FORKS=""
 for formula in ${CURRENT_FORKS}
 do
   if [[ -d "${FORMULA_REPO}/${formula}" ]]
