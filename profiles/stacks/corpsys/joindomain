@@ -1,0 +1,19 @@
+#The following salt states comprise the Corporate Systems XenDesktop (Linux VDA) profile.
+#format: YAML
+
+base:
+  '*':
+    - timezone
+    - packages
+    # example.groups
+    - users
+    - postgres
+    - firewalld
+    - resolver.ng
+    - chrony
+    - chrony.config
+    - kerberos
+    - samba
+    - samba.client
+    - samba.config
+    - samba.winbind

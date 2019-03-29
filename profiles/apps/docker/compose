@@ -1,0 +1,10 @@
+#format: YAML
+
+base:
+  '*':
+    - packages
+    # example.groups
+    - docker
+    - docker.containers
+    - docker.compose
+    - docker.compose-ng

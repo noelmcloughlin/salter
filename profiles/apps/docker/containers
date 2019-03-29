@@ -1,0 +1,8 @@
+#format: YAML
+
+base:
+  '*':
+    - packages
+    #- example.groups
+    - docker
+    - docker.containers

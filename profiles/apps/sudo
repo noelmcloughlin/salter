@@ -1,0 +1,7 @@
+#format: YAML
+
+base:
+  '*':
+    - timezone
+    - users
+    - users.sudo
