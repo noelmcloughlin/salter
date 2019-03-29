@@ -5,7 +5,7 @@ Salt Desktop orchestrates useful software onto Linux/MacOS without fuss. Ubuntu 
 
 ## Quick start
 
-<code>curl -o salt.sh https://github.com/saltstack/salt-desktop/raw/bin/salt.sh && sudo bash salt.sh</code>
+<code>curl -o salt.sh https://github.com/overstock/salt-desktop/raw/bin/salt.sh && sudo bash salt.sh</code>
 
 <code>sudo /usr/local/bin/devsetup -u username</code>     #Provision a Desktop via Menu
 
