@@ -37,7 +37,7 @@ darwin*) OSHOME=/Users
          su - ${USER} -c '/usr/local/bin/pip install --upgrade wrapper barcodenumber npyscreen'
          [[ ! -x /usr/local/bin/brew ]] && echo "Install homebrew (https://docs.brew.sh/Installation.html)" && exit 1
          
-         echo "Install saltstack ..."
+         echo "Install salt ..."
          /usr/local/bin/salt --version >/dev/null 2>&1
          if (( $? > 0 )); then
              su ${USER} -c 'brew install saltstack'
