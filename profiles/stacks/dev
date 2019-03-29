@@ -3,6 +3,9 @@
 base:
   '*':
     - timezone
+       {%- if grains.os_family in ('RedHat',) %}
+    - epel
+       {%- endif %}
     - packages
 
     #- example.config

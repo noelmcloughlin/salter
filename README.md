@@ -5,7 +5,9 @@ Salt Desktop orchestrates useful software onto Linux/MacOS without fuss. Ubuntu 
 
 ## Quick start
 
-<coce>curl -o salt.sh https://raw.githubusercontent.com/overstock/salt-desktop/master/bin/salt.sh && sudo bash salt.sh</code>
+<code>curl -o salt.sh https://raw.githubusercontent.com/overstock/salt-desktop/master/bin/salt.sh && sudo bash salt.sh</code>
+
+<code>sudo vi /srv/salt/profiles/config.sls</code>        #Customize for your site (i.e. dns/ntp/domain)!!
 
 <code>sudo /usr/local/bin/devsetup -u username</code>     #Provision a Desktop via Menu
 
@@ -21,7 +23,7 @@ Salt Desktop orchestrates useful software onto Linux/MacOS without fuss. Ubuntu 
 - SQLPlus 12.2 or later
 - SQL Developer recent
 
-OR 
+OR even better
 
 <code>sudo /usr/local/bin/devsetup -u username -s dev</code>          # Provision a Linux Desktop (with oracle jdk and tomcat)
 
