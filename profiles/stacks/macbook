@@ -6,8 +6,8 @@ base:
     # timezone
     - packages
 
-    - example.config
-    - example.groups
+    # example.config
+    # example.groups
 
     - users
     - postgres

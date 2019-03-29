@@ -8,8 +8,8 @@ base:
         {%- endif %}
     - packages
 
-    - example.config
-    - example.groups
+    # example.config
+    # example.groups
 
     - users
     - users.sudo
