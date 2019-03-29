@@ -90,8 +90,8 @@ esac
 echo "Clone salt-desktop ..."
 [[ -d ${SALTFS} ]] && rm -fr ${SALTFS} 2>/dev/null
 mkdir -p ${SALTFS} 2>/dev/null
-git clone https://github.com/saltstack/salt-desktop.git ${SALTFS}
-(( $? != 0 )) && echo "Cannot clone from github.com/saltstack" && exit 111
+git clone https://github.com/overstock/salt-desktop.git ${SALTFS}
+(( $? != 0 )) && echo "Cannot clone from github.com" && exit 111
 cd ${SALTFS}
 
 rm -f /usr/local/bin/devsetup 2>/dev/null
