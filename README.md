@@ -5,7 +5,7 @@ Salt Desktop orchestrates useful software onto Linux/MacOS without fuss. Ubuntu 
 
 ## Quick start
 
-<code>curl -o salt.sh https://raw.githubusercontent.com/overstock/salt-desktop/master/bin/salt.sh && sudo bash salt.sh</code>
+<code>curl -o salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/bin/salt.sh && sudo bash salt.sh</code>
 
 <code>sudo vi /srv/salt/profiles/config.sls</code>        #Customize for your site (i.e. dns/ntp/domain)!!
 
@@ -109,7 +109,9 @@ These formulae, hosted at https://github.com/saltstack-formulas, are verfied wit
 
 ### Join Active Directory Domain and setup Citrix Linux VDA
 ```bash
-$ sudo devsetup -u domainadm -s corpsys/cleanup; sudo devsetup -u domainadm -s corpsys/joindomain
+$ sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain-cleanup; sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain
+
+.. etc ...
 
 custom choice [ stacks/corpsys/joindomain ] selected
 Logging to [ /tmp/saltdesktop/stacks/corpsys/joindomain/log.201804110644 ]
@@ -132,13 +134,13 @@ DNS update failed: NT_STATUS_UNSUCCESSFUL
 domainadm@myhost4:~$ sudo kinit -k MYHOST4\$@EXAMPLE.COM
 domainadm@myhost4:~$ sudo systemctl restart winbind
 
-domainadm@myhost4:~$ sudo devsetup -u domainadm -s corpsys/linuxvda
+domainadm@myhost4:~$ sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda
 
 ```
 
 ### Sudo Access
 ```bash
-$ sudo devsetup -u jdoe -a sudo
+$ sudo /usr/local/bin/devsetup -u jdoe -a sudo
 
 custom choice [ apps/sudo ] selected
 Logging to [ /tmp/saltdesktop/apps/sudo/log.201804110702 ]
