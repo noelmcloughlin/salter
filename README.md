@@ -113,8 +113,6 @@ These formulae, hosted at https://github.com/saltstack-formulas, are verfied wit
 ```bash
 $ sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain-cleanup; sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain
 
-.. etc ...
-
 custom choice [ stacks/corpsys/joindomain ] selected
 Logging to [ /tmp/saltdesktop/stacks/corpsys/joindomain/log.201804110644 ]
 Orchestrating things, please be patient ...
@@ -136,7 +134,18 @@ DNS update failed: NT_STATUS_UNSUCCESSFUL
 domainadm@myhost4:~$ sudo kinit -k MYHOST4\$@EXAMPLE.COM
 domainadm@myhost4:~$ sudo systemctl restart winbind
 
+
 domainadm@myhost4:~$ sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda
+
+custom choice [ stacks/corpsys/linuxvda ] selected
+Logging to [ /tmp/saltdesktop/stacks/corpsys/linuxvda/log.201804110804 ]
+Orchestrating things, please be patient ...
+Summary for local
+--------------
+Succeeded: 18 (changed=10)
+Failed:     0
+--------------
+
 
 ```
 
