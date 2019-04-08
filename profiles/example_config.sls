@@ -81,6 +81,8 @@ packages:
       - libicu-devel
       - perl-IPC-Run
       - perl-Test-Simple
+        {# Samba #}
+      - sssd-libwbclient
      {% if grains.os == 'Fedora' %}
       - lxde-common
       - python2-dnf-plugin-versionlock
