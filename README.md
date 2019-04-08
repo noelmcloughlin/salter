@@ -37,6 +37,8 @@ OR
 
 OR
 
+<code>sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain-clean</code>  # Prepare to join Linux host to AD.
+
 <code>sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain</code>    # Join this Linux host to Active Directory
 
 <code>sudo net ads join EXAMPLE.COM -U nmcloughlin</code>                   # Join the Domain
@@ -50,7 +52,7 @@ OR
 
 OR
 
-<code>sudo /usr/local/bin/devsetup -u domainadm -s corpsys/clean</code>         # Cleanup Samba & Citrix LinuxVDA software
+<code>sudo /usr/local/bin/devsetup -u username -a postgres/remove</code>      # Remove Postgresql
 
 OR
 
