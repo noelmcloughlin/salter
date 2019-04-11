@@ -1,5 +1,5 @@
 # Salt Desktop verified values
-# CAUTION: Corrupte yaml in this file will break Salt
+# CAUTION: Corrupt yaml in this file will break Salt
 # The 'devsetup -u' argument replaces 'undefined_user' text below.
 
 {%- set kernel_version = salt['cmd.run']('uname -r', output_loglevel='quiet') %}
