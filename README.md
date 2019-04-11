@@ -1,10 +1,10 @@
 # Salt Desktop
 
-Salt Desktop orchestrates useful software onto Linux/MacOS without fuss. Ubuntu and MacOS are recommended.
+Salt Desktop orchestrates useful software onto Linux/MacOS without fuss.
 
 ## Quick start
 
-Install Salt:
+Install salt on MacOS or GNU/Linux (Ubuntu/Debian/CentOS/SuSE):
 
           curl -o salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/bin/salt.sh && sudo bash salt.sh
 
@@ -73,7 +73,7 @@ OR ... cleaninstall postgres:
           sudo /usr/local/bin/devsetup -u username -a postgres/cleaninstall
 
 
-OR ... build your own profilen ...:
+OR ... build your own profile ...:
 
           sudo -s
           cd /srv/salt/profiles/apps
