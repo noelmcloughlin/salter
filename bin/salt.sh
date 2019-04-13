@@ -7,7 +7,12 @@ USER=username
 SALTFS=/srv/salt
 [[ `id -u` != 0    ]] && echo "Run script with sudo, exiting" && exit 1
 
-RELEASE='stable 2018.3.4'
+if [ -f "/usr/bin/zypper" ]; then
+    # opensuse does not have major version pegged packages support
+    RELEASE=""
+else
+    RELEASE='stable 2018.3.4'
+fi
 #parse commandline (not tested yet)
 while getopts ":r:" option; do
     case "${option}" in
