@@ -104,13 +104,13 @@ ln -s ${SALTFS}/bin/devsetup.sh /usr/local/bin/devsetup
 echo
 echo "Now setup your Desktop by running-"
 echo
-echo "sudo devsetup -u ${USER}                        # Provision a Desktop via Menu"
-echo "sudo devsetup -u ${USER} -s dev                 # Provision a Linux Desktop (with oracle jdk/tomcat)"
-echo "sudo devsetup -u ${USER} -s corpsys/dev         # Provision a Linux Desktop (without oracle jdk/tomcat)"
-echo "sudo devsetup -u ${USER} -s macbook             # Provision a Macbook Desktop"
-echo "sudo devsetup -u domainadm -s corpsys/joindomain  # Join Linux host to AD (See README)"
-echo "sudo devsetup -u domainadm -s corpsys/linuxvda    # Citrix Linux Virtual Desktop (See README)"
-echo "sudo devsetup -u ${USER} [-a|-s]  ...           # create your own ..."
+echo "sudo /usr/local/bin/devsetup -u ${USER}                          # Provision Desktop via Menu"
+echo "sudo /usr/local/bin/devsetup -u ${USER} -s dev                   # Provision Linux Desktop (with oracle jdk/tomcat)"
+echo "sudo /usr/local/bin/devsetup -u ${USER} -s corpsys/dev           # Provision Linux Desktop (without oracle jdk/tomcat)"
+echo "sudo /usr/local/bin/devsetup -u ${USER} -s macbook               # Provision Macbook Desktop"
+echo "sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain  # Join Linux host to AD (See README)"
+echo "sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda    # Citrix Linux VDA (See README)"
+echo "sudo /usr/local/bin/devsetup -u ${USER} [-a|-s]  ...             # create your own ..."
 echo
 echo "[Otherwise Salt and Salt-Desktop, are installed successfully]."
 echo

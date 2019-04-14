@@ -85,7 +85,7 @@ OR ... build your own profile ...:
 <br></br>
 ## Ecosystem
 
-At least the following salt formulas, hosted at https://github.com/saltstack-formulas, are verfied with Salt-Desktop. All software downloads are checksum verified and can be stored on your internal network.
+At least the following software, hosted at https://github.com/saltstack-formulas, are verfied with Salt-Desktop. All software downloads are checksum verified and can be stored on your internal network.
 
 | Upstream formula  	| Linux | MacOS	| Notes         | 	
 |---------------	|------	|-------|-------------	|
@@ -113,14 +113,13 @@ At least the following salt formulas, hosted at https://github.com/saltstack-for
 | lxd              	|  yes  |   -  	|   	   	|
 | lvm              	|  yes  |   - 	|   	   	|
 | maven              	|  yes  |  yes	|   	   	|
-| mysql              	|  yes  |  yes 	| +workbench  	|
-| mariadb        	|  yes  |   -  	|   	   	|
-| mongoDB        	|  yes  |  yes	| +BI connector	|
+| mysql              	|  yes  |  yes 	|+maria,wrkbench|
+| mongodb        	|  yes  |  yes	| +BI connector	|
 | opensds        	|  yes  |   -  	|   	   	|
 | sun-java       	|  yes  |  yes 	| +JRE/JDK/JCE	|
 | packages      	|  yes  |  yes 	|   	   	|
 | postgres      	|  yes  |  yes 	|   	   	|
-| resolver-ng      	|  yes  |   - 	|   	   	|
+| resolver         	|  yes  |   - 	|   	   	|
 | salt            	|  yes  |  yes 	|   	   	|
 | samba             	|  yes  |   -  	|   	   	|
 | sqlplus       	|  yes  |  yes 	|   	  	|
@@ -158,7 +157,16 @@ DNS update failed: NT_STATUS_UNSUCCESSFUL
 domainadm@myhost4:~$ sudo kinit -k MYHOST4\$@EXAMPLE.COM
 domainadm@myhost4:~$ sudo systemctl restart winbind
 
-domainadm@myhost4:~$ sudo devsetup -u domainadm -s corpsys/linuxvda
+
+domainadm@myhost4:~$ sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda
+custom choice [ stacks/corpsys/linuxvda ] selected
+Logging to [ /tmp/saltdesktop/stacks/corpsys/linuxvda/log.201804110804 ]
+Orchestrating things, please be patient ...
+Summary for local
+--------------
+Succeeded: 18 (changed=10)
+Failed:     0
+--------------
 
 ```
 
