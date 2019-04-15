@@ -137,7 +137,7 @@ At least the following software, hosted at https://github.com/saltstack-formulas
 
 ### Join Active Directory Domain and setup Citrix Linux VDA
 ```bash
-$ sudo devsetup -u domainadm -s corpsys/cleanup; sudo devsetup -u domainadm -s corpsys/joindomain
+$ sudo devsetup -u domainadm -s corpsys/joindomain-cleanup; sudo devsetup -u domainadm -s corpsys/joindomain
 
 custom choice [ stacks/corpsys/joindomain ] selected
 Logging to [ /tmp/saltdesktop/stacks/corpsys/joindomain/log.201804110644 ]
