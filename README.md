@@ -1,67 +1,94 @@
-REPO NOW HOSTED AT https://github.com/saltstack-formulas/salt-desktop !!!!!!!
+
+NOW HOSTED AT https://github.com/saltstack-formulas/salt-desktop !!!!!!!
 
 # Salt Desktop
-![saltstack formulas logo](https://avatars2.githubusercontent.com/u/4683350?s=200&v=4)
 
-Salt Desktop orchestrates useful software onto Linux/MacOS without fuss. Ubuntu and MacOS are recommended.
+Salt Desktop orchestrates useful software onto Linux/MacOS without fuss.
 
 ## Quick start
 
-<code>curl -o salt.sh https://raw.githubusercontent.com/overstock/salt-desktop/master/bin/salt.sh && sudo bash salt.sh</code>
+Install salt on MacOS or GNU/Linux (Ubuntu/Debian/CentOS/SuSE):
 
-<code>sudo vi /srv/salt/profiles/config.sls</code>        #Customize for your site (i.e. dns/ntp/domain)!!
+          curl -o salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/bin/salt.sh && sudo bash salt.sh
 
-<code>sudo /usr/local/bin/devsetup -u username</code>     #Provision a Desktop via Menu
+Customize your site (i.e. dns/ntp/domain/krb/etc):
 
-**Menu choices are:**
-- Oracle JDK/JCE 8u201
-- Jetbrains IntelliJ IDEA latest
-- Jetbrains Pycharm latest
-- Postgresql
-- Eclipse Java (with plugins) recent
-- Maven 3.2.5 or later
-- Tomcat 7 or later
-- Apache2 or later
-- SQLPlus 12.2 or later
-- SQL Developer recent
+          sudo vi /srv/salt/profiles/config.sls
 
-OR even better
+## Profiles: Menu example
 
-<code>sudo /usr/local/bin/devsetup -u username -s dev</code>          # Provision a Linux Desktop (with oracle jdk and tomcat)
+Provision a Desktop via Menu:
 
-OR 
-
-<code>sudo /usr/local/bin/devsetup -u username -s corpsys/dev</code>  # Provision a Linux Desktop (without oracle jdk/tomcat)
-
-OR 
-
-<code>sudo /usr/local/bin/devsetup -u username -s macbook</code>  # Provision a Macbook Desktop
-
-OR
-
-<code>sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain</code>    # Join this Linux host to Active Directory
-
-<code>sudo net ads join EXAMPLE.COM -U nmcloughlin</code>                   # Join the Domain
-
-<code>sudo kinit -k UPPERCASE_HOSTNAME\\$@EXAMPLE.COM</code>                # On failure retry after 5-10mins.
-
-<code>sudo systemctl restart winbind</code>                                   # Service should work now
-
-<code>sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda</code>      # Setup Citrix LinuxVDA software
+          sudo /usr/local/bin/devsetup -u username
 
 
-OR
+<a href="https://github.com/saltstack-formulas/salt-desktop/blob/master/bin/menu.py">![Sample menu](design_specs/menu.png)</a>
 
-<code>sudo /usr/local/bin/devsetup -u domainadm -s corpsys/clean</code>         # Cleanup Samba & Citrix LinuxVDA software
 
-OR
+## Profiles: Stack example
 
-<code>sudo /usr/local/bin/devsetup -u username [-a|-s]  ... create your own ... </code>
+Provision Linux Developer desktop (with oracle jdk and tomcat):
+
+          sudo /usr/local/bin/devsetup -u username -s dev
+
+OR .. provision Linux Developer desktop (without oracle jdk/tomcat):
+
+          sudo /usr/local/bin/devsetup -u username -s corpsys/dev
+
+OR .. provision MacBook Developer desktop:
+
+          sudo /usr/local/bin/devsetup -u username -s macbook
+
+OR .. join Linux host to Active Directory:
+
+          sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain-clean
+
+          sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain
+
+          sudo net ads join EXAMPLE.COM -U nmcloughlin
+
+          sudo kinit -k UPPERCASE_HOSTNAME\\$@EXAMPLE.COM   # On failure retry after few minutes
+
+          sudo systemctl restart winbind
+
+AND .. provision Citrix LinuxVDA:
+
+          sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda
+
+
+OR ... build your own profile ...:
+
+          sudo -s
+          cd /srv/salt/profiles/stacks
+          cp template my_own_stack
+          vi my_own_stack
+          /usr/local/bin/devsetup -u username -s my_own_stack
+          
+
+## Profiles: App example
+
+Remove postgres:
+
+          sudo /usr/local/bin/devsetup -u username -a postgres/remove
+
+OR ... cleaninstall postgres:
+
+          sudo /usr/local/bin/devsetup -u username -a postgres/cleaninstall
+
+
+OR ... build your own profile ...:
+
+          sudo -s
+          cd /srv/salt/profiles/apps
+          cp template my_own_app
+          vi my_own_app
+          /usr/local/bin/devsetup -u username -s my_own_app
+
 
 <br></br>
 ## Ecosystem
 
-These formulae, hosted at https://github.com/saltstack-formulas, are verfied with Salt-Desktop. All software is checksum verified. Some binaries are stored at example.com.
+At least the following software, hosted at https://github.com/saltstack-formulas, are verfied with Salt-Desktop. All software downloads are checksum verified and can be stored on your internal network.
 
 | Upstream formula  	| Linux | MacOS	| Notes         | 	
 |---------------	|------	|-------|-------------	|
@@ -89,14 +116,13 @@ These formulae, hosted at https://github.com/saltstack-formulas, are verfied wit
 | lxd              	|  yes  |   -  	|   	   	|
 | lvm              	|  yes  |   - 	|   	   	|
 | maven              	|  yes  |  yes	|   	   	|
-| mysql              	|  yes  |  yes 	| +workbench  	|
-| mariadb        	|  yes  |   -  	|   	   	|
-| mongoDB        	|  yes  |  yes	| +BI connector	|
+| mysql              	|  yes  |  yes 	|+maria,wrkbench|
+| mongodb        	|  yes  |  yes	| +BI connector	|
 | opensds        	|  yes  |   -  	|   	   	|
 | sun-java       	|  yes  |  yes 	| +JRE/JDK/JCE	|
 | packages      	|  yes  |  yes 	|   	   	|
 | postgres      	|  yes  |  yes 	|   	   	|
-| resolver-ng      	|  yes  |   - 	|   	   	|
+| resolver         	|  yes  |   - 	|   	   	|
 | salt            	|  yes  |  yes 	|   	   	|
 | samba             	|  yes  |   -  	|   	   	|
 | sqlplus       	|  yes  |  yes 	|   	  	|
@@ -134,7 +160,16 @@ DNS update failed: NT_STATUS_UNSUCCESSFUL
 domainadm@myhost4:~$ sudo kinit -k MYHOST4\$@EXAMPLE.COM
 domainadm@myhost4:~$ sudo systemctl restart winbind
 
-domainadm@myhost4:~$ sudo devsetup -u domainadm -s corpsys/linuxvda
+
+domainadm@myhost4:~$ sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda
+custom choice [ stacks/corpsys/linuxvda ] selected
+Logging to [ /tmp/saltdesktop/stacks/corpsys/linuxvda/log.201804110804 ]
+Orchestrating things, please be patient ...
+Summary for local
+--------------
+Succeeded: 18 (changed=10)
+Failed:     0
+--------------
 
 ```
 
@@ -155,3 +190,5 @@ Total states run:     13
 Total run time:   25.748 s
 See full log in [ /tmp/saltdesktop/apps/sudo/log.201804110702 ]
 ```
+
+![saltstack formulas logo](https://avatars2.githubusercontent.com/u/4683350?s=200&v=4)
