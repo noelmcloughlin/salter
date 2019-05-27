@@ -47,7 +47,7 @@ OR .. join Linux host to Active Directory:
 
           sudo net ads join EXAMPLE.COM -U nmcloughlin
 
-          sudo kinit -k UPPERCASE_HOSTNAME\\$@EXAMPLE.COM   # On failure retry after few minutes
+          sudo kinit -k UPPERCASE_HOSTNAME\$@EXAMPLE.COM   # On failure retry after few minutes
 
           sudo systemctl restart winbind
 
