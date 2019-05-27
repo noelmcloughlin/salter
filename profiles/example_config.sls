@@ -82,7 +82,7 @@ packages:
       - perl-IPC-Run
       - perl-Test-Simple
         {# Samba #}
-      - sssd-libwbclient
+      # sssd-libwbclient   #this may break wb
      {% if grains.os == 'Fedora' %}
       - lxde-common
       - python2-dnf-plugin-versionlock
