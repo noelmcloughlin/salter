@@ -7,7 +7,12 @@ USER=username
 SALTFS=/srv/salt
 [[ `id -u` != 0    ]] && echo "Run script with sudo, exiting" && exit 1
 
-RELEASE='stable 2018.3.4'
+if [ -f "/usr/bin/zypper" ]; then
+    # opensuse does not have major version pegged packages support
+    RELEASE=""
+else
+    RELEASE='stable 2018.3.4'
+fi
 #parse commandline (not tested yet)
 while getopts ":r:" option; do
     case "${option}" in
@@ -90,7 +95,7 @@ esac
 echo "Clone salt-desktop ..."
 [[ -d ${SALTFS} ]] && rm -fr ${SALTFS} 2>/dev/null
 mkdir -p ${SALTFS} 2>/dev/null
-git clone https://github.com/overstock/salt-desktop.git ${SALTFS}
+git clone https://github.com/saltstack-formulas/salt-desktop.git ${SALTFS}
 (( $? != 0 )) && echo "Cannot clone from github.com" && exit 111
 cd ${SALTFS}
 
@@ -99,13 +104,13 @@ ln -s ${SALTFS}/bin/devsetup.sh /usr/local/bin/devsetup
 echo
 echo "Now setup your Desktop by running-"
 echo
-echo "sudo devsetup -u ${USER}                        # Provision a Desktop via Menu"
-echo "sudo devsetup -u ${USER} -s dev                 # Provision a Linux Desktop (with oracle jdk/tomcat)"
-echo "sudo devsetup -u ${USER} -s corpsys/dev         # Provision a Linux Desktop (without oracle jdk/tomcat)"
-echo "sudo devsetup -u ${USER} -s macbook             # Provision a Macbook Desktop"
-echo "sudo devsetup -u domainadm -s corpsys/joindomain  # Join Linux host to AD (See README)"
-echo "sudo devsetup -u domainadm -s corpsys/linuxvda    # Citrix Linux Virtual Desktop (See README)"
-echo "sudo devsetup -u ${USER} [-a|-s]  ...           # create your own ..."
+echo "sudo /usr/local/bin/devsetup -u ${USER}                          # Provision Desktop via Menu"
+echo "sudo /usr/local/bin/devsetup -u ${USER} -s dev                   # Provision Linux Desktop (with oracle jdk/tomcat)"
+echo "sudo /usr/local/bin/devsetup -u ${USER} -s corpsys/dev           # Provision Linux Desktop (without oracle jdk/tomcat)"
+echo "sudo /usr/local/bin/devsetup -u ${USER} -s macbook               # Provision Macbook Desktop"
+echo "sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain  # Join Linux host to AD (See README)"
+echo "sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda    # Citrix Linux VDA (See README)"
+echo "sudo /usr/local/bin/devsetup -u ${USER} [-a|-s]  ...             # create your own ..."
 echo
 echo "[Otherwise Salt and Salt-Desktop, are installed successfully]."
 echo

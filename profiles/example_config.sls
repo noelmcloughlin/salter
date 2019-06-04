@@ -1,5 +1,5 @@
 # Salt Desktop verified values
-# CAUTION: Corrupte yaml in this file will break Salt
+# CAUTION: Corrupt yaml in this file will break Salt
 # The 'devsetup -u' argument replaces 'undefined_user' text below.
 
 {%- set kernel_version = salt['cmd.run']('uname -r', output_loglevel='quiet') %}
@@ -81,6 +81,8 @@ packages:
       - libicu-devel
       - perl-IPC-Run
       - perl-Test-Simple
+        {# Samba #}
+      # sssd-libwbclient   #this may break wb
      {% if grains.os == 'Fedora' %}
       - lxde-common
       - python2-dnf-plugin-versionlock
