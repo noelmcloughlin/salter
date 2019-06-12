@@ -66,6 +66,12 @@ while getopts ":u:l:s:a:" option; do
 done
 shift $((OPTIND-1))
 
+if [[ -z "${DEVUSER}" ]]
+then
+    echo "Error: No user specified"
+    usage
+fi
+
 ##### PROFILE PHASE
 echo "${profile}" | grep menu >/dev/null 2>&1
 if (( $? == 0 ))
