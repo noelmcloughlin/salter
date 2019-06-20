@@ -102,16 +102,15 @@ cd ${SALTFS}
 rm -f /usr/local/bin/devsetup 2>/dev/null
 ln -s ${SALTFS}/bin/devsetup.sh /usr/local/bin/devsetup
 echo
-echo "Now setup your Desktop by running-"
+echo "For usage ideas visit ..."
+echo " https://github.com/saltstack-formulas/salt-desktop#stack-profiles"
 echo
-echo "sudo /usr/local/bin/devsetup -u ${USER}                          # Provision Desktop via Menu"
-echo "sudo /usr/local/bin/devsetup -u ${USER} -s dev                   # Provision Linux Desktop (with oracle jdk/tomcat)"
-echo "sudo /usr/local/bin/devsetup -u ${USER} -s corpsys/dev           # Provision Linux Desktop (without oracle jdk/tomcat)"
-echo "sudo /usr/local/bin/devsetup -u ${USER} -s macbook               # Provision Macbook Desktop"
-echo "sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain  # Join Linux host to AD (See README)"
-echo "sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda    # Citrix Linux VDA (See README)"
-echo "sudo /usr/local/bin/devsetup -u ${USER} [-a|-s]  ...             # create your own ..."
+echo "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"
+echo "////////////                                             \\\\\\\\\\\\\\\\"
+echo "\\\\\\\\\\\               Congratulations                ////////////////"
+echo "///////////     Salt and Salt-Desktop are installed      \\\\\\\\\\\\\\\\"
+echo "///////////                                              ////////////////"
+echo "////////////////////////////////////////////////////////////////////////"
 echo
-echo "[Otherwise Salt and Salt-Desktop, are installed successfully]."
 echo
 exit 0
