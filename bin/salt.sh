@@ -110,11 +110,11 @@ echo
 echo "For usage ideas visit ..."
 echo " https://github.com/saltstack-formulas/salt-desktop#stack-profiles"
 echo
-echo "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"
-echo "////////////                                             \\\\\\\\\\\\\\\\"
-echo "\\\\\\\\\\\               Congratulations                ////////////////"
-echo "///////////     Salt and Salt-Desktop are installed      \\\\\\\\\\\\\\\\"
-echo "///////////                                              ////////////////"
+echo "////////////////////////////////////////////////////////////////////////"
+echo "///////////                                              ///////////////"
+echo "///////////               Congratulations                ///////////////"
+echo "///////////     Salt and Salt-Desktop are installed      ///////////////"
+echo "///////////                                              ///////////////"
 echo "////////////////////////////////////////////////////////////////////////"
 echo
 echo
