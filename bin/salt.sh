@@ -23,6 +23,12 @@ while getopts ":r:" option; do
 done
 shift $((OPTIND-1))
 
+if [ `uname` = 'FreeBSD' ]
+then
+    SALTFS=/usr/local/etc/salt/states
+    mkdir -p ${SALTFS} 2>/dev/null
+fi
+
 case "$OSTYPE" in
 darwin*) OSHOME=/Users
          USER=$( stat -f "%Su" /dev/console )
