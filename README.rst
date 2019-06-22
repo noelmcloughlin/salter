@@ -3,14 +3,14 @@
 Salt Desktop
 ================
 
-Salt Desktop orchestrates useful software onto Linux/MacOS without fuss.
+Salt Desktop orchestrates useful software onto Linux/FreeBSD/MacOS without fuss.
 
 HOSTED AT https://github.com/saltstack-formulas/salt-desktop !!!!!!!
 
 Quick start
 ===========
 
-Install salt on MacOS or GNU/Linux (Ubuntu/Debian/CentOS/SuSE)::
+Install salt on MacOS, FreeBSD, or GNU/Linux (Ubuntu/Debian/CentOS/SuSE)::
 
     curl -o salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/bin/salt.sh && sudo bash salt.sh
 
