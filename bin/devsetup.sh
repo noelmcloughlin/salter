@@ -9,14 +9,13 @@ loglevel='warning'
 profile='menu'
 SALTFS=/srv/salt
 PILLARFS=/srv/pillar
-PROFILEAPI=${SALTFS}/profiles
-FORMULA_REPO=${SALTFS}/repo
-
 if [ `uname` = 'FreeBSD' ]
 then
     SALTFS=/usr/local/etc/salt/states
     PILLARFS=/usr/local/etc/salt/pillars
 fi
+PROFILEAPI=${SALTFS}/profiles
+FORMULA_REPO=${SALTFS}/repo
 
 usage()
 {
