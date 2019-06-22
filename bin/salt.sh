@@ -87,14 +87,14 @@ freebsd*|linux*)
              /usr/bin/pacman -Syyu --noconfirm
              /usr/bin/pacman -S --noconfirm git python-yaml python-pip psutils || exit 1
          elif [ -f "/usr/sbin/pkg" ]; then
-             /usr/sbin/pkg update -f -y
-             /usr/sbin/pkg install -y git py36-pip wget
+             export DEFAULT_ALWAYS_YES=true
+             /usr/sbin/pkg update -f
+             /usr/sbin/pkg install git py36-pip wget
          fi
          pip install --user --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
          rm -f install_salt.sh 2>/dev/null
          wget -O install_salt.sh https://bootstrap.saltstack.com || exit 1
          (sh install_salt.sh -P ${RELEASE} && rm -f install_salt.sh) || exit 1
-         ;;
 esac
 
 echo "Clone salt-desktop ..."
