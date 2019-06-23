@@ -7,12 +7,13 @@ USER=username
 SALTFS=/srv/salt
 [[ `id -u` != 0    ]] && echo "Run script with sudo, exiting" && exit 1
 
-if [ -f "/usr/bin/zypper" ]; then
-    # opensuse does not have major version pegged packages support
+if [ -f "/usr/bin/zypper" ] || [ -f "/usr/sbin/pkg" ]; then
+    # No major version pegged packages support
     RELEASE=""
 else
     RELEASE='stable 2018.3.4'
 fi
+
 #parse commandline (not tested yet)
 while getopts ":r:" option; do
     case "${option}" in
@@ -21,6 +22,12 @@ while getopts ":r:" option; do
     esac
 done
 shift $((OPTIND-1))
+
+if [ `uname` = 'FreeBSD' ]
+then
+    SALTFS=/usr/local/etc/salt/states
+    mkdir -p ${SALTFS} 2>/dev/null
+fi
 
 case "$OSTYPE" in
 darwin*) OSHOME=/Users
@@ -61,7 +68,8 @@ darwin*) OSHOME=/Users
          export HOMEBREW_CURLRC=1
          ;;
 
-linux*)  OSHOME=/home
+freebsd*|linux*)
+         OSHOME=/home
          echo "Setup Linux baseline and install saltstack masterless minion ..."
          if [ -f "/usr/bin/dnf" ]; then
              /usr/bin/dnf install -y --best --allowerasing python-pip git wget redhat-rpm-config python-devel || exit 1 
@@ -84,12 +92,15 @@ linux*)  OSHOME=/home
              /usr/bin/pacman-mirrors -g
              /usr/bin/pacman -Syyu --noconfirm
              /usr/bin/pacman -S --noconfirm git python-yaml python-pip psutils || exit 1
+         elif [ -f "/usr/sbin/pkg" ]; then
+             export DEFAULT_ALWAYS_YES=true
+             /usr/sbin/pkg update -f
+             /usr/sbin/pkg install git py36-pip wget
          fi
-         pip install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
+         pip install --user --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
          rm -f install_salt.sh 2>/dev/null
          wget -O install_salt.sh https://bootstrap.saltstack.com || exit 1
          (sh install_salt.sh -P ${RELEASE} && rm -f install_salt.sh) || exit 1
-         ;;
 esac
 
 echo "Clone salt-desktop ..."
@@ -105,11 +116,11 @@ echo
 echo "For usage ideas visit ..."
 echo " https://github.com/saltstack-formulas/salt-desktop#stack-profiles"
 echo
-echo "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"
-echo "////////////                                             \\\\\\\\\\\\\\\\"
-echo "\\\\\\\\\\\               Congratulations                ////////////////"
-echo "///////////     Salt and Salt-Desktop are installed      \\\\\\\\\\\\\\\\"
-echo "///////////                                              ////////////////"
+echo "////////////////////////////////////////////////////////////////////////"
+echo "///////////                                              ///////////////"
+echo "///////////               Congratulations                ///////////////"
+echo "///////////     Salt and Salt-Desktop are installed      ///////////////"
+echo "///////////                                              ///////////////"
 echo "////////////////////////////////////////////////////////////////////////"
 echo
 echo
