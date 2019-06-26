@@ -11,7 +11,7 @@ if [ -f "/usr/bin/zypper" ]; then
     # opensuse does not have major version pegged packages support
     RELEASE=""
 else
-    RELEASE='stable 2018.3.4'
+    RELEASE='stable 2019.2.0'
 fi
 #parse commandline (not tested yet)
 while getopts ":r:" option; do
@@ -65,11 +65,11 @@ linux*)  OSHOME=/home
          echo "Setup Linux baseline and install saltstack masterless minion ..."
          if [ -f "/usr/bin/dnf" ]; then
              /usr/bin/dnf install -y --best --allowerasing python3-pip git wget redhat-rpm-config python3-devel || exit 1 
-             pip install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
+             pip3 install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
          elif [ -f "/usr/bin/yum" ]; then
              /usr/bin/yum install -y epel-release
-             /usr/bin/yum install -y python3-pip git wget redhat-rpm-config python3-devel || exit 1 
-             pip install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
+             /usr/bin/yum install -y python34-pip git wget redhat-rpm-config python34-devel || exit 1 
+             pip3.4 install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
          elif [ -f "/usr/bin/zypper" ]; then
              /usr/bin/zypper install -y git python3-PyYAML python3-devel python3-pip python3-curses || exit 1
              /usr/bin/zypper remove -y python2-pip 2>/dev/null
@@ -93,6 +93,17 @@ linux*)  OSHOME=/home
          rm -f install_salt.sh 2>/dev/null
          wget -O install_salt.sh https://bootstrap.saltstack.com || exit 1
          (sh install_salt.sh -x python3 -P ${RELEASE} && rm -f install_salt.sh) || exit 1
+
+         ### workaround for https://github.com/saltstack/salt-bootstrap/issues/1355
+         ### and ensure python3 is systemd default python
+         if [ -f "/usr/bin/dnf" ] || [ -f "/usr/bin/yum" ]; then
+             rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
+         elif [ -f "/usr/bin/apt-get" ]; then
+             /usr/bin/apt-get remove -y python2.7 python2.7-minimal || exit 1
+             rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
+         elif [ -f "/usr/bin/zypper" ]; then
+             rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
+         fi
          ;;
 esac
 
