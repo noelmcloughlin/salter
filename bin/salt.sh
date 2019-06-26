@@ -7,12 +7,13 @@ USER=username
 SALTFS=/srv/salt
 [[ `id -u` != 0    ]] && echo "Run script with sudo, exiting" && exit 1
 
-if [ -f "/usr/bin/zypper" ]; then
-    # opensuse does not have major version pegged packages support
+if [ -f "/usr/bin/zypper" ] || [ -f "/usr/sbin/pkg" ]; then
+    # No major version pegged packages support
     RELEASE=""
 else
     RELEASE='stable 2019.2.0'
 fi
+
 #parse commandline (not tested yet)
 while getopts ":r:" option; do
     case "${option}" in
@@ -21,6 +22,12 @@ while getopts ":r:" option; do
     esac
 done
 shift $((OPTIND-1))
+
+if [ `uname` = 'FreeBSD' ]
+then
+    SALTFS=/usr/local/etc/salt/states
+    mkdir -p ${SALTFS} 2>/dev/null
+fi
 
 case "$OSTYPE" in
 darwin*) OSHOME=/Users
@@ -61,7 +68,8 @@ darwin*) OSHOME=/Users
          export HOMEBREW_CURLRC=1
          ;;
 
-linux*)  OSHOME=/home
+freebsd*|linux*)
+         OSHOME=/home
          echo "Setup Linux baseline and install saltstack masterless minion ..."
          if [ -f "/usr/bin/dnf" ]; then
              /usr/bin/dnf install -y --best --allowerasing python3-pip git wget redhat-rpm-config python3-devel || exit 1 
