@@ -76,8 +76,8 @@ freebsd*|linux*)
              pip3 install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
          elif [ -f "/usr/bin/yum" ]; then
              /usr/bin/yum install -y epel-release
-             /usr/bin/yum install -y python34-pip git wget redhat-rpm-config python34-devel || exit 1 
-             pip3.4 install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
+             /usr/bin/yum install -y python36-pip git wget redhat-rpm-config python36-devel || exit 1 
+             pip3.6 install --upgrade --ignore-installed --pre wrapper barcodenumber npyscreen || exit 1
          elif [ -f "/usr/bin/zypper" ]; then
              /usr/bin/zypper install -y git python3-PyYAML python3-devel python3-pip python3-curses || exit 1
              /usr/bin/zypper remove -y python2-pip 2>/dev/null
