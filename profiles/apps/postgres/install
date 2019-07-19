@@ -1,7 +1,0 @@
-#format: YAML
-
-base:
-  '*':
-    - postgres
-    - postgres.dev
-    - postgres.upstream
