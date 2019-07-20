@@ -20,18 +20,19 @@
 COMMUNITYNAME=SaltDesktop
 PROJECT=${PROJECT:-saltstack-formulas}
 SUBPROJECT=salt-desktop
+SUBDIR=./
 NAME="$( echo ${SUBPROJECT} | awk -F- '{print $NF}' )"
 URI=https://github.com
 USERNAME=''
 
-STATES="corpsys/dev corpsys/joindomain corpsys/linuxvda devstack everything mysql sudo deepsea docker-compose java packages tomcat deepsea_post docker-containers lxd postgres dev etcd macbook salt"
+STATES="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
 #
 #----------------------
 #  Developer settings
 #---------------------
 #FORK_URI=https://github.com
 #FORK_PROJECT=noelmcloughlin
-#FORK_BRANCH="fixedbranch"
+#FORK_BRANCH="develop"
 #FORK_SUBPROJECTS="salt-desktop"
 
 #********************************
@@ -108,7 +109,6 @@ pkg-install() {
                  /usr/bin/apt-get update -y
                  /usr/bin/apt-get install -y ${PACKAGES} || exit 1
              fi
-             ;;
     esac
 }
 
@@ -133,7 +133,6 @@ pkg-update() {
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get upgrade -y ${PACKAGES} || exit 1
              fi
-             ;;
     esac
 }
 
@@ -158,7 +157,6 @@ pkg-remove() {
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get remove -y ${PACKAGES} || exit 1
              fi
-             ;;
     esac
 }
 
@@ -166,8 +164,7 @@ pkg-remove() {
 #---- salt-project -------------
 #-------------------------------
 
-get-salt-master-hostname()
-{
+get-salt-master-hostname() {
    hostname -f >/dev/null 2>&1
    if (( $? == 0 )); then
        FQDN=$(hostname -f)
@@ -190,13 +187,13 @@ HEREDOC
     salt-key -A --yes >/dev/null 2>&1
 }
 
-salt-bootstrap()
-{
+salt-bootstrap() {
     get-salt-master-hostname
     if [ -f "/usr/bin/zypper" ] || [ -f "/usr/sbin/pkg" ]; then
         # No major version pegged packages support for suse/freebsd
         SALT_VERSION=''
     fi
+    rm -fr ${BASE}/pillar/* 2>/dev/null
 
     case "$OSTYPE" in
     darwin*) OSHOME=/Users
@@ -268,7 +265,6 @@ salt-bootstrap()
              #wget -O install_salt.sh https://bootstrap.saltstack.com || exit 10
              #(sh install_salt.sh -x python3 ${SALT_VERSION}" && rm -f install_salt.sh) || exit 10
              rm -f install_salt.sh 2>/dev/null
-             ;;
     esac
     ### workaround https://github.com/saltstack/salt-bootstrap/issues/1355
     if [ -f "/usr/bin/apt-get" ]; then
@@ -300,12 +296,11 @@ EOF
     echo
 }
 
-setup-log()
-{
+setup-log() {
     LOGDIR=${1} && LOG=${2}
     mkdir -p ${LOGDIR} 2>/dev/null
     salt-call --versions >>${LOG} 2>&1
-    cat ${BASE}/pillar/site.j2 >>${LOG} 2>&1
+    [ -f "${BASE}/pillar.site.j2" ] && cat ${BASE}/pillar/site.j2 >>${LOG} 2>&1
     cat ${BASE}/pillar/*.sls >>${LOG} 2>&1
     echo >> ${LOG}
     salt-call pillar.items --local >> ${LOG} 2>&1
@@ -316,8 +311,7 @@ setup-log()
 }
 
 ### Pull down project
-clone-project()
-{
+clone-project() {
     PROJ=${1} && SUBPROJ=${2} && ALIAS=${3} && CHILD=${4} && GIT=${5}
     echo "cloning ${SUBPROJ} for ${COMMUNITYNAME} ..."
     mkdir -p ${SALTFS}/${STATES_DIR}/community/${PROJ} 2>/dev/null
@@ -334,21 +328,19 @@ clone-project()
     echo && ln -s ${SALTFS}/${STATES_DIR}/community/${PROJ}/${SUBPROJ}/${CHILD} ${SALTFS}/${STATES_DIR}/${ALIAS} 2>/dev/null
 }
 
-pillar_roots()
-{
+pillar_roots() {
     PILLAR_ROOTS_SOURCE=${1} && mkdir -p ${BASE}/pillar/ 2>/dev/null
-    cp ${PILLAR_ROOTS_SOURCE}/* ${BASE}/pillar/ 2>/dev/null
+    cp -Rp ${PILLAR_ROOTS_SOURCE}/* ${BASE}/pillar/ 2>/dev/null
 }
 
-highstate()
-{
+
+highstate() {
     was-salt-done || usage
     ACTION=${1} && NAME=${2} && FILE_ROOTS_SOURCE=${3}
     salt-key -A --yes >/dev/null 2>&1
     salt-key -L
 
-    ## if user is defined (-u option) find and replace user-placeholders in pillar data
-    if [ -n "${USERNAME}" ]; then
+    if [ -n "${USERNAME}" ]; then    #find/replace username placeholders in pillar data
         case "$OSTYPE" in
         darwin*) grep -rl 'domainadm' ${BASE}/pillar | xargs sed -i '' "s/domainadm/undefined_user/g" 2>/dev/null
                  grep -rl 'undefined_user' ${BASE}/pillar | xargs sed -i '' "s/undefined_user/${USERNAME}/g" 2>/dev/null
@@ -372,10 +364,9 @@ highstate()
 }
 
 ### salt-formula should do some of this instead
-clone-saltstack-formulas()
-{ 
+clone-saltstack-formulas() { 
     was-salt-done || usage
-    for formula in $( grep '^.* - ' ${BASE}/${STATES_DIR}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
+    for formula in $( grep '^.* - ' ${SALTFS}/${STATES_DIR}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
     do
         ## adjust for state and formula name mismatches
         case ${formula} in
@@ -392,12 +383,11 @@ clone-saltstack-formulas()
         phpstorm)   source='jetbrains-phpstorm';;
         *)          source=${formula} ;;
         esac
-        clone-project saltstack-formulas ${source}-formula ${formula} ${formula} https://github.com/saltstack-formulas
+        clone-project saltstack-formulas ${source}-formula ${formula} ${formula} https://github.com
     done
 }
 
-usage()
-{
+usage() {
     echo "Usage: sudo $0 -i INSTALL_TARGET [ OPTIONS ]" 1>&2
     echo "Usage: sudo $0 -r REMOVE_TARGET [ OPTIONS ]" 1>&2
     echo 1>&2
@@ -420,7 +410,7 @@ usage()
     echo "  [-u <loginname>]" 1>&2
     echo "        Valid loginname (local or corporate user)." 1>&2
     echo 1>&2
-    exit ${1}
+    exit 1
 }
 
 INSTALL_TARGET=salt && REMOVE_TARGET=''
@@ -448,42 +438,45 @@ was-salt-done() {
     return 0
 }
 
-business-logic()
-{
-    STATES_SYMLINK=${SALTFS}/${STATES_DIR}/${NAME}/file_roots/install                 ## path includes symlink
+business-logic() {
     get-salt-master-hostname
+    STATES_DIR_SYMLINK=${SALTFS}/${STATES_DIR}/${NAME}/file_roots/install
+    cp ${STATES_DIR_SYMLINK}/${INSTALL_TARGET}.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
+
+    ## install option
     case "${INSTALL_TARGET}" in
-    salt)        salt-bootstrap                                                    ## bootstrap salt software
-                 clone-project saltstack-formulas salt-formula salt salt ${URI}    ## clone salt formula
-                 clone-project ${PROJECT} ${SUBPROJECT} ${NAME} salt ${URI}        ## clone our Project
-                 pillar_roots ${SALTFS}/${STATES_DIR}/${NAME}/pillar_roots         ## path includes symlnk
-                 highstate install salt ${STATES_SYMLINK}                          ## apply salt metastate
-                 ;;
+    salt)    salt-bootstrap                                                    ## bootstrap salt software
+             clone-project saltstack-formulas salt-formula salt salt ${URI}    ## clone salt formula
+             clone-project ${PROJECT} ${SUBPROJECT} ${NAME} ${SUBDIR} ${URI}   ## clone our Project
+             pillar_roots ${SALTFS}/${STATES_DIR}/${NAME}/pillar_roots         ## copy pillar data
+             highstate install salt ${STATES_DIR_SYMLINK}                          ## apply salt metastate
+             ;;
 
-    menu)        pip install --pre wrapper barcodenumber npyscreen || exit 1
-                 (was-salt-done && ${BASE}/${DIR}/lib/menu.py ${STATESDIR_SYMLINK}) || exit 2
-                 clone-project ${PROJECT} ${SUBPROJECT} ${NAME} '' ${URI}           ## clone our Project
+    menu)    pip install --pre wrapper barcodenumber npyscreen || exit 1
+             (was-salt-done && ${BASE}/${DIR}/lib/menu.py ${STATES_DIR_SYMLINK}) || exit 2
+             cp ${STATES_DIR_SYMLINK}/${INSTALL_TARGET}.sls  ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
+             clone-saltstack-formulas
+             highstate install menu ${STATES_DIR_SYMLINK}
+             ;;
+
+    *)       echo "${STATES}" | grep "${INSTALL_TARGET}" >/dev/null 2>&1
+             if (( $? == 0 )) || [ -f ${STATES_DIR_SYMLINK}/install/${INSTALL_TARGET}.sls ]; then
                  clone-saltstack-formulas
-                 highstate install menu ${STATESDIR_SYMLINK} ;;
-
-    ${STATES})   clone-saltstack-formulas
-                 clone-project ${PROJECT} ${SUBPROJECT} ${NAME} '' ${URI}           ## clone our Project
-                 highstate install ${INSTALL_TARGET} ${STATESDIR_SYMLINK} ;;
-
-    *)           if [ -f ${STATESDIR_SYMLINK}/remove/${INSTALL_TARGET}.sls ]; then
-                     highstate remove ${INSTALL_TARGET} ${STATESDIR_SYMLINK}
-                 else
-                     case "${REMOVE_TARGET}" in
-                     ${STATES})   highstate remove ${INSTALL_TARGET} ${STATESDIR_SYMLINK}
-                                  ;;
-                     *)           if [ -f ${STATESDIR_SYMLINK}/remove/${INSTALL_TARGET}.sls ]; then
-                                     highstate remove ${INSTALL_TARGET} ${STATESDIR_SYMLINK}
-                                  else
-                                     echo "Not implemented" && usage 1
-                                  fi
-                     esac
-                 fi
+                 highstate install ${INSTALL_TARGET} ${STATES_DIR_SYMLINK}
+             else
+                 echo "Not implemented" && usage 1
+             fi
     esac
+
+    ## remove option
+    if [ -n "${REMOVE_TARGET}" ]; then
+        echo "${STATES}" | grep "${REMOVE_TARGET}" >/dev/null 2>&1
+        if (( $? == 0 )) && [ -f ${STATES_DIR_SYMLINK}/remove/${INSTALL_TARGET}.sls ]; then
+           highstate remove ${INSTALL_TARGET} ${STATES_DIR_SYMLINK}
+        else
+           echo "Not implemented" && usage 1
+        fi
+    fi
 }
 
 ## MAIN

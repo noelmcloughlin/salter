@@ -14,6 +14,7 @@ base:
     - saltstack-formulas.linuxvda.sls
     - saltstack-formulas.lxd.sls
     - saltstack-formulas.maven.sls
+    - saltstack-formulas.mysql.sls
     - saltstack-formulas.nginx.sls
     - saltstack-formulas.opensds.sls
     - saltstack-formulas.packages.sls
