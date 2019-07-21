@@ -17,7 +17,7 @@ Install salter on MacOS, FreeBSD, or GNU/Linux (Ubuntu/Debian/CentOS/SuSE)::
 Customize pillar data for you site (i.e. set dns/ntp/domain/domain, etc)::
 
     sudo -s
-    cd /srv/salt/community/saltstack-formulas/salt-desktop/pillar_roots/saltstack-formulas/
+    cd /srv/salt/salt/pillar_roots/saltstack-formulas/
     ls
        apache.sls  eclipse.sls   init.sls kerberos.sls  maven.sls    packages.sls  salt.sls  sqlplus.sls   users.sls
        chrony.sls  etcd.sls      java.sls linuxvda.sls  nginx.sls    postgres.sls  samba.sls  timezone.sls
