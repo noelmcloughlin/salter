@@ -12,7 +12,7 @@ Quick start
 
 Install salter on MacOS, FreeBSD, or GNU/Linux (Ubuntu/Debian/CentOS/SuSE)::
 
-    curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/bin/installer.sh && sudo bash salter.sh -i salt
+    curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i salt
 
 Customize pillar data for you site (i.e. set dns/ntp/domain/domain, etc)::
 
