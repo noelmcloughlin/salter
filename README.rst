@@ -10,21 +10,25 @@ HOSTED AT https://github.com/saltstack-formulas/salt-desktop !!!!!!!
 Quick start
 ===========
 
-Install salt on MacOS, FreeBSD, or GNU/Linux (Ubuntu/Debian/CentOS/SuSE)::
+Install salter on MacOS, FreeBSD, or GNU/Linux (Ubuntu/Debian/CentOS/SuSE)::
 
-    curl -o salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/bin/salt.sh && sudo bash salt.sh
+    curl -o salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/bin/installer.sh && sudo bash salter.sh
 
-Customize your site (i.e. dns/ntp/domain/krb/etc)::
+Customize pillar data for you site (i.e. set dns/ntp/domain/domain, etc)::
 
-    sudo vi /srv/salt/profiles/config.sls
-
+    sudo -s
+    cd /srv/salt/community/saltstack-formulas/salt-desktop/pillar_roots/saltstack-formulas/
+    ls
+       apache.sls  eclipse.sls   init.sls kerberos.sls  maven.sls    packages.sls  salt.sls  sqlplus.sls   users.sls
+       chrony.sls  etcd.sls      java.sls linuxvda.sls  nginx.sls    postgres.sls  samba.sls  timezone.sls
+       docker.sls  firewall.sls  jetbrains.sls  lxd.sls opensds.sls  resolver.sls  sqldeveloper.sls  tomcat.sls
 
 Menu
 ====
 
 Provision a Desktop via Menu::
 
-    sudo /usr/local/bin/devsetup -u username
+    sudo /usr/local/bin/salter.sh -u username
 
 
 .. image:: design_specs/menu.png
@@ -33,26 +37,26 @@ Provision a Desktop via Menu::
    :alt: Sample Menu
 
 
-Stack profiles
-==============
+states
+=======
 
 Provision Linux Developer desktop (with oracle jdk and tomcat)::
 
-      sudo /usr/local/bin/devsetup -u username -s dev
+      sudo /usr/local/bin/salter.sh -u username -i dev
 
 OR .. provision Linux Developer desktop (without oracle jdk/tomcat)::
 
-      sudo /usr/local/bin/devsetup -u username -s corpsys/dev
+      sudo /usr/local/bin/salter.sh -u username -i corpsys/dev
 
 OR .. provision MacBook Developer desktop::
 
-      sudo /usr/local/bin/devsetup -u username -s macbook
+      sudo /usr/local/bin/salter.sh -u username -i macbook
 
 OR .. join Linux host to Active Directory::
 
-      sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain-clean
+      sudo /usr/local/bin/salter.sh -u domainadm -r corpsys/joindomain  #clean
 
-      sudo /usr/local/bin/devsetup -u domainadm -s corpsys/joindomain
+      sudo /usr/local/bin/salter.sh -u domainadm -i corpsys/joindomain  #install
 
       sudo net ads join EXAMPLE.COM -U nmcloughlin
 
@@ -62,37 +66,19 @@ OR .. join Linux host to Active Directory::
 
 AND .. provision Citrix LinuxVDA::
 
-      sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda
+      sudo /usr/local/bin/salter.sh -u domainadm -i corpsys/linuxvda
 
 
-OR ... build your own profile ...::
+OR remove postgres::
 
-      sudo -s
-      cd /srv/salt/profiles/stacks
-      cp template my_own_stack
-      vi my_own_stack
-      /usr/local/bin/devsetup -u username -s my_own_stack
-
-
-App profiles
-============
-
-Remove postgres::
-
-      sudo /usr/local/bin/devsetup -u username -a postgres/remove
+      sudo /usr/local/bin/salter.sh -u username -a postgres/remove
 
 OR ... cleaninstall postgres:
 
-      sudo /usr/local/bin/devsetup -u username -a postgres/cleaninstall
+      sudo /usr/local/bin/salter.sh -u username -a postgres/cleaninstall
 
 
-OR ... build your own profile ...::
-
-      sudo -s
-      cd /srv/salt/profiles/apps
-      cp template my_own_app
-      vi my_own_app
-      /usr/local/bin/devsetup -u username -s my_own_app
+OR ... define your own...::
 
 
 ecosystem
@@ -155,10 +141,10 @@ EXAMPLES
 Join Active Directory Domain and setup Citrix Linux VDA::
 
     bash
-    sudo devsetup -u domainadm -s corpsys/joindomain-cleanup; sudo devsetup -u domainadm -s corpsys/joindomain
+    sudo salter.sh -u domainadm -i corpsys/joindomain-cleanup; sudo salter.sh -u domainadm -i corpsys/joindomain
 
     custom choice [ stacks/corpsys/joindomain ] selected
-    Logging to [ /tmp/saltdesktop/stacks/corpsys/joindomain/log.201804110644 ]
+    Logging to [ /tmp/install-saltstack-formulas-salt-desktop-joindomain/log.201804110644 ]
     Orchestrating things, please be patient ...
     Summary for local
     --------------
@@ -179,9 +165,9 @@ Join Active Directory Domain and setup Citrix Linux VDA::
     domainadm@myhost4:~$ sudo systemctl restart winbind
 
 
-    domainadm@myhost4:~$ sudo /usr/local/bin/devsetup -u domainadm -s corpsys/linuxvda
+    domainadm@myhost4:~$ sudo /usr/local/bin/salter.sh -u domainadm -i corpsys/linuxvda
     custom choice [ stacks/corpsys/linuxvda ] selected
-    Logging to [ /tmp/saltdesktop/stacks/corpsys/linuxvda/log.201804110804 ]
+    Logging to [ /tmp/install-saltstack-formulas-salt-desktop-linuxvda/log.201804110804 ]
     Orchestrating things, please be patient ...
     Summary for local
     --------------
@@ -193,10 +179,10 @@ Join Active Directory Domain and setup Citrix Linux VDA::
 Sudo access::
 
     bash
-    sudo devsetup -u jdoe -a sudo
+    sudo salter.sh -u jdoe -a sudo
 
     custom choice [ apps/sudo ] selected
-    Logging to [ /tmp/saltdesktop/apps/sudo/log.201804110702 ]
+    Logging to [ /tmp/install-saltstack-formulas-salt-desktop-sudo/log.201804110702 ]
     Orchestrating things, please be patient ...
 
     Summary for local
@@ -206,4 +192,4 @@ Sudo access::
     -------------
     Total states run:     13
     Total run time:   25.748 s
-    See full log in [ /tmp/saltdesktop/apps/sudo/log.201804110702 ]
+    See full log in [ /tmp/install-saltstack-formulas-salt-desktop-sudo/log.201804110702 ]

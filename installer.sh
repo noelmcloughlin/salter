@@ -442,7 +442,9 @@ business-logic() {
              clone-project saltstack-formulas salt-formula salt salt ${URI}    ## clone salt formula
              clone-project ${PROJECT} ${SUBPROJECT} ${NAME} ${SUBDIR} ${URI}   ## clone our Project
              pillar_roots ${SALTFS}/${STATES_DIR}/${NAME}/pillar_roots         ## copy pillar data
-             highstate install salt ${STATES_DIR_SYMLINK}                          ## apply salt metastate
+             highstate install salt ${STATES_DIR_SYMLINK}                      ## apply salt metastate
+             rm /usr/local/bin/salter.sh 2>/dev/null
+             ln -s ${SALTFS}/${STATES_DIR}/${NAME}/installer.sh /usr/local/bin/salter.sh 2>/dev/null
              ;;
 
     menu)    pip install --pre wrapper barcodenumber npyscreen || exit 1
