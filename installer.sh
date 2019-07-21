@@ -30,10 +30,10 @@ STATES="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysq
 #----------------------
 #  Developer settings
 #---------------------
-#FORK_URI=https://github.com
-#FORK_PROJECT=noelmcloughlin
-#FORK_BRANCH="develop"
-#FORK_SUBPROJECTS="salt-desktop"
+# FORK_URI=https://github.com
+# FORK_PROJECT=noelmcloughlin
+# FORK_BRANCH="develop"
+# FORK_SUBPROJECTS="salt-desktop"
 
 #********************************
 #  Boilerplate implementation
@@ -256,19 +256,12 @@ salt-bootstrap() {
              rm -f install_salt.sh 2>/dev/null
              wget -O install_salt.sh https://bootstrap.saltstack.com || exit 1
 
-             # hack for https://github.com/saltstack/salt-bootstrap/pull/1356
-             if [ -f salt-bootstrap.sh ]; then
-                 sh ./salt-bootstrap.sh -x python3 ${SALT_VERSION}
-             else
-                 sh ./lib/salt-bootstrap.sh -x python3 ${SALT_VERSION}
-             fi
-             #wget -O install_salt.sh https://bootstrap.saltstack.com || exit 10
-             #(sh install_salt.sh -x python3 ${SALT_VERSION}" && rm -f install_salt.sh) || exit 10
+             wget -O install_salt.sh https://bootstrap.saltstack.com || exit 10
+             (sh install_salt.sh -x python3 ${SALT_VERSION} && rm -f install_salt.sh) || exit 10
              rm -f install_salt.sh 2>/dev/null
     esac
-    ### workaround https://github.com/saltstack/salt-bootstrap/issues/1355
+    ### stop debian interference with services (https://wiki.debian.org/chroot)
     if [ -f "/usr/bin/apt-get" ]; then
-        ### prevent dpkg from starting daemons: https://wiki.debian.org/chroot
         cat > /usr/sbin/policy-rc.d <<EOF
 #!/bin/sh
 exit 101
@@ -355,7 +348,7 @@ highstate() {
     LOG=${LOGDIR}/log.$( date '+%Y%m%d%H%M' )
     setup-log ${LOGDIR} ${LOG}
     salt-call state.highstate --local ${DEBUGG_ON} --retcode-passthrough saltenv=base  >>${LOG} 2>&1
-    [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null || echo "See full log in [ ${LOG} ]"
+    [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null && echo "See full log in [ ${LOG} ]"
     echo
     echo "///////////////////////////////////////////////////////////////////////////"
     echo "      congrats:  ${NAME} for ${COMMUNITYNAME} is now installed"
