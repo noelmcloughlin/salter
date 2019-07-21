@@ -31,8 +31,8 @@ Provision a Desktop via Menu::
     sudo /usr/local/bin/salter.sh -u username
 
 
-.. image:: design_specs/menu.png
-   :target: https://github.com/saltstack-formulas/salt-desktop/blob/master/bin/menu.py
+.. image:: lib/design_specs/menu.png
+   :target: https://github.com/saltstack-formulas/salt-desktop/blob/master/lib/menu.py
    :scale: 25 %
    :alt: Sample Menu
 
