@@ -15,8 +15,9 @@ try:
 except ImportError("Cannot import npyscreen"):
     exit(102)
 
-class TestApp(npyscreen.NPSApp):
+class TestApp(npyscreen.NPSApp, outdir='/srv/salt'):
     def __init__(self):
+        self.dir = outdir
         # Set option users will see in the multi select widget
         self.maven = 'Maven'
         self.postgres = 'Postgres'
@@ -130,7 +131,7 @@ class TestApp(npyscreen.NPSApp):
            select_list.insert(0, 'users')
            select_list.insert(0, 'packages')
            try:
-               f = open('/srv/salt/top.sls', 'w')
+               f = open(self.dir + '/top.sls', 'w')
                f.write("base:\n")
                f.write("  '*':\n")
                for ele in select_list:
@@ -144,7 +145,10 @@ class TestApp(npyscreen.NPSApp):
 #### Run the select screen & handle interrupts
 if __name__ == "__main__":
     try:
-        App = TestApp()
+        outdir = '/srv/salt'
+        if len(sys.argv) > 1:
+            outdir = str(sys.argv[1])
+        App = TestApp(outdir)
         App.run()
     except KeyboardInterrupt:
         print('Interrupted')
