@@ -17,27 +17,14 @@
 #
 # This script allows common bootstrapping for any salt-project.
 #
-COMMUNITYNAME=SaltDesktop
-PROJECT=${PROJECT:-saltstack-formulas}
-SUBPROJECT=salt-desktop
-SUBDIR=./
-NAME="$( echo ${SUBPROJECT} | awk -F- '{print $NF}' )"
-URI=https://github.com
-USERNAME=''
-
-STATES="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
+#--- Developer settings ---
 #
-#----------------------
-#  Developer settings
-#---------------------
 # FORK_URI=https://github.com
 # FORK_PROJECT=noelmcloughlin
-# FORK_BRANCH="develop"
-# FORK_SUBPROJECTS="salt-desktop"
-
-#********************************
-#  Boilerplate implementation
-#********************************
+# FORK_BRANCH="fixes"
+# FORK_SUBPROJECTS="opensds-installer salt-formula salt-desktop"
+#
+#-----------------------------------------------------------------------
 trap exit SIGINT SIGTERM
 [[ `id -u` != 0 ]] && echo && echo "Run script with sudo, exiting" && echo && exit 1
 
@@ -359,6 +346,8 @@ highstate() {
 ### salt-formula should do some of this instead
 clone-saltstack-formulas() { 
     was-salt-done || usage
+    FILE_ROOTS_SOURCE=${1} && NAME=${2}
+    cp ${FILE_ROOTS_SOURCE}/${NAME}.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
     for formula in $( grep '^.* - ' ${SALTFS}/${STATES_DIR}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
     do
         ## adjust for state and formula name mismatches
@@ -438,31 +427,38 @@ business-logic() {
 
     ## install option
     case "${INSTALL_TARGET}" in
-    salt)    salt-bootstrap                                                    ## bootstrap salt software
-             clone-project saltstack-formulas salt-formula salt salt ${URI}    ## clone salt formula
-             clone-project ${PROJECT} ${SUBPROJECT} ${NAME} ${SUBDIR} ${URI}   ## clone our Project
-             pillar_roots ${SALTFS}/${STATES_DIR}/${NAME}/pillar_roots         ## copy pillar data
-             highstate install salt ${STATES_DIR_SYMLINK}                      ## apply salt metastate
-             rm /usr/local/bin/salter.sh 2>/dev/null
-             ln -s ${SALTFS}/${STATES_DIR}/desktop/installer.sh /usr/local/bin/salter.sh 2>/dev/null
-             ;;
+    salt)       ## SALT
+                salt-bootstrap                                                    ## bootstrap salt software
+                clone-project saltstack-formulas salt-formula salt salt ${URI}    ## clone salt formula
+                clone-project ${PROJECT} ${SUBPROJECT} ${NAME} ${SUBDIR} ${URI}   ## clone our Project
+                pillar_roots ${SALTFS}/${STATES_DIR}/${NAME}/pillar_roots         ## copy pillar data
+                highstate install salt ${STATES_DIR_SYMLINK}                      ## apply salt metastate
+                rm /usr/local/bin/salter.sh 2>/dev/null
+                ln -s ${SALTFS}/${STATES_DIR}/${NAME}/installer.sh /usr/local/bin/salter.sh 2>/dev/null
+                ;;
 
-    menu)    ## EXAMPLE MENU
-             pip install --pre wrapper barcodenumber npyscreen || exit 1
-             (was-salt-done && ${BASE}/${DIR}/lib/menu.py ${STATES_DIR_SYMLINK}) || exit 2
-             cp ${STATES_DIR_SYMLINK}/${INSTALL_TARGET}.sls  ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
-             clone-saltstack-formulas
-             highstate install menu ${STATES_DIR_SYMLINK}
-             ;;
+    menu)       ## MENU
+                pip install --pre wrapper barcodenumber npyscreen || exit 1
+                (was-salt-done && ${BASE}/${DIR}/lib/menu.py ${STATES_DIR_SYMLINK}) || exit 2
+                cp ${STATES_DIR_SYMLINK}/${INSTALL_TARGET}.sls  ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
+                clone-saltstack-formulas ${STATES_DIR_SYMLINK} ${NAME}
+                highstate install ${INSTALL_TARGET} ${STATES_DIR_SYMLINK}
+                ;;
 
-    *)       ## INDIVIDUAL STATES (PROFILES)
-             echo "${STATES}" | grep "${INSTALL_TARGET}" >/dev/null 2>&1
-             if (( $? == 0 )) || [ -f ${STATES_DIR_SYMLINK}/install/${INSTALL_TARGET}.sls ]; then
-                 clone-saltstack-formulas
-                 highstate install ${INSTALL_TARGET} ${STATES_DIR_SYMLINK}
-                 return $?
-             fi
-             echo "Not implemented" && usage 1
+    *)          ## PROFILES
+                echo "${STATES}" | grep "${INSTALL_TARGET}" >/dev/null 2>&1
+                if (( $? == 0 )) || [ -f ${STATES_DIR_SYMLINK}/install/${INSTALL_TARGET}.sls ]; then
+                    clone-saltstack-formulas ${STATES_DIR_SYMLINK} ${NAME}
+                    highstate install ${INSTALL_TARGET} ${STATES_DIR_SYMLINK}
+
+                    ## deepsea post-install step
+                    if (( $? == 0 )) && [[ "${INSTALL_TARGET}" == "deepsea" ]]; then
+                       salt-call --local grains.append deepsea default ${MASTER_HOST}
+                       cp ${STATES_DIR_SYMLINK}/deepsea_post.sls ${SALTFS}/${STATES}/top.sls
+                    fi
+                    return 0
+                fi
+                echo "Not implemented" && usage 1
     esac
 
     ## remove option
@@ -476,5 +472,15 @@ business-logic() {
     fi
 }
 
-## MAIN
+## Main ##
+
+COMMUNITYNAME=SaltDesktop
+PROJECT=${PROJECT:-saltstack-formulas}
+SUBPROJECT=salt-desktop
+SUBDIR=./
+NAME="$( echo ${SUBPROJECT} | awk -F- '{print $NF}' )"
+URI=https://github.com
+USERNAME=''
+STATES="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
+
 business-logic
