@@ -434,7 +434,7 @@ business-logic() {
                 pillar_roots ${SALTFS}/${STATES_DIR}/${NAME}/pillar_roots         ## copy pillar data
                 highstate install salt ${STATES_DIR_SYMLINK}                      ## apply salt metastate
                 rm /usr/local/bin/salter.sh 2>/dev/null
-                ln -s ${SALTFS}/${STATES_DIR}/${NAME}/installer.sh /usr/local/bin/salter.sh 2>/dev/null
+                ln -s ${SALTFS}/${STATES_DIR}/desktop/installer.sh /usr/local/bin/salter.sh 2>/dev/null
                 ;;
 
     menu)       ## MENU
