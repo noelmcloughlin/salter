@@ -19,10 +19,10 @@
 #
 #--- Developer settings ---
 #
-# FORK_URI=https://github.com
-# FORK_PROJECT=noelmcloughlin
-# FORK_BRANCH="fixes"
-# FORK_SUBPROJECTS="opensds-installer salt-formula salt-desktop"
+ FORK_URI=https://github.com
+ FORK_PROJECT=noelmcloughlin
+ FORK_BRANCH="fixes"
+ FORK_SUBPROJECTS="opensds-installer salt-formula salt-desktop docker-formula samba-formula packages-formula"
 #
 #-----------------------------------------------------------------------
 trap exit SIGINT SIGTERM
