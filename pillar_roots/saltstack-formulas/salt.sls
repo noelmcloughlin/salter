@@ -55,6 +55,17 @@ salt_formulas:
      - openssh-formula
      - packages-formula
      - firewalld-formula
+     - eclipse-formula
+     - tomcat-formula
+     - sqlplus-formula
+     - sqldeveloper-formula
+     - sun-java-formula
+     - users-formula
+     - kubernetes-formula
+     - cloudfoundry-formula
+     - postgres-formula
+     - jetbrains-intellij-formula
+     - jetbrains-pycharm-formula
      - etcd-formula
      - ceph-formula
      - deepsea-formula

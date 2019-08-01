@@ -23,6 +23,8 @@ Customize pillar data for you site (i.e. set dns/ntp/domain/domain, etc)::
        chrony.sls  etcd.sls      java.sls linuxvda.sls  nginx.sls    postgres.sls  samba.sls  timezone.sls
        docker.sls  firewall.sls  jetbrains.sls  lxd.sls opensds.sls  resolver.sls  sqldeveloper.sls  tomcat.sls
 
+Make sure you update salt.sls with all formulas you need (we provide defaults).
+
 Menu
 ====
 

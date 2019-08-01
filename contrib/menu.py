@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#########################################################
-# Copyright (c) 2019 Overstock.com. All Rights Reserved.
-#########################################################
+##########################################################
+# Copyright (c) 2019 Saltstack Formulas
+##########################################################
 # encoding: utf-8
 # This script displays a formula menu for default profile.
 # http://npyscreen.readthedocs.org/introduction.html

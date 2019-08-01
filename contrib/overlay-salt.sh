@@ -14,10 +14,15 @@ git init                                                                    ##fo
 git remote add salt https://github.com/noelmcloughlin/salt-desktop.git      ##overlay salt-desktop repo
 git pull salt fixes  --allow-unrelated-histories -f >/dev/null              ##typically master branch
 if (( $? == 0 )); then
-    mv scripts/* contrib/ 2>/dev/null                                       ##Overlay onto salt-desktop
-    cp -Rp ./profiles/* ./file_roots/                                       ##Your profiles/highstatesa ..
-    cp -Rp ./configs/* ./pillar_roots/                                      ##Your pillar data ..
-    rm -fr ./profiles ./configs ./scripts 2>/dev/null                       ##cleanup local dirs
+    ## your salt artifacts
+    FILE_ROOTS=/srv/salt && [ -d /usr/local/etc/salt/states ] && FILE_ROOTS=/usr/local/etc/salt/states
+    TARGET_DIR=${FILE_ROOTS}/community/your
+    mkdir -p ${TARGET_DIR}/contrib ${TARGET_DIR}/file_roots ${TARGET_DIR}/pillar_roots 2>/dev/null
+
+    cp -Rp ./scripts/* ${TARGET_DIR}/contrib/                               ##Your contrib
+    cp -Rp ./profiles/* ${TARGET_DIR}/file_roots/                           ##Your profiles/highstatesa ..
+    cp -Rp ./configs/* ${TARGET_DIR}/pillar_roots/                          ##Your pillar data ..
+    rm -fr ./scripts ./profiles ./configs 2>/dev/null                       ##cleanup local dirs
     git init                                                                ##forget what just happened
 else
     [[ -x "/usr/bin/xcode-select" ]] && /usr/bin/xcode-select --install     ##possible macos issue
@@ -31,23 +36,16 @@ RC=0 && ./installer.sh -i salt && RC=$?
 
 ## overlay contributed/custom salt formulas
 SOURCE_DIR=formulas
-[ -d /srv/salt ] && FILE_ROOTS=/srv/salt
-[ -d /usr/local/etc/salt/states ] && FILE_ROOTS=/usr/local/etc/salt/states
-TARGET_DIR=${FILE_ROOTS}/community/you
-if [ -d "${FILE_ROOTS}" ]; then
-    mkdir -p ${TARGET_DIR} 2>/dev/null
-    for formula in $( ls ./${SOURCE_DIR}/ 2>/dev/null | grep '\-formula' | awk -F'-' '{print $1}' )
-    do
-        if [ -d "${SOURCE_DIR}/${formula}-formula/${formula}" ]; then
-            rm -fr ${TARGET_DIR}/${formula}-formula ${FILE_ROOTS}/${formula} 2>/dev/null               ##cleanup
-            mv ${SOURCE_DIR}/${formula}-formula ${TARGET_DIR}/                                         ##integrate
-            ln -s  ${TARGET_DIR}/${formula}-formula/${formula} ${FILE_ROOTS}/${formula} 2>/dev/null    ##symlink
-        fi
-    done
-else
-    echo "No ${FILE_ROOTS} directory found" && RC=28
-fi
-[ -f contrib/salt.sls ] && cp contrib/salt.sls ${FILE_ROOTS}/salt/init.sls
+mkdir -p ${TARGET_DIR} 2>/dev/null
+for formula in $( ls ./${SOURCE_DIR}/ 2>/dev/null | grep '\-formula' | awk -F'-' '{print $1}' )
+do
+    if [ -d "${SOURCE_DIR}/${formula}-formula/${formula}" ]; then
+        rm -fr ${TARGET_DIR}/${formula}-formula ${FILE_ROOTS}/${formula} 2>/dev/null               ##cleanup
+        mv ${SOURCE_DIR}/${formula}-formula ${TARGET_DIR}/                                         ##integrate
+        ln -s  ${TARGET_DIR}/${formula}-formula/${formula} ${FILE_ROOTS}/${formula} 2>/dev/null    ##symlink
+    fi
+done
+
 ## Check status/cleanup
 (( RC > 0 )) && echo "something is wrong" && exit ${RC}
 echo "This cloned directory is no longer needed! Use /usr/local/bin/salter.sh"
