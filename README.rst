@@ -1,6 +1,6 @@
-==============
+=============
 salt-desktop
-==============
+=============
 
 Salt Desktop is a tool for building and deploying system environments without fuss.
 
