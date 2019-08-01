@@ -329,8 +329,10 @@ highstate() {
                  grep -rl 'undefined_user' ${BASE}/pillar | xargs sed -i "s/undefined_user/${USERNAME}/g" 2>/dev/null
         esac
     fi
-
+    ## prepare salt highstate
     cp ${FILE_ROOTS_SOURCE}/${NAME}.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
+    [ "${NAME}" == "salt" ] && cp ${STATES_DIR}/${PROJ}/${SUBPROJ}/${CHILD}/file_roots/install/salt.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
+    ## run salt highstate
     LOGDIR=/tmp/${ACTION}-${PROJECT}-${SUBPROJECT}-${NAME}
     LOG=${LOGDIR}/log.$( date '+%Y%m%d%H%M' )
     setup-log ${LOGDIR} ${LOG}
@@ -439,7 +441,7 @@ business-logic() {
 
     menu)       ## MENU
                 pip install --pre wrapper barcodenumber npyscreen || exit 1
-                (was-salt-done && ${BASE}/${DIR}/lib/menu.py ${STATES_DIR_SYMLINK}) || exit 2
+                (was-salt-done && ${BASE}/${DIR}/contrib/menu.py ${STATES_DIR_SYMLINK}) || exit 2
                 cp ${STATES_DIR_SYMLINK}/${INSTALL_TARGET}.sls  ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
                 clone-saltstack-formulas ${STATES_DIR_SYMLINK} ${NAME}
                 highstate install ${INSTALL_TARGET} ${STATES_DIR_SYMLINK}

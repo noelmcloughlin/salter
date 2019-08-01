@@ -1,5 +1,3 @@
-{% from "site.j2" import sitedata as site %}
-
 salt:
   install_packages: False
   master:
@@ -26,7 +24,7 @@ salt:
         - /srv/pillar
   ssh_roster:
     controller1:
-      host: {{ site.host_ipv4 or site.host_ipv6 }}
+      host: {{ grains.ipv4[0] or grains.ipv6[1] }}
       user: stack
       sudo: True
       priv: /etc/salt/ssh_keys/sshkey.pem
