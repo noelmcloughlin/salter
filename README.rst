@@ -23,6 +23,8 @@ Customize pillar data for you site (i.e. set dns/ntp/domain/domain, etc)::
        chrony.sls  etcd.sls      java.sls linuxvda.sls  nginx.sls    postgres.sls  samba.sls  timezone.sls
        docker.sls  firewall.sls  jetbrains.sls  lxd.sls opensds.sls  resolver.sls  sqldeveloper.sls  tomcat.sls
 
+Make sure you update salt.sls with all formulas you need (we provide defaults).
+
 Menu
 ====
 
@@ -31,7 +33,7 @@ Provision a Desktop via Menu::
     sudo /usr/local/bin/salter.sh -u username
 
 
-.. image:: lib/design_specs/menu.png
+.. image:: contrib/design_specs/menu.png
    :target: https://github.com/saltstack-formulas/salt-desktop/blob/master/bin/menu.py
    :scale: 25 %
    :alt: Sample Menu
