@@ -1,197 +1,93 @@
-.. _readme:
+==============
+salt-desktop
+==============
 
-Salt Desktop
-================
+Salt Desktop is a tool for building and deploying software environments without fuss.
 
-Salt Desktop orchestrates useful software onto Linux/FreeBSD/MacOS without fuss.
+Profiles are an minimilistic way of describing a wanted software environment. They can be dynamically created, shared, and reused in a predictable manner. Configs are an interface designed to hold global values distributble to hosts. While profile defaults maybe sufficient, we often need to modify default configuration to suit site/personal specifics. Formulas are pre-written salt states developed and shared by open source communities.  If you are familar with yaml and want to inject dynamic profiles into your systems, this tool does that.  Support OS include FreeBSD, MacOS, and most GNU/Linux.
 
-HOSTED AT https://github.com/saltstack-formulas/salt-desktop !!!!!!!
-
-Quick start
-===========
-
-Install salter on MacOS, FreeBSD, or GNU/Linux (Ubuntu/Debian/CentOS/SuSE)::
-
-    curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i salt
-
-Customize pillar data for you site (i.e. set dns/ntp/domain/domain, etc)::
-
-    sudo -s
-    cd /srv/salt/salt/pillar_roots/saltstack-formulas/
-    ls
-       apache.sls  eclipse.sls   init.sls kerberos.sls  maven.sls    packages.sls  salt.sls  sqlplus.sls   users.sls
-       chrony.sls  etcd.sls      java.sls linuxvda.sls  nginx.sls    postgres.sls  samba.sls  timezone.sls
-       docker.sls  firewall.sls  jetbrains.sls  lxd.sls opensds.sls  resolver.sls  sqldeveloper.sls  tomcat.sls
-
-Make sure you update salt.sls with all formulas you need (we provide defaults).
-
-Menu
-====
-
-Provision a Desktop via Menu::
-
-    sudo /usr/local/bin/salter.sh -u username
-
-
-.. image:: contrib/design_specs/menu.png
-   :target: https://github.com/saltstack-formulas/salt-desktop/blob/master/bin/menu.py
-   :scale: 25 %
-   :alt: Sample Menu
-
-
-states
+Install
 =======
 
-Provision Linux Developer desktop (with oracle jdk and tomcat)::
+```
+curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i salt
+```
 
-      sudo /usr/local/bin/salter.sh -u username -i dev
+Deploy a system profile
+========================
 
-OR .. provision Linux Developer desktop (without oracle jdk/tomcat)::
+```
+sudo /usr/local/bin/salter.sh -i <profile-name>
+```
 
-      sudo /usr/local/bin/salter.sh -u username -i corpsys/dev
+Profile
 
-OR .. provision MacBook Developer desktop::
-
-      sudo /usr/local/bin/salter.sh -u username -i macbook
-
-OR .. join Linux host to Active Directory::
-
-      sudo /usr/local/bin/salter.sh -u domainadm -r corpsys/joindomain  #clean
-
-      sudo /usr/local/bin/salter.sh -u domainadm -i corpsys/joindomain  #install
-
-      sudo net ads join EXAMPLE.COM -U nmcloughlin
-
-      sudo kinit -k UPPERCASE_HOSTNAME\\$@EXAMPLE.COM   # On failure retry after few minutes
-
-      sudo systemctl restart winbind
-
-AND .. provision Citrix LinuxVDA::
-
-      sudo /usr/local/bin/salter.sh -u domainadm -i corpsys/linuxvda
-
-
-OR remove postgres::
-
-      sudo /usr/local/bin/salter.sh -u username -a postgres/remove
-
-OR ... cleaninstall postgres:
-
-      sudo /usr/local/bin/salter.sh -u username -a postgres/cleaninstall
+    base:
+      "*":
+        - ceph.repo
+        - chrony
+        - devstack
+        - docker
+        - etcd
+        - golang
+        - iscsi
+        - kubernetes
+        - grafana
+        - webstorm
+        - pycharm
+        - kerberos
 
 
-OR ... define your own...::
+Config:
+
+    kubernetes:
+      pkg:
+        use_upstream_source: True
+      kubectl:
+        version: 1.15.0
+        pkg:
+          binary:
+            source_hash: ecec7fe4ffa03018ff00f14e228442af5c2284e57771e4916b977c20ba4e5b39  #linux amd64 binary
+      minikube:
+        version: 1.2.0
 
 
-ecosystem
-=========
+Formulas
 
-At least the following software, hosted at https://github.com/saltstack-formulas, are verfied with Salt-Desktop. All software downloads are checksum verified and can be stored on your internal network.
+* `saltstack-formulas repository`_ ( default)
+* `salt-formulas repository`_
 
-========================  =====  =====  ==========================
-| Upstream formula        Linux  MacOS  Notes
-========================  =====  =====  ==========================
-| apache                   yes           
-| ceph.repo                yes           
-| chrony                   yes           
-| linuxVda                 yes           
-| deepsea                  yes           
-| devstack                 yes          and OSC CLI
-| docker                   yes                 
-| eclipse                  yes    yes    
-| cloudfoundry             yes    yes    
-| etcd                     yes    yes    
-| etcd.docker              yes    yes    
-| firewalld                yes                 
-| golang                   yes                 
-| grafana                  yes    yes    
-| hadoop                   yes                 
-| iscsi                    yes                 
-| jetbrains-intelliJ       yes    yes    
-| jetbrains-datagrip       yes    yes    
-| jetbrains-phpstorm       yes    yes    
-| jetbrains-webstorm       yes    yes    
-| jetbrains-pycharm        yes    yes    
-| jetbrains-goland         yes    yes    
-| kerberos                 yes                 
-| lxd                      yes                 
-| lvm                      yes                 
-| maven                    yes    yes    
-| mysql                    yes    yes   and mariaDB, workbench
-| mongodb                  yes    yes   and BI connector
-| opensds                  yes                 
-| packages                 yes    yes    
-| postgres                 yes    yes    
-| prometheus               yes    yes    
-| resolver                 yes                 
-| salt                     yes    yes    
-| samba                    yes                 
-| sqlplus                  yes    yes    
-| sqldeveloper             yes    yes    
-| sun-java                 yes    yes   and JRE/JDK/JCE
-| timezone                 yes                 
-| tomcat                   yes    yes    
-| users                    yes                 
-========================  =====  =====  ==========================
+.. _`saltstack-formulas`: https://github.com/saltstack-formulas
+.. _`salt-formulas`: https://github.com/salt-formulas
 
 
+Integration
+-----------
+
+The architectural design aims to keep users focused on profiles and related configuration only. One integration pattern is to maintain business logic in a separate repository that includes this content-
+
+  * ``profiles/`` director for your profiles
+
+  * ``configs/`` directory for your config or empty.
+
+  * ``formulas/`` directory for your private formulas or empty.
+
+  * ``scripts/overlay-salt.sh`` script like the working example in `./contrib/` directory.
 
 
-EXAMPLES
-========
+Your integration workflow becomes-
 
-Join Active Directory Domain and setup Citrix Linux VDA::
-
-    bash
-    sudo salter.sh -u domainadm -i corpsys/joindomain-cleanup; sudo salter.sh -u domainadm -i corpsys/joindomain
-
-    custom choice [ stacks/corpsys/joindomain ] selected
-    Logging to [ /tmp/install-saltstack-formulas-salt-desktop-joindomain/log.201804110644 ]
-    Orchestrating things, please be patient ...
-    Summary for local
-    --------------
-    Succeeded: 127 (changed=98)
-    Failed:      0
-    Warnings:    1
-    --------------
+```
+git clone https://git.example.com/repos/my-salt-profiles-and-configs.git
+cd my-salt-profiles-and-configs/
+sudo ./scripts/overlay-salt.sh
+```
 
 
-    domainadm@myhost4:~$ sudo net ads join EXAMPLE.COM -U nmcloughlin
-    Enter nmcloughlin password:
-    Using short domain name -- EXAMPLE
-    Joined MYHOST4 to dns domain example.com
-    DNS Update for myhost4.example.com failed: ERROR_DNS_GSS_ERROR
-    DNS update failed: NT_STATUS_UNSUCCESSFUL
+Notes
+-----
+The `overlay-salt.sh` script merges salt-desktop into your repository and integrates your artifacts into the initial install procedure. We have provided a working example in the `contrib/` directory.
 
-    domainadm@myhost4:~$ sudo kinit -k MYHOST4\$@EXAMPLE.COM
-    domainadm@myhost4:~$ sudo systemctl restart winbind
+salt-desktop is tested on python2 and python3 (default). This tool is reported to work on MacOS, FreeBSD, and most GNU/Linux.
 
-
-    domainadm@myhost4:~$ sudo /usr/local/bin/salter.sh -u domainadm -i corpsys/linuxvda
-    custom choice [ stacks/corpsys/linuxvda ] selected
-    Logging to [ /tmp/install-saltstack-formulas-salt-desktop-linuxvda/log.201804110804 ]
-    Orchestrating things, please be patient ...
-    Summary for local
-    --------------
-    Succeeded: 18 (changed=10)
-    Failed:     0
-    --------------
-
-
-Sudo access::
-
-    bash
-    sudo salter.sh -u jdoe -a sudo
-
-    custom choice [ apps/sudo ] selected
-    Logging to [ /tmp/install-saltstack-formulas-salt-desktop-sudo/log.201804110702 ]
-    Orchestrating things, please be patient ...
-
-    Summary for local
-    -------------
-    Succeeded: 11 (changed=5)
-    Failed:     2
-    -------------
-    Total states run:     13
-    Total run time:   25.748 s
-    See full log in [ /tmp/install-saltstack-formulas-salt-desktop-sudo/log.201804110702 ]
+formulas are tested by the respective developers.
