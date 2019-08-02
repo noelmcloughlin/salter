@@ -229,11 +229,11 @@ salt-bootstrap() {
              pkg-update 2>/dev/null
              echo "Setup Linux baseline and install saltstack masterless minion ..."
              if [ -f "/usr/bin/dnf" ]; then
-                 ADD="--best --allowerasing git wget redhat-rpm-config"
+                 PACKAGES="--best --allowerasing git wget redhat-rpm-config"
              elif [ -f "/usr/bin/yum" ]; then
-                 ADD="epel-release git wget redhat-rpm-config"
+                 PACKAGES="epel-release git wget redhat-rpm-config"
              elif [ -f "/usr/bin/zypper" ]; then
-                 ADD="git wget"
+                 PACKAGES="git wget"
              elif [ -f "/usr/bin/apt-get" ]; then
                  PACKAGES="git ssh wget curl software-properties-common"
              elif [ -f "/usr/bin/pacman" ]; then
