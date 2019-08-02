@@ -333,8 +333,8 @@ highstate() {
     fi
     ## prepare/run salt highstate
     set -xv
-    cp ${FILE_ROOTS_SOURCE}/init.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null               #project metastate
-    cp ${FILE_ROOTS_YOUR_SOURCE}/${NAME}.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null       #your metastate (optional)
+    cp ${FILE_ROOTS_SOURCE}/init.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null           #project metastate
+    cp ${FILE_ROOTS_YOUR_SOURCE}/${NAME}.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null   #your metastate (optional)
     [ -z "${DEBUGG_ON}" ] && set +xv
     LOGDIR=/tmp/${ACTION}-${PROJECT}-${SUBPROJECT}-${NAME}
     LOG=${LOGDIR}/log.$( date '+%Y%m%d%H%M' )
@@ -447,17 +447,15 @@ business-logic() {
                 highstate install ${INSTALL_TARGET} ${PROJECT_HOME}/file_roots/install ${YOUR}/file_roots/install
                 ;;
 
+    ${PROJECT}) optional-project-level-work
+                ;;
+
     *)          ## PROFILES
                 echo "${STATES}" | grep "${INSTALL_TARGET}" >/dev/null 2>&1
                 if (( $? == 0 )) || [ -f ${PROJECT_HOME}/file_roots/install/${INSTALL_TARGET}.sls ]; then
                     clone-saltstack-formulas ${PROJECT_HOME}/file_roots/install ${NAME}
                     highstate install ${INSTALL_TARGET} ${PROJECT_HOME}/file_roots/install ${YOUR}/file_roots/install
-
-                    ## deepsea post-install step
-                    if (( $? == 0 )) && [[ "${INSTALL_TARGET}" == "deepsea" ]]; then
-                       salt-call --local grains.append deepsea default ${MASTER_HOST}
-                       cp ${PROJECT_HOME}/file_roots/install/deepsea_post.sls ${SALTFS}/${STATES_DIR}/top.sls
-                    fi
+                    optional-post-install-work
                     return 0
                 fi
                 echo "Not implemented" && usage 1
@@ -466,7 +464,7 @@ business-logic() {
     ## remove option
     if [ -n "${REMOVE_TARGET}" ]; then
         echo "${STATES}" | grep "${REMOVE_TARGET}" >/dev/null 2>&1
-        if (( $? == 0 )) && [ -f ${PROJECT_HOME}/file_roots/install/remove/${INSTALL_TARGET}.sls ]; then
+        if (( $? == 0 )) && [ -f ${PROJECT_HOME}/file_roots/remove/${INSTALL_TARGET}.sls ]; then
            highstate remove ${INSTALL_TARGET} ${PROJECT_HOME}/file_roots/remove ${YOUR}/file_roots/remove
            return 0
         fi
@@ -475,7 +473,6 @@ business-logic() {
 }
 
 ## Main ##
-
 COMMUNITYNAME=SaltDesktop
 PROJECT=${PROJECT:-saltstack-formulas}
 SUBPROJECT=salt-desktop
@@ -487,5 +484,11 @@ PROJECT_HOME=${SALTFS}/community/${PROJECT}/${SUBPROJECT}/${SUBDIR}
 YOUR=${SALTFS}/${STATES_DIR}/community/your
 
 STATES="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
+
+optional-project-level-work() {
+}
+
+optional-post-install-work(){
+}
 
 business-logic
