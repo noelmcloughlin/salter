@@ -4,9 +4,9 @@ salt-desktop
 
 Salt Desktop is a tool for building and deploying system environments without fuss.
 
-Profiles are an minimilistic way of describing a wanted software environment. They can be dynamically created, shared, and reused in a predictable manner. Configs are an interface designed to hold global values distributble to hosts. While profile defaults maybe sufficient, we often need to modify default configuration to suit site/personal specifics. Formulas are pre-written salt states developed and shared by open source communities.
+If you are familar with yaml and want to inject dynamic profiles into your systems, this tool does that. The architectural design aims to keep users focused on profiles and associated configuration..
 
-If you are familar with yaml and want to inject dynamic profiles into your systems, this tool does that. The architectural design aims to keep users focused on profiles and related configuration only. Supports MacOS, GNU/Linux (Debians/Redhats/Suse/Arch), and FreeBSD.
+Profiles are an minimilistic way of describing a wanted software environment. They can be dynamically created, shared, and reused in a predictable manner. Configs are an interface designed to hold global values distributble to hosts. While profile defaults maybe sufficient, we often need to modify default configuration to suit site/personal specifics. Formulas are pre-written salt states developed and shared by open source communities.
 
 Install
 =======
