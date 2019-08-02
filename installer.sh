@@ -449,7 +449,7 @@ business-logic() {
 
     *)          ## PROFILES
                 echo "${STATES}" | grep "${INSTALL_TARGET}" >/dev/null 2>&1
-                if (( $? == 0 )) || [ -f ${PROJECT_HOME}/file_roots/install/install/${INSTALL_TARGET}.sls ]; then
+                if (( $? == 0 )) || [ -f ${PROJECT_HOME}/file_roots/install/${INSTALL_TARGET}.sls ]; then
                     clone-saltstack-formulas ${PROJECT_HOME}/file_roots/install ${NAME}
                     highstate install ${INSTALL_TARGET} ${PROJECT_HOME}/file_roots/install ${YOUR}/file_roots/install
 

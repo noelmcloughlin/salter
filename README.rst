@@ -1,139 +1,60 @@
-.. _readme:
+=============
+salt-desktop
+=============
 
-===============================================
-salt-desktop for GNU/Linux, MacOS, FreeBSD
-===============================================
+Salt Desktop is a tool for building and deploying system environments without fuss.
 
-Salt Desktop is a tool for building and deploying software environments without fuss.
+If you are familar with yaml and want to inject dynamic profiles into your systems, this tool does that. The architectural design aims to keep users focused on profiles and associated configuration..
 
-If you are familar with yaml and want to inject dynamic profiles into your systems, this tool does that.
+Profiles are an minimilistic way of describing a wanted software environment. They can be dynamically created, shared, and reused in a predictable manner. Configs are an interface designed to hold global values distributble to hosts. While profile defaults maybe sufficient, we often need to modify default configuration to suit site/personal specifics. Formulas are pre-written salt states developed and shared by open source communities.
 
-Profiles are an minimilistic way of describing a wanted software environment. They can be dynamically created, shared, and reused in a predictable manner. Here is what a profile looks like-
+Install
+=======
 
-    #format: yaml
-    base:
-      '*':
-        - apache
-        - ceph.repo
-        - chrony
-        - devstack
-        - docker
-        - eclipse
-        - etcd
-        - golang
-        - iscsi
-        - kubernetes
-        - webstorm
-        - pycharm
-        - goland
-        - kerberos
+```
+curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i salt
+```
 
-Configs are an interface designed to hold global values distributble to hosts. While profile defaults maybe sufficient, we often need to modify default configuration according to site specifics. Here is a config example with kubernetes overrides-
+Deploy profiles
+===============
 
-    #format: yaml
-    kubernetes:
-      dir:
-        binary: /opt/kubernetes
-        source: /tmp/kubernetes
-      pkg:
-        use_upstream_source: True
-      kubectl:
-        version: '1.15.0'
-        linux:
-          altpriority: 1000
-        pkg:
-          binary:
-            source_hash: ecec7fe4ffa03018ff00f14e228442af5c2284e57771e4916b977c20ba4e5b39  #linux amd64 binary
-      minikube:
-        version: '1.2.0'
+This command deploys a profile (pre-shipped or custom-built)-
 
-Configs are stored in a standardised file system hierarchy-
+```
+sudo /usr/local/bin/salter.sh -i <profile-name>
+```
 
-    ls /srv/salt/community/saltstack-formulas/salt-desktop/pillar_roots/
-       apache.sls  eclipse.sls   init.sls kerberos.sls  maven.sls    packages.sls  salt.sls  sqlplus.sls   users.sls
-       chrony.sls  etcd.sls      java.sls linuxvda.sls  nginx.sls    postgres.sls  samba.sls  timezone.sls
-       docker.sls  firewall.sls  jetbrains.sls  lxd.sls opensds.sls  resolver.sls  sqldeveloper.sls  tomcat.sls
-       .. etc ...
+Dedicated upstream repositories contain the building blocks for profiles-
 
-Formulas are pre-written salt states developed and shared in open source communities. Here are examples-
-
-* saltstack-formulas repository (tool default)
-* salt-formulas repository (not integrated yet)
-* ... other git repositories...
+* `saltstack-formulas repository`_ ( default)
+* `salt-formulas repository`_
 
 .. _`saltstack-formulas`: https://github.com/saltstack-formulas
 .. _`salt-formulas`: https://github.com/salt-formulas
 
-Initial install
-===============
+Integration recommendation
+==========================
 
-    curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i salt
+Keep your business logic artifacts separate from the consuming system. This implies keeping your salt-desktop artifacts in a separate git repository from this tool. Your repository ideally will include at least the following content-
 
-This command downloads and installs salt. It builds the standard environment and finishes by deploying the default "salt" profile. Here is example output fro Archlinux-
+  * ``configs/`` directory for your config or empty.
 
-    ... cut verbose stuff ...
-    cloning salt-formula for SaltDesktop ...
-    ... using fork: sillyboy, branch: fixes
-    Branch 'fixes' set up to track remote branch 'fixes' from 'origin'.
-    Switched to a new branch 'fixes'
+  * ``formulas/`` directory for your private formulas or empty.
 
-    cloning salt-desktop for SaltDesktop ...
-
-    + cp /srv/salt/community/saltstack-formulas/salt-desktop/.//file_roots/install/init.sls /srv/salt//top.sls
-    + cp /srv/salt//community/your/file_roots/install/salt.sls /srv/salt//top.sls
-    local:
-        ----------
-        base:
-            - salt.pkgrepo
-            - salt.minion
-            - salt.formulas
-    run salt: this takes a while, please be patient ...
-    -------------
-    Succeeded: 41
-    Failed:     0
-    -------------
-    See full log in [ /tmp/install-saltstack-formulas-salt-desktop-salt/log.201908012240 ]
-    ///////////////////////////////////////////////////////////////////////
-              salt for SaltDesktop has completed
-    //////////////////////////////////////////////////////////////////////
-
-
-Usage
-=====
-
-    sudo /usr/local/bin/salter.sh -i <profile-name>
-
-Examples
-========
-
-    sudo /usr/local/bin/salter.sh -i salt
-    sudo /usr/local/bin/salter.sh -i docker
-    sudo /usr/local/bin/salter.sh -i joindomain
-    sudo /usr/local/bin/salter.sh -i sudo
-    sudo /usr/local/bin/salter.sh -i java
-
-Integration example
-====================
-
-The architectural design aims to keep users focused on profiles and related configuration only. To support this design goal, the recommended integration pattern is to maintain a separate repository to hold your personal or site-specific business logic-
-
-Your repository includes at least these directories-
-
-* profiles/ ..................... mandatory - use pre-supplied profiles and write your own.
-* configs/ ...................... optional - recommended.
-* formulas/ ..................... optional - not recommended (just use upstream repositories)
-* scripts/overlay-salt.sh ....... optional - see example in ./salt-desktop/contrib/ 
+  * ``scripts/overlay-salt.sh`` script like the working example in `./contrib/` directory.
 
 Your integration workflow becomes-
 
-    git clone https://git.example.com/repos/my-salt-profiles-and-configs.git
-    cd my-salt-profiles-and-configs/
-    sudo ./scripts/overlay-salt.sh
+```
+git clone https://git.example.com/repos/my-salt-profiles-and-configs.git
+cd my-salt-profiles-and-configs/
+sudo ./scripts/overlay-salt.sh
+```
 
+Notes
+-----
 The `overlay-salt.sh` script merges salt-desktop into your repository and integrates your artifacts into the initial install procedure. We have provided a working example in the `contrib/` directory.
 
-Note
-----
 salt-desktop is tested on python2 and python3 (default). This tool is reported to work on MacOS, FreeBSD, and most GNU/Linux.
 
 formulas are tested by the respective developers.
