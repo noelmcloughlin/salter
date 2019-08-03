@@ -35,7 +35,7 @@ Dedicated upstream repositories contain the building blocks for profiles-
 Integration recommendation
 ==========================
 
-Separate your business logic artifacts from the consuming system. Keep your salt-desktop artifacts in a separate git repository. You can integrate salt-desktop by following the steps below-
+Separate your business logic artifacts from the consuming system. Keep your salt-desktop artifacts in a separate git repository. You can integrate salt-desktop with your repo as follows-
 
 1. Create following directories in your repository.
 
@@ -54,8 +54,7 @@ Separate your business logic artifacts from the consuming system. Keep your salt
     curl -o scripts/overlay-salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/contrib/overlay-salt.sh
     sudo ./scripts/overlay-salt.sh
 
-
-The result looks like this: https://github.com/noelmcloughlin/salt-desktop-overlay-demo
+See Reference Solution at https://github.com/noelmcloughlin/salt-desktop-overlay-demo
 
 
 Notes
