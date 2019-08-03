@@ -307,11 +307,9 @@ highstate() {
     if [ -n "${USERNAME}" ]; then
         ### find/replace dummy usernames in pillar data ###
         case "$OSTYPE" in
-        darwin*) grep -rl 'domainadm' ${PILLARFS} | xargs sed -i '' "s/domainadm/undefined_user/g" 2>/dev/null
-                 grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i '' "s/undefined_user/${USERNAME}/g" 2>/dev/null
+        darwin*) grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i '' "s/undefined_user/${USERNAME}/g" 2>/dev/null
                  ;;
-        linux*)  grep -rl 'domainadm' ${PILLARFS} | xargs sed -i "s/domainadm/undefined_user/g" 2>/dev/null
-                 grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i "s/undefined_user/${USERNAME}/g" 2>/dev/null
+        linux*)  grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i "s/undefined_user/${USERNAME}/g" 2>/dev/null
         esac
     fi
 
