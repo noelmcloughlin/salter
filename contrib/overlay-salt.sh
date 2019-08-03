@@ -32,7 +32,8 @@ fi
 
 ## Check for a contributed/custom installer.sh script and install salt
 [ -f contrib/installer.sh ] && mv contrib/installer.sh installer.sh && chmod +x installer.sh
-RC=0 && ./installer.sh -i salt && RC=$?
+RC=0 && ./installer.sh -i bootstrap || exit 1
+RC=0 && ./installer.sh -i salt || exit 1
 
 ## overlay contributed/custom salt formulas
 SOURCE_DIR=formulas
@@ -47,5 +48,6 @@ do
 done
 
 ## Check status/cleanup
+rm ./installer.sh 2>/dev/null
 (( RC > 0 )) && echo "something is wrong" && exit ${RC}
-echo "This cloned directory is no longer needed! Use /usr/local/bin/salter.sh"
+echo "Salter script is installed at /usr/local/bin/salter.sh"

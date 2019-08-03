@@ -403,8 +403,7 @@ business-logic() {
     bootstrap)  salt-bootstrap
                 ;;
 
-    salt)       ## SALT
-                salt-bootstrap
+    salt)       ## SALT FORMULA/DESKTOP
                 gitclone 'https://github.com' saltstack-formulas salt-formula salt salt
                 gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${PROFILE} ${solution[subdir]}
                 highstate install ${solution[states]} salt

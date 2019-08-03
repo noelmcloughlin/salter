@@ -12,7 +12,7 @@ Install
 =======
 
 ```
-curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i salt
+curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i bootstrap && sudo bash salter.sh -i salt
 ```
 
 Deploy profiles
@@ -21,7 +21,7 @@ Deploy profiles
 This command deploys a profile (pre-shipped or custom-built)-
 
 ```
-sudo /usr/local/bin/salter.sh -i <profile-name>
+sudo /usr/local/bin/salter.sh -i <profile-name> [ -u loginname ]
 ```
 
 Dedicated upstream repositories contain the building blocks for profiles-
