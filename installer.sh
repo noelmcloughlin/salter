@@ -261,12 +261,11 @@ EOF
 }
 
 setup-log() {
-    LOGDIR=${1} && LOG=${2}
-    mkdir -p ${LOGDIR} 2>/dev/null
+    LOG=${1}
+    mkdir -p ${solution['logdir']} 2>/dev/null
     salt-call --versions >>${LOG} 2>&1
     [ -f "${PILLARFS}.site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
-    salt-call pillar.items --local >> ${LOG} 2>&1
-    echo >>${LOG} 2>&1
+    [ -n "${DEBUGG_ON}" ] && salt-call pillar.items --local >> ${LOG} 2>&1 && echo >>${LOG} 2>&1
     salt-call state.show_top --local | tee -a ${LOG} 2>&1
     echo >>${LOG} 2>&1
     echo "run salt: this takes a while, please be patient ..."
@@ -303,7 +302,8 @@ highstate() {
     [ ! -f ${SALTFS}/top.sls ] && echo "Failed to find ${TARGET}.sls or ${TARGET}/init.sls" && usage
 
     ## prepare pillars
-    cp -R ${solution[pillars]}/* ${your[pillars]}/* ${PILLARFS}/ 2>/dev/null
+    cp -Rp ${solution[pillars]}/* ${PILLARFS}/ 2>/dev/null
+    cp -Rp ${your[pillars]}/* ${PILLARFS}/ 2>/dev/null
     if [ -n "${USERNAME}" ]; then
         ### find/replace dummy usernames in pillar data ###
         case "$OSTYPE" in
@@ -316,11 +316,12 @@ highstate() {
     ## prepare formulas
     for formula in $( grep '^.* - ' ${SALTFS}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
      do
-         ## adjust for state and formula name mismatches
+         ## adjust mismatched state/formula names
          case ${formula} in
          resharper|pycharm|goland|rider|datagrip|clion|rubymine|appcode|webstorm|phpstorm)
                      source="jetbrains-${formula}" ;;
          linuxvda)   source='citrix-linuxvda' ;;
+         salt)       continue;;                    ##already cloned?
          *)          source=${formula} ;;
          esac
          gitclone 'https://github.com' saltstack-formulas ${source}-formula ${formula} ${formula}
@@ -328,12 +329,12 @@ highstate() {
 
     ## run states
     LOG=${solution[logdir]}/log.$( date '+%Y%m%d%H%M' )
-    setup-log ${LOGDIR} ${LOG}
+    setup-log ${LOG}
     salt-call state.highstate --local ${DEBUGG_ON} --retcode-passthrough saltenv=base  >>${LOG} 2>&1
     [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null && echo "See full log in [ ${LOG} ]"
     echo
     echo "///////////////////////////////////////////////////////////////////////"
-    echo "          ${PROFILE} for ${solution[repo]} has completed"
+    echo "        $(basename ${PROFILE}) for ${solution[repo]} has completed"
     echo "//////////////////////////////////////////////////////////////////////"
     echo
 }
@@ -342,11 +343,11 @@ usage() {
     echo "Usage: sudo $0 -i TARGET [ OPTIONS ] [ -u username ]" 1>&2
     echo "Usage: sudo $0 -r TARGET [ OPTIONS ]" 1>&2
     echo 1>&2
-    echo "  [-u <loginname>]" 1>&2
-    echo "        Loginname (current or corporate or root user)." 1>&2
+    echo "  [-u <username>]" 1>&2
+    echo "        A Loginname (current or corporate or root user)." 1>&2
     echo "        its mandatory for some Linux profiles" 1>&2
     echo "        but not required on MacOS" 1>&2 
-    echo "        
+    echo 1>&2
     echo "  TARGETS" 1>&2
     echo 1>&2
     echo "\tsalt\t\tBootstrap Salt and Salt formula" 1>&2
@@ -419,10 +420,8 @@ business-logic() {
                 echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
                 if (( $? == 0 )) || [ -f ${solution[states]}/install/${TARGET}.sls ]; then
                     highstate install ${solution[states]} ${TARGET}
-                   optional-solution-completion
-                    return 0
+                    optional-post-install-work
                 fi
-                echo "Not implemented" && usage 1
     esac
 }
 
@@ -447,7 +446,7 @@ mandatory-solution-configuration() {
     your['states']="${SALTFS}/community/your/file_roots"
     your['pillars']="${SALTFS}/community/your/pillar_roots"
 
-    mkdir -p ${solution[states]} ${solution[pillars]} ${your[states]} ${your[pillars]} ${solution[logdir]} ${BASE_ETC}/salt 2>/dev/null
+    mkdir -p ${solution[states]} ${solution[pillars]} ${your[states]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC}/salt 2>/dev/null
 }
 
 optional-developer-settings() {
@@ -468,5 +467,6 @@ optional-post-install-work(){
 
 ## MAIN ##
 
+optional-developer-settings
 mandatory-solution-configuration
 business-logic
