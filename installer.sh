@@ -339,9 +339,14 @@ highstate() {
 }
 
 usage() {
-    echo "Usage: sudo $0 -i TARGET [ OPTIONS ]" 1>&2
+    echo "Usage: sudo $0 -i TARGET [ OPTIONS ] [ -u username ]" 1>&2
     echo "Usage: sudo $0 -r TARGET [ OPTIONS ]" 1>&2
     echo 1>&2
+    echo "  [-u <loginname>]" 1>&2
+    echo "        Loginname (current or corporate or root user)." 1>&2
+    echo "        its mandatory for some Linux profiles" 1>&2
+    echo "        but not required on MacOS" 1>&2 
+    echo "        
     echo "  TARGETS" 1>&2
     echo 1>&2
     echo "\tsalt\t\tBootstrap Salt and Salt formula" 1>&2
@@ -357,9 +362,6 @@ usage() {
     echo "      Optional log-level (default warning)" 1>&2
     echo 1>&2
     echo "   [ -l debug ]    Debug output in logs." 1>&2
-    echo 1>&2
-    echo "  [-u <loginname>]" 1>&2
-    echo "        Valid loginname (local or corporate user)." 1>&2
     echo 1>&2
     exit 1
 }
