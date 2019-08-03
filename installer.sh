@@ -370,6 +370,7 @@ usage() {
     exit 1
 }
 
+(( $# == 0 )) && usage
 USERNAME=''
 while getopts ":i:l:r:u:" option; do
     case "${option}" in
