@@ -21,6 +21,7 @@
 trap exit SIGINT SIGTERM
 [ `id -u` != 0 ] && echo && echo "Run script with sudo, exiting" && echo && exit 1
 declare -A your solution fork || (echo "bash v4 or later is required" && exit 1)
+(( $# == 0 )) && echo usage
 
 BASE=/srv
 BASE_ETC=/etc
