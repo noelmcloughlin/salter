@@ -15,34 +15,25 @@
 # limitations under the License.
 #-----------------------------------------------------------------------
 #
-# This script allows common bootstrapping for any salt-project.
-#
-#--- Developer settings ---
-#
- FORK_URI=https://github.com
- FORK_PROJECT=noelmcloughlin
- FORK_BRANCH="fixes"
- FORK_SUBPROJECTS="opensds-installer salt-formula salt-desktop docker-formula samba-formula packages-formula"
+# This script allows common bootstrapping for any project using salt
 #
 #-----------------------------------------------------------------------
 trap exit SIGINT SIGTERM
 [[ `id -u` != 0 ]] && echo && echo "Run script with sudo, exiting" && echo && exit 1
+declare -A your solution fork || (echo "bash v4 or later is required" && exit 1)
 
-MASTER_HOST=''
-if [[ `uname` == 'FreeBSD' ]]; then
+BASE=/srv
+BASE_ETC=/etc
+STATEDIR=''
+if [ `uname` == 'FreeBSD' ]; then
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
-    DIR=salt
-    STATES_DIR=states  #file_roots is /usr/local/etc/salt/states
-else
-    BASE=${BASE:-/srv}
-    BASE_ETC=/etc
-    DIR=
-    STATES_DIR=''      #file_roots is /srv/salt
+    STATEDIR=states
+elif [ `uname` == 'Darwin' ]; then
+    USER=$( stat -f "%Su" /dev/console )
 fi
-SALTFS=${BASE:-/srv}/${DIR:-salt}
 PILLARFS=${BASE:-/srv}/pillar
-WORKDIR=$(pwd)
+SALTFS=${BASE:-/srv}/salt/${STATEDIR}
 
 #-----------------------------------------
 #   Adaption layer for OS package handling
@@ -63,8 +54,7 @@ pkg-query() {
 pkg-install() {
     PACKAGES=${@}
     case ${OSTYPE} in
-    darwin*) USER=$( stat -f "%Su" /dev/console )
-             for p in ${PACKAGES}; do
+    darwin*) for p in ${PACKAGES}; do
                  su ${USER} -c "brew install ${p}"
                  su ${USER} -c "brew unlink ${p} 2>/dev/null && brew link ${p} 2>/dev/null"
              done
@@ -105,8 +95,7 @@ pkg-install() {
 pkg-update() {
     PACKAGES=${@}
     case ${OSTYPE} in
-    darwin*) USER=$( stat -f "%Su" /dev/console )
-             for p in ${PACKAGES}; do
+    darwin*) for p in ${PACKAGES}; do
                  su ${USER} -c "brew upgrade ${p}"
              done
              ;;
@@ -129,8 +118,7 @@ pkg-update() {
 pkg-remove() {
     PACKAGES=${@}
     case ${OSTYPE} in
-    darwin*) USER=$( stat -f "%Su" /dev/console )
-             for p in ${PACKAGES}; do
+    darwin*) for p in ${PACKAGES}; do
                  su ${USER} -c "brew uninstall ${p} --force"
              done
              ;;
@@ -150,9 +138,9 @@ pkg-remove() {
     esac
 }
 
-#-------------------------------
-#---- salt-project -------------
-#-------------------------------
+#-----------------------
+#---- salt -------------
+#-----------------------
 
 get-salt-master-hostname() {
    hostname -f >/dev/null 2>&1
@@ -171,9 +159,9 @@ HEREDOC
     fi
     if [[ -f "${BASE_ETC}/salt/minion" ]]; then
         MASTER=$( grep '^\s*master\s*:\s*' ${BASE_ETC}/salt/minion | awk '{print $2}')
-        [[ -z "${MASTER_HOST}" ]] && MASTER_HOST=${MASTER}
+        [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=${MASTER}
     fi
-    [[ -z "${MASTER_HOST}" ]] && MASTER_HOST=$( hostname )
+    [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=$( hostname )
     salt-key -A --yes >/dev/null 2>&1
 }
 
@@ -187,10 +175,7 @@ salt-bootstrap() {
     export PWD=$( pwd )
 
     case "$OSTYPE" in
-    darwin*) OSHOME=/Users
-             USER=$( stat -f "%Su" /dev/console )
-
-             echo "Setup Darwin known good baseline ..."
+    darwin*) echo "Setup Darwin known good baseline ..."
              ### https://github.com/Homebrew/legacy-homebrew/issues/19670
              sudo chown -R ${USER}:admin /usr/local/*
              sudo chmod -R 0755 /usr/local/* /Library/Python/2.7/site-packages/pip* /Users/${USER}/Library/Caches/pip 2>/dev/null
@@ -206,7 +191,6 @@ salt-bootstrap() {
              su - ${USER} -c '/usr/local/bin/pip install --upgrade wrapper barcodenumber npyscreen'
              [[ ! -x /usr/local/bin/brew ]] && echo "Install homebrew (https://docs.brew.sh/Installation.html)" && exit 1
 
-             echo "Install salt ..."
              /usr/local/bin/salt --version >/dev/null 2>&1
              if (( $? > 0 )); then
                  su ${USER} -c 'brew install saltstack'
@@ -215,18 +199,16 @@ salt-bootstrap() {
              fi
              su ${USER} -c 'brew unlink saltstack && brew link saltstack'
              su ${USER} -c 'brew tap homebrew/services'
-             mkdir /etc/salt 2>/dev/null
              echo $( hostname ) >/etc/salt/minion_id
-             cp /usr/local/etc/saltstack/minion /etc/salt/minion
-             sed -i"bak" "s/#file_client: remote/file_client: local/" /etc/salt/minion
+             cp /usr/local/etc/saltstack/minion /etc/salt/minion 2>/dev/null
+             sed -i"bak" "s/#file_client: remote/file_client: local/" /etc/salt/minion 2>/dev/null
 
              ##Workaround https://github.com/Homebrew/brew/issues/4099
              echo '--no-alpn' >> ~/.curlrc
              export HOMEBREW_CURLRC=1
              ;;
 
-     linux*) OSHOME=/home
-             pkg-update 2>/dev/null
+     linux*) pkg-update 2>/dev/null
              echo "Setup Linux baseline and install saltstack masterless minion ..."
              if [ -f "/usr/bin/dnf" ]; then
                  PACKAGES="--best --allowerasing git wget redhat-rpm-config"
@@ -263,9 +245,9 @@ EOF
 
     ### salt services
     if [[ "`uname`" == "FreeBSD" ]] || [[ "`uname`" == "Darwin" ]]; then
-        sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${MASTER_HOST}@" ${BASE_ETC}/salt/minion
+        sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
     else
-        sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${MASTER_HOST}@" ${BASE_ETC}/salt/minion
+        sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
     fi
     (systemctl enable salt-api && systemctl start salt-api) 2>/dev/null || service start salt-api 2>/dev/null
     (systemctl enable salt-master && systemctl start salt-master) 2>/dev/null || service start salt-master 2>/dev/null
@@ -283,8 +265,6 @@ setup-log() {
     mkdir -p ${LOGDIR} 2>/dev/null
     salt-call --versions >>${LOG} 2>&1
     [ -f "${PILLARFS}.site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
-    cat ${PILLARFS}/*.sls >>${LOG} 2>&1
-    echo >> ${LOG}
     salt-call pillar.items --local >> ${LOG} 2>&1
     echo >>${LOG} 2>&1
     salt-call state.show_top --local | tee -a ${LOG} 2>&1
@@ -292,100 +272,86 @@ setup-log() {
     echo "run salt: this takes a while, please be patient ..."
 }
 
-### Pull down project
-clone-project() {
-    PROJ=${1} && SUBPROJ=${2} && ALIAS=${3} && CHILD=${4} && GIT=${5}
-    echo "cloning ${SUBPROJ} for ${COMMUNITYNAME} ..."
-    mkdir -p ${SALTFS}/${STATES_DIR}/community/${PROJ} 2>/dev/null
-    rm -fr ${SALTFS}/${STATES_DIR}/community/${PROJ}/${SUBPROJ} 2>/dev/null
+gitclone() {
+    URI=${1} && ENTITY=${2} && REPO=${3} && ALIAS=${4} && SUBDIR=${5}
+    echo "cloning ${REPO} from ${ENTITY} ..."
+    rm -fr ${SALTFS}/community/${ENTITY}/${REPO} 2>/dev/null
 
-    echo "${FORK_SUBPROJECTS}" | grep "${SUBPROJ}" >/dev/null 2>&1
-    if (( $? == 0 )) && [[ -n "${FORK_URI}" ]] && [[ -n "${FORK_PROJECT}" ]] && [[ -n "${FORK_BRANCH}" ]]; then
-        echo "... using fork: ${FORK_PROJECT}, branch: ${FORK_BRANCH}"
-        git clone ${FORK_URI}/${FORK_PROJECT}/${SUBPROJ} ${SALTFS}/${STATES_DIR}/community/${PROJ}/${SUBPROJ} >/dev/null 2>&1 || exit 11
-        cd  ${SALTFS}/${STATES_DIR}/community/${PROJ}/${SUBPROJ} && git checkout ${FORK_BRANCH}
+    echo "${fork[solutions]}" | grep "${REPO}" >/dev/null 2>&1
+    if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
+        echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
+        git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/community/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
+        cd  ${SALTFS}/community/${ENTITY}/${REPO} && git checkout ${fork[branch]}
     else
-        git clone ${GIT}/${PROJ}/${SUBPROJ} ${SALTFS}/${STATES_DIR}/community/${PROJ}/${SUBPROJ} >/dev/null 2>&1 || exit 11
+        git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/community/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
     fi
-    echo && ln -s ${SALTFS}/${STATES_DIR}/community/${PROJ}/${SUBPROJ}/${CHILD} ${SALTFS}/${STATES_DIR}/${ALIAS} 2>/dev/null
-}
-
-copy-pillars() {
-    PILLAR_ROOTS_SOURCE=${1} && mkdir -p ${PILLARFS}/ 2>/dev/null
-    cp -Rp ${PILLAR_ROOTS_SOURCE}/* ${PILLARFS}/ 2>/dev/null
+    echo && ln -s ${SALTFS}/community/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
 }
 
 highstate() {
-    was-salt-done || usage
-    copy-pillars ${PROJECT_HOME}/pillar_roots
-    copy-pillars ${YOUR}/pillar_roots
-    salt-key -A --yes >/dev/null 2>&1 && [ -n "${DEBUGG_ON}" ] && salt-key -L
+    (get-salt-master-hostname && [ -d ${solution[homedir]} ]) || usage
 
-    ACTION=${1} && NAME=${2} && FILE_ROOTS_SOURCE=${3} && FILE_ROOTS_YOUR_SOURCE=${4} && ALIAS=${4}
-    if [ -n "${USERNAME}" ]; then    #find/replace username placeholders in pillar data
+    ## prepare states
+    ACTION=${1} && STATEDIR=${2} && TARGET=${3}
+    for PROFILE in ${solution[states]}/${ACTION}/${TARGET} ${your[states]}/${ACTION}/${TARGET}
+    do  
+        set -xv
+        [ -f ${PROFILE}.sls ] && cp ${PROFILE}.sls ${SALTFS}/top.sls && break
+        [ -f ${PROFILE}/init.sls ] && cp ${PROFILE}/init.sls ${SALTFS}/top.sls && break
+    done
+    [ -z "${DEBUGG_ON}" ] && set +xv
+    [ ! -f ${SALTFS}/top.sls ] && echo "Failed to find ${TARGET}.sls or ${TARGET}/init.sls" && usage
+
+    ## prepare pillars
+    cp -R ${solution[pillars]}/* ${your[pillars]}/* ${PILLARFS}/ 2>/dev/null
+    if [ -n "${USERNAME}" ]; then
+        ### find/replace dummy usernames in pillar data ###
         case "$OSTYPE" in
-        darwin*) grep -rl 'domainadm' ${PILLARFS}/${PROJECT} | xargs sed -i '' "s/domainadm/undefined_user/g" 2>/dev/null
-                 grep -rl 'undefined_user' ${PILLARFS}/${PROJECT} | xargs sed -i '' "s/undefined_user/${USERNAME}/g" 2>/dev/null
+        darwin*) grep -rl 'domainadm' ${PILLARFS} | xargs sed -i '' "s/domainadm/undefined_user/g" 2>/dev/null
+                 grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i '' "s/undefined_user/${USERNAME}/g" 2>/dev/null
                  ;;
         linux*)  grep -rl 'domainadm' ${PILLARFS} | xargs sed -i "s/domainadm/undefined_user/g" 2>/dev/null
                  grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i "s/undefined_user/${USERNAME}/g" 2>/dev/null
         esac
     fi
-    ## prepare/run salt highstate
-    set -xv
-    cp ${FILE_ROOTS_SOURCE}/init.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null           #project metastate
-    cp ${FILE_ROOTS_YOUR_SOURCE}/${NAME}.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null   #your metastate (optional)
-    [ -z "${DEBUGG_ON}" ] && set +xv
-    LOGDIR=/tmp/${ACTION}-${PROJECT}-${SUBPROJECT}-${NAME}
-    LOG=${LOGDIR}/log.$( date '+%Y%m%d%H%M' )
+
+    ## prepare formulas
+    for formula in $( grep '^.* - ' ${SALTFS}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
+     do
+         ## adjust for state and formula name mismatches
+         case ${formula} in
+         resharper|pycharm|goland|rider|datagrip|clion|rubymine|appcode|webstorm|phpstorm)
+                     source="jetbrains-${formula}" ;;
+         linuxvda)   source='citrix-linuxvda' ;;
+         *)          source=${formula} ;;
+         esac
+         gitclone 'https://github.com' saltstack-formulas ${source}-formula ${formula} ${formula}
+    done
+
+    ## run states
+    LOG=${solution[logdir]}/log.$( date '+%Y%m%d%H%M' )
     setup-log ${LOGDIR} ${LOG}
     salt-call state.highstate --local ${DEBUGG_ON} --retcode-passthrough saltenv=base  >>${LOG} 2>&1
     [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null && echo "See full log in [ ${LOG} ]"
     echo
     echo "///////////////////////////////////////////////////////////////////////"
-    echo "          ${NAME} for ${COMMUNITYNAME} has completed"
+    echo "          ${PROFILE} for ${solution[repo]} has completed"
     echo "//////////////////////////////////////////////////////////////////////"
     echo
 }
 
-### salt-formula should do some of this instead
-clone-saltstack-formulas() { 
-    was-salt-done || usage
-    FILE_ROOTS_SOURCE=${1} && NAME=${2}
-    cp ${FILE_ROOTS_SOURCE}/${NAME}.sls ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
-    for formula in $( grep '^.* - ' ${SALTFS}/${STATES_DIR}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
-    do
-        ## adjust for state and formula name mismatches
-        case ${formula} in
-        linuxvda)   source='citrix-linuxvda' ;;
-        resharper)  source='jetbrains-resharper';;
-        pycharm)    source='jetbrains-pycharm';;
-        goland)     source='jetbrains-goland';;
-        rider)      source='jetbrains-rider';;
-        datagrip)   source='jetbrains-datagrip';;
-        clion)      source='jetbrains-clion';;
-        rubymine)   source='jetbrains-rubymine';;
-        appcode)    source='jetbrains-appcode';;
-        webstorm)   source='jetbrains-webstorm';;
-        phpstorm)   source='jetbrains-phpstorm';;
-        *)          source=${formula} ;;
-        esac
-        clone-project saltstack-formulas ${source}-formula ${formula} ${formula} https://github.com
-    done
-}
-
 usage() {
-    echo "Usage: sudo $0 -i INSTALL_TARGET [ OPTIONS ]" 1>&2
-    echo "Usage: sudo $0 -r REMOVE_TARGET [ OPTIONS ]" 1>&2
+    echo "Usage: sudo $0 -i TARGET [ OPTIONS ]" 1>&2
+    echo "Usage: sudo $0 -r TARGET [ OPTIONS ]" 1>&2
     echo 1>&2
     echo "  TARGETS" 1>&2
     echo 1>&2
     echo "\tsalt\t\tBootstrap Salt and Salt formula" 1>&2
     echo 1>&2
-    echo "\t${PROJECT}\tApply all ${COMMUNITYNAME} states" 1>&2
+    echo "\t${solution[entity]}\tApply all ${solution[repo]} states" 1>&2
     echo 1>&2
-    echo " ${STATES}" 1>&2
-    echo "\t\t\tApply specific ${COMMUNITYNAME} state" 1>&2
+    echo " ${solution[targets]}" 1>&2
+    echo "\t\t\tApply specific ${solution[repo]} state" 1>&2
     echo 1>&2
     echo "  OPTIONS" 1>&2
     echo 1>&2
@@ -400,12 +366,11 @@ usage() {
     exit 1
 }
 
-INSTALL_TARGET=salt && REMOVE_TARGET=''
+USERNAME=''
 while getopts ":i:l:r:u:" option; do
     case "${option}" in
-    i)  INSTALL_TARGET=${OPTARG:-menu} ;;
-    r)  REMOVE_TARGET=${OPTARG}
-        INSTALL_TARGET='' ;;
+    i)  ACTION=install && TARGET=${OPTARG:-menu} ;;
+    r)  ACTION=remove && TARGET=${OPTARG} ;;
     l)  case ${OPTARG} in
         'all'|'garbage'|'trace'|'debug'|'warning'|'error') DEBUGG="-l${OPTARG}" && set -xv
            ;;
@@ -419,76 +384,89 @@ while getopts ":i:l:r:u:" option; do
 done
 shift $((OPTIND-1))
 
-was-salt-done() {
-    get-salt-master-hostname && [ -d ${SALTFS}/${STATES_DIR}/community/${PROJECT}/${SUBPROJECT} ]
-    (( $? > 0 )) && (echo "Run salt first" && return 1)
-    return 0
-}
-
 business-logic() {
-    get-salt-master-hostname
+    ## remove option
+    if [ "${ACTION}" == 'remove' ] && [ -n "${TARGET}" ]; then
+        echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
+        if (( $? == 0 )) || [ -f ${solution[states]}/${ACTION}/${TARGET}.sls ]; then
+           highstate remove ${solution[states]} ${TARGET}
+           return 0
+        fi
+    fi
 
     ## install option
-    case "${INSTALL_TARGET}" in
+    case "${TARGET}" in
     salt)       ## SALT
-                salt-bootstrap                                                                         ## bootstrap salt software
-                clone-project saltstack-formulas salt-formula salt salt ${URI}                         ## clone salt formula
-                clone-project ${PROJECT} ${SUBPROJECT} ${NAME} ${SUBDIR} ${URI}                        ## clone our Project
-                highstate install salt ${PROJECT_HOME}/file_roots/install ${YOUR}/file_roots/install   ## apply salt metastate
+                salt-bootstrap
+                gitclone 'https://github.com' saltstack-formulas salt-formula salt salt
+                gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${PROFILE} ${solution[subdir]}
+                highstate install ${solution[states]} salt
                 rm /usr/local/bin/salter.sh 2>/dev/null
-                ln -s ${PROJECT_HOME}/installer.sh /usr/local/bin/salter.sh 2>/dev/null
+                ln -s ${solution[homedir]}/installer.sh /usr/local/bin/salter.sh
                 ;;
 
     menu)       ## MENU
                 pip install --pre wrapper barcodenumber npyscreen || exit 1
-                (was-salt-done && ${BASE}/${DIR}/contrib/menu.py ${PROJECT_HOME}/file_roots/install) || exit 2
-                cp ${PROJECT_HOME}/file_roots/install/${INSTALL_TARGET}.sls  ${SALTFS}/${STATES_DIR}/top.sls 2>/dev/null
-                clone-saltstack-formulas ${PROJECT_HOME}/file_roots/install ${NAME}
-                highstate install ${INSTALL_TARGET} ${PROJECT_HOME}/file_roots/install ${YOUR}/file_roots/install
+                ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[states]}/install) || exit 2
+                highstate install ${solution[states]} ${TARGET}
                 ;;
 
-    ${PROJECT}) optional-project-level-work
+    ${solution[entity]})
+                optional-solution-work
                 ;;
 
     *)          ## PROFILES
-                echo "${STATES}" | grep "${INSTALL_TARGET}" >/dev/null 2>&1
-                if (( $? == 0 )) || [ -f ${PROJECT_HOME}/file_roots/install/${INSTALL_TARGET}.sls ]; then
-                    clone-saltstack-formulas ${PROJECT_HOME}/file_roots/install ${NAME}
-                    highstate install ${INSTALL_TARGET} ${PROJECT_HOME}/file_roots/install ${YOUR}/file_roots/install
-                    optional-post-install-work
+                echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
+                if (( $? == 0 )) || [ -f ${solution[states]}/install/${TARGET}.sls ]; then
+                    highstate install ${solution[states]} ${TARGET}
+                   optional-solution-completion
                     return 0
                 fi
                 echo "Not implemented" && usage 1
     esac
-
-    ## remove option
-    if [ -n "${REMOVE_TARGET}" ]; then
-        echo "${STATES}" | grep "${REMOVE_TARGET}" >/dev/null 2>&1
-        if (( $? == 0 )) && [ -f ${PROJECT_HOME}/file_roots/remove/${INSTALL_TARGET}.sls ]; then
-           highstate remove ${INSTALL_TARGET} ${PROJECT_HOME}/file_roots/remove ${YOUR}/file_roots/remove
-           return 0
-        fi
-        echo "Not implemented" && usage 1
-    fi
 }
 
-## Main ##
-COMMUNITYNAME=SaltDesktop
-PROJECT=${PROJECT:-saltstack-formulas}
-SUBPROJECT=salt-desktop
-SUBDIR=./
-NAME="$( echo ${SUBPROJECT} | awk -F- '{print $NF}' )"
-URI=https://github.com
-USERNAME=''
-PROJECT_HOME=${SALTFS}/community/${PROJECT}/${SUBPROJECT}/${SUBDIR}
-YOUR=${SALTFS}/${STATES_DIR}/community/your
+mandatory-solution-configuration() {
+    ### solution details ###
+    solution['saltmaster']=""
+    solution['bootstrap']="salt-bootstrap"
+    solution['uri']="https://github.com"
+    solution['entity']="saltstack-formulas"
+    solution['repo']="salt-desktop"
+    solution['alias']="desktop"
+    solution['targets']="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
+    solution['subdir']="./"
 
-STATES="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
+    ### derived details ###
+    solution['homedir']="${SALTFS}/community/${solution['entity']}/${solution[repo]}/${solution[subdir]}"
+    solution['states']="${solution[homedir]}/file_roots"
+    solution['pillars']="${solution[homedir]}/pillar_roots"
+    solution['logdir']="/tmp/${solution[entity]}-${solution[repo]}"
 
-optional-project-level-work() {
+    ### your details ###
+    your['states']="${SALTFS}/community/your/file_roots"
+    your['pillars']="${SALTFS}/community/your/pillar_roots"
+
+    mkdir -p ${solution[states]} ${solution[pillars]} ${your[states]} ${your[pillars]} ${solution[logdir]} ${BASE_ETC}/salt 2>/dev/null
+}
+
+optional-developer-settings() {
+    fork['uri']="https://github.com"
+    fork['entity']="noelmcloughlin"
+    fork['branch']="fixes"
+    fork['solutions']="opensds-installer salt-formula salt-desktop docker-formula samba-formula packages-formula"
+}
+
+optional-solution-work() {
+    #todo: split salt-bootstrap and salt-desktop/salt-formula handling
+    echo "not implemented"
 }
 
 optional-post-install-work(){
+    echo "not implemented"
 }
 
+## MAIN ##
+
+mandatory-solution-configuration
 business-logic
