@@ -420,7 +420,7 @@ business-logic() {
                 echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
                 if (( $? == 0 )) || [ -f ${solution[states]}/install/${TARGET}.sls ]; then
                     highstate install ${solution[states]} ${TARGET}
-                   optional-solution-completion
+                    optional-post-install-work
                     return 0
                 fi
                 echo "Not implemented" && usage 1
