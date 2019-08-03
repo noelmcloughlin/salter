@@ -32,13 +32,12 @@ Dedicated upstream repositories contain the building blocks for profiles-
 .. _`saltstack-formulas`: https://github.com/saltstack-formulas
 .. _`salt-formulas`: https://github.com/salt-formulas
 
-
 Integration recommendation
 ==========================
 
 Keep your business logic artifacts separate from the consuming system. This implies keeping your salt-desktop artifacts in a separate git repository from this tool. Your repository ideally will include at least the following content-
 
-  * ``profiles/`` directory for your profiles
+  * ``profiles/`` directory for your profiles; can be contributed upstream
 
   * ``configs/`` directory for your config or empty.
 
