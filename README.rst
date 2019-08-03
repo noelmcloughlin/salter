@@ -49,11 +49,11 @@ Separate your business logic artifacts from the consuming system. Keep your salt
 
 2. Move your pillars/states to these new directories.
 
-3. Overlay salt-desktop.
-```
- curl -o scripts/overlay-salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/contrib/overlay-salt.sh
- sudo ./scripts/overlay-salt.sh
-```
+3. Overlay salt-desktop::
+
+    curl -o scripts/overlay-salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/contrib/overlay-salt.sh
+    sudo ./scripts/overlay-salt.sh
+
 
 The result looks like this: https://github.com/noelmcloughlin/salt-desktop-overlay-demo
 
