@@ -350,7 +350,9 @@ usage() {
     echo 1>&2
     echo "  TARGETS" 1>&2
     echo 1>&2
-    echo "\tsalt\t\tBootstrap Salt and Salt formula" 1>&2
+    echo "\tbootstrap\t\tRun salt-bootstrap with additions" 1>&2
+    echo 1>&2
+    echo "\tsalt\t\tInstall salt-desktop and salt-formula" 1>&2
     echo 1>&2
     echo "\t${solution[entity]}\tApply all ${solution[repo]} states" 1>&2
     echo 1>&2
@@ -397,6 +399,9 @@ business-logic() {
 
     ## install option
     case "${TARGET}" in
+    bootstrap)  salt-bootstrap
+                ;;
+
     salt)       ## SALT
                 salt-bootstrap
                 gitclone 'https://github.com' saltstack-formulas salt-formula salt salt
