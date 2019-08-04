@@ -12,7 +12,7 @@ Install
 =======
 
 ```
-curl https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh -i bootstrap && sudo bash salter.sh -i salter
+curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh -i bootstrap && sudo bash salter.sh -i salter
 ```
 
 Deploy profiles
