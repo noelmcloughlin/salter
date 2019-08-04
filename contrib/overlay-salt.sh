@@ -5,7 +5,7 @@
 #   - ./profiles directory (copied to salt file_roots)
 #   - ./configs directory (copied to salt pillar_roots)
 #   - ./formulas directory (copied to salt file_roots)
-#   - ./scripts/installer.sh (a customized installer)
+#   - ./scripts/salter.sh (a customized installer)
 # This script merges both repos and installs salt-desktop
 #----------------------------------------------------------------
 git config user.email "not@important.com"                                   ##keep git happy
@@ -30,10 +30,10 @@ else
     exit 1 
 fi
 
-## Check for a contributed/custom installer.sh script and install salt
-[ -f contrib/installer.sh ] && mv contrib/installer.sh installer.sh && chmod +x installer.sh
-RC=0 && ./installer.sh -i bootstrap || exit 1
-RC=0 && ./installer.sh -i salt || exit 1
+## Check for a contributed/custom salter.sh script and install salt
+[ -f contrib/salter.sh ] && mv contrib/salter.sh salter.sh && chmod +x salter.sh
+RC=0 && ./salter.sh -i bootstrap || exit 1
+RC=0 && ./salter.sh -i salt || exit 1
 
 ## overlay contributed/custom salt formulas
 SOURCE_DIR=formulas
@@ -48,6 +48,6 @@ do
 done
 
 ## Check status/cleanup
-rm ./installer.sh 2>/dev/null
+rm ./salter.sh 2>/dev/null
 (( RC > 0 )) && echo "something is wrong" && exit ${RC}
 echo "Salter script is installed at /usr/local/bin/salter.sh"

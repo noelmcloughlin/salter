@@ -6,7 +6,7 @@ Description of solution Application Programming Interface (API).
 
 The command line interface is described now.
 
-- <code>installer.sh</code>
+- <code>salter.sh</code>
 
   - Bash script to install/upgrade salstack software under sudo privledges.
 

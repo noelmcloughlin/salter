@@ -333,9 +333,9 @@ highstate() {
     salt-call state.highstate --local ${DEBUGG_ON} --retcode-passthrough saltenv=base  >>${LOG} 2>&1
     [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null && echo "See full log in [ ${LOG} ]"
     echo
-    echo "///////////////////////////////////////////////////////////////////////"
+    echo "/////////////////////////////////////////////////////////////////"
     echo "        $(basename ${PROFILE}) for ${solution[repo]} has completed"
-    echo "//////////////////////////////////////////////////////////////////////"
+    echo "////////////////////////////////////////////////////////////////"
     echo
 }
 
@@ -352,10 +352,12 @@ usage() {
     echo 1>&2
     echo "\tbootstrap\t\tRun salt-bootstrap with additions" 1>&2
     echo 1>&2
-    echo "\tsalt\t\tInstall salter and salt-formula" 1>&2
+    echo "\tsalter\t\tInstall salter and salt-formula" 1>&2
     echo 1>&2
-    echo "\t${solution[entity]}\tApply all ${solution[repo]} states" 1>&2
-    echo 1>&2
+    if [ "${solution[entity]}" != "salter" ]; then
+       echo "\t${solution[entity]}\tDeploy ${solution[repo]}" 1>&2
+       echo 1>&2
+    fi
     echo " ${solution[targets]}" 1>&2
     echo "\t\t\tApply specific ${solution[repo]} state" 1>&2
     echo 1>&2
@@ -400,28 +402,22 @@ business-logic() {
 
     ## install option
     case "${TARGET}" in
-    bootstrap)  salt-bootstrap
-                ;;
+    bootstrap)  salt-bootstrap ;;
 
-    salt)       ## SALT FORMULA/DESKTOP
-                gitclone 'https://github.com' saltstack-formulas salt-formula salt salt
-                gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${PROFILE} ${solution[subdir]}
+    menu)       pip install --pre wrapper barcodenumber npyscreen || exit 1
+                ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[states]}/install) || exit 2
+                highstate install ${solution[states]} ${TARGET} ;;
+
+    salter)     gitclone 'https://github.com' saltstack-formulas salt-formula salt salt
+                gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
                 highstate install ${solution[states]} salt
                 rm /usr/local/bin/salter.sh 2>/dev/null
-                ln -s ${solution[homedir]}/installer.sh /usr/local/bin/salter.sh
-                ;;
+                ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter.sh ;;
 
-    menu)       ## MENU
-                pip install --pre wrapper barcodenumber npyscreen || exit 1
-                ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[states]}/install) || exit 2
-                highstate install ${solution[states]} ${TARGET}
-                ;;
+    ${solution[repo]})
+                solution-tasks ${solution[repo]} ;;
 
-    ${solution[entity]})
-                optional-solution-work
-                ;;
-
-    *)          ## PROFILES
+    *)          ## PROFILES (STATES/FORMULAS)
                 echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
                 if (( $? == 0 )) || [ -f ${solution[states]}/install/${TARGET}.sls ]; then
                     highstate install ${solution[states]} ${TARGET}
@@ -430,8 +426,10 @@ business-logic() {
     esac
 }
 
-mandatory-solution-configuration() {
-    ### solution details ###
+##### everything above is generic; some things below are customized #####
+
+mandatory-solution-repo-description() {
+    ### repo details ###
     solution['saltmaster']=""
     solution['uri']="https://github.com"
     solution['entity']="saltstack-formulas"
@@ -439,14 +437,14 @@ mandatory-solution-configuration() {
     solution['alias']="salter"
     solution['targets']="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
     solution['subdir']="./"
-
-    ### derived details ###
+   
+    ### giving these values ###
     solution['homedir']="${SALTFS}/community/${solution['entity']}/${solution[repo]}/${solution[subdir]}"
     solution['states']="${solution[homedir]}/file_roots"
     solution['pillars']="${solution[homedir]}/pillar_roots"
     solution['logdir']="/tmp/${solution[entity]}-${solution[repo]}"
 
-    ### your details ###
+    ### YOUR STUFF HERE ###
     your['states']="${SALTFS}/community/your/file_roots"
     your['pillars']="${SALTFS}/community/your/pillar_roots"
 
@@ -460,9 +458,8 @@ optional-developer-settings() {
     fork['solutions']="opensds-installer salt-formula salter docker-formula samba-formula packages-formula"
 }
 
-optional-solution-work() {
-    #todo: split salt-bootstrap and salter/salt-formula handling
-    echo "not implemented"
+solution-tasks() {
+    echo "already implemented by 'salter' case match"
 }
 
 optional-post-install-work(){
@@ -472,5 +469,5 @@ optional-post-install-work(){
 ## MAIN ##
 
 optional-developer-settings
-mandatory-solution-configuration
+mandatory-solution-repo-description
 business-logic
