@@ -12,7 +12,7 @@ Install
 =======
 
 ```
-curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/installer.sh && sudo bash salter.sh -i bootstrap && sudo bash salter.sh -i salt
+curl https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh -i bootstrap && sudo bash salter.sh -i salter
 ```
 
 Deploy profiles
@@ -58,7 +58,7 @@ Separate business logic artifacts from the consuming system. Store your salt art
 
 See `Reference Solution`_.
 
-.. _`Reference-Solution`: https://github.com/noelmcloughlin/salter-overlay-demo
+.. _`Reference Solution`: https://github.com/noelmcloughlin/salter-overlay-demo
 
 Notes
 -----
