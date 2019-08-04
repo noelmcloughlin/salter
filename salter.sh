@@ -264,7 +264,7 @@ setup-log() {
     LOG=${1}
     mkdir -p ${solution['logdir']} 2>/dev/null
     salt-call --versions >>${LOG} 2>&1
-    [ -f "${PILLARFS}.site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
+    [ -f "${PILLARFS}/site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
     [ -n "${DEBUGG_ON}" ] && salt-call pillar.items --local >> ${LOG} 2>&1 && echo >>${LOG} 2>&1
     salt-call state.show_top --local | tee -a ${LOG} 2>&1
     echo >>${LOG} 2>&1
@@ -334,7 +334,7 @@ highstate() {
     [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null && echo "See full log in [ ${LOG} ]"
     echo
     echo "/////////////////////////////////////////////////////////////////"
-    echo "        $(basename ${PROFILE}) for ${solution[repo]} has completed"
+    echo "        $(basename ${TARGET}) for ${solution[repo]} has completed"
     echo "////////////////////////////////////////////////////////////////"
     echo
 }
