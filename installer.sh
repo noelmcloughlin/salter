@@ -21,7 +21,6 @@
 trap exit SIGINT SIGTERM
 [ `id -u` != 0 ] && echo && echo "Run script with sudo, exiting" && echo && exit 1
 declare -A your solution fork || (echo "bash v4 or later is required" && exit 1)
-(( $# == 0 )) && echo usage
 
 BASE=/srv
 BASE_ETC=/etc
@@ -353,7 +352,7 @@ usage() {
     echo 1>&2
     echo "\tbootstrap\t\tRun salt-bootstrap with additions" 1>&2
     echo 1>&2
-    echo "\tsalt\t\tInstall salt-desktop and salt-formula" 1>&2
+    echo "\tsalt\t\tInstall salter and salt-formula" 1>&2
     echo 1>&2
     echo "\t${solution[entity]}\tApply all ${solution[repo]} states" 1>&2
     echo 1>&2
@@ -434,11 +433,10 @@ business-logic() {
 mandatory-solution-configuration() {
     ### solution details ###
     solution['saltmaster']=""
-    solution['bootstrap']="salt-bootstrap"
     solution['uri']="https://github.com"
     solution['entity']="saltstack-formulas"
-    solution['repo']="salt-desktop"
-    solution['alias']="desktop"
+    solution['repo']="salter"
+    solution['alias']="salter"
     solution['targets']="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
     solution['subdir']="./"
 
@@ -459,11 +457,11 @@ optional-developer-settings() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="fixes"
-    fork['solutions']="opensds-installer salt-formula salt-desktop docker-formula samba-formula packages-formula"
+    fork['solutions']="opensds-installer salt-formula salter docker-formula samba-formula packages-formula"
 }
 
 optional-solution-work() {
-    #todo: split salt-bootstrap and salt-desktop/salt-formula handling
+    #todo: split salt-bootstrap and salter/salt-formula handling
     echo "not implemented"
 }
 
