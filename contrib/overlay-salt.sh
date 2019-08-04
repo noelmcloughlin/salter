@@ -33,7 +33,7 @@ fi
 ## Check for a contributed/custom salter.sh script and install salt
 [ -f contrib/salter.sh ] && mv contrib/salter.sh salter.sh && chmod +x salter.sh
 RC=0 && ./salter.sh -i bootstrap || exit 1
-RC=0 && ./salter.sh -i salt || exit 1
+RC=0 && ./salter.sh -i salter || exit 1
 
 ## overlay contributed/custom salt formulas
 SOURCE_DIR=formulas
