@@ -1,41 +1,43 @@
 =============
-salt-desktop
+salter
 =============
 
-Salt Desktop is a tool for building and deploying system environments without fuss.
+Salter is a tool for building and deploying system environments without fuss.
 
-If you are familar with yaml and want to inject dynamic profiles into your systems, this tool does that. The architectural design aims to keep users focused on profiles and associated configuration..
+If you are familar with yaml and want to inject dynamic profiles into your systems, this tool can help. The architectural design aims to keep users focused on profiles and associated configuration as much as possible.
 
-Profiles are an minimilistic way of describing a wanted software environment. They can be dynamically created, shared, and reused in a predictable manner. Configs are an interface designed to hold global values distributble to hosts. While profile defaults maybe sufficient, we often need to modify default configuration to suit site/personal specifics. Formulas are pre-written salt states developed and shared by open source communities.
+*Profiles* are an minimilistic way of describing a wanted software environment; they can be dynamically created, shared, and reused in a predictable manner. *Configs* are an interface designed to hold global values distributble to hosts, and allowing us to alter default configuration with site/personal specifics. *Formulas/States* are pre-written salt states developed by open source communities.
 
 Install
 =======
 
 ```
-curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/installer.sh && sudo bash salter.sh -i bootstrap && sudo bash salter.sh -i salt
+curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/installer.sh && sudo bash salter.sh -i bootstrap && sudo bash salter.sh -i salt
 ```
 
 Deploy profiles
 ===============
 
-This command deploys a profile (pre-shipped or custom-built)-
+This command deploys a profile (pre-shipped or yours)-
 
 ```
 sudo /usr/local/bin/salter.sh -i <profile-name> [ -u loginname ]
 ```
 
-Dedicated upstream repositories contain the building blocks for profiles-
+Upstream community repositories contain building blocks for profiles-
 
-* `saltstack-formulas repository`_ ( default)
-* `salt-formulas repository`_
+* `saltstack-formulas`_ (default)
+* `salt-formulas`_
+* `random salt-projects`_ (random example)
 
 .. _`saltstack-formulas`: https://github.com/saltstack-formulas
 .. _`salt-formulas`: https://github.com/salt-formulas
+.. _`random salt-projects`: https://github.com/eligundry/salt.eligundry.com
 
 Integration recommendation
 ==========================
 
-Separate your business logic artifacts from the consuming system. Keep your salt-desktop artifacts in a separate git repository. You can integrate salt-desktop with your repo as follows-
+Separate business logic artifacts from the consuming system. Store your salt artifacts in a separate git repository. You can integrate salter with your repo as follows (see `Reference Solution`_)-
 
 1. Create following directories in your repository.
 
@@ -49,18 +51,17 @@ Separate your business logic artifacts from the consuming system. Keep your salt
 
 2. Move your pillars/states to these new directories.
 
-3. Overlay salt-desktop::
+3. Overlay salter::
 
-    curl -o scripts/overlay-salt.sh https://raw.githubusercontent.com/saltstack-formulas/salt-desktop/master/contrib/overlay-salt.sh
+    curl -o scripts/overlay-salt.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/contrib/overlay-salt.sh
     sudo ./scripts/overlay-salt.sh
 
-See Reference Solution at https://github.com/noelmcloughlin/salt-desktop-overlay-demo
+See `Reference Solution`_.
 
+.. _`Reference-Solution`: https://github.com/noelmcloughlin/salter-overlay-demo
 
 Notes
 -----
-The `overlay-salt.sh` script merges salt-desktop into your repository and integrates your artifacts into the initial install procedure. We have provided a working example in the `contrib/` directory.
+The `overlay-salt.sh` script merges salter into your repository and integrates your artifacts into the initial install procedure. We have provided a working example in the `contrib/` directory.
 
-salt-desktop is tested on python2 and python3 (default). This tool is reported to work on MacOS, FreeBSD, and most GNU/Linux.
-
-formulas are tested by the respective developers.
+salter is tested on python2 and python3 (default). This tool is reported to work on MacOS, FreeBSD, and most GNU/Linux. Salt states/fprrmulas are tested by the respective maintainers.
