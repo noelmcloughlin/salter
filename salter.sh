@@ -414,8 +414,8 @@ business-logic() {
                 rm /usr/local/bin/salter.sh 2>/dev/null
                 ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter.sh ;;
 
-    ${solution[repo]})
-                solution-tasks ${solution[repo]} ;;
+    ${solution[alias]})
+                solution-tasks ${solution[alias]} ;;
 
     *)          ## PROFILES (STATES/FORMULAS)
                 echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
