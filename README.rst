@@ -39,12 +39,10 @@ Integration recommendation
 
 Separate your business logic artifacts from salt - store your states/pillars in separate repositories (i.e. not this repo).
 
-Optionally merge "salter" into your own repo on-the-fly with `scripts/overlay-salt.sh` script, assuming the following directory structure-
+Optionally merge "salter" into your own repo on-the-fly with ``scripts/overlay-salt.sh`` script, by adopting this directory structure-
 
 * ``profiles/``    your salt high(states)
 * ``configs/``    your pillar data
-* ``scripts/overlay-salt.sh``    script derived from `./contrib/overlay-salt.sh`
-* ``formulas/``     optional
 
 and then running::
 
