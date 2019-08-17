@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-#----------------------------------------------------------------------
-# Copyright 2019 Saltstack Formulas, The OpenSDS Authors
+#-------------------------------------------------------------------------
+# Copyright 2019 Saltstack Formulas
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#-----------------------------------------------------------------------
+#
+# Original work from: https://github.com/saltstack-formulas/salter
+# MODIFIED WORK SECTION has additional copyright under this "License".
+#--------------------------------------------------------------------------
 #
 # This script allows common bootstrapping for any project using salt
 #
@@ -426,7 +429,12 @@ business-logic() {
     esac
 }
 
-##### everything above is generic; some things below are customized #####
+#########################################################################
+#
+# MODIFIED WORK SECTION
+# Copyright 2019 Saltstack Formulas
+#
+#########################################################################
 
 mandatory-solution-repo-description() {
     ### repo details ###
