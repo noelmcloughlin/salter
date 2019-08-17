@@ -277,17 +277,17 @@ setup-log() {
 gitclone() {
     URI=${1} && ENTITY=${2} && REPO=${3} && ALIAS=${4} && SUBDIR=${5}
     echo "cloning ${REPO} from ${ENTITY} ..."
-    rm -fr ${SALTFS}/community/${ENTITY}/${REPO} 2>/dev/null
+    rm -fr ${SALTFS}/namespaces/${ENTITY}/${REPO} 2>/dev/null
 
     echo "${fork[solutions]}" | grep "${REPO}" >/dev/null 2>&1
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/community/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
-        cd  ${SALTFS}/community/${ENTITY}/${REPO} && git checkout ${fork[branch]}
+        git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
+        cd  ${SALTFS}/namespaces/${ENTITY}/${REPO} && git checkout ${fork[branch]}
     else
-        git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/community/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
+        git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
     fi
-    echo && ln -s ${SALTFS}/community/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
+    echo && ln -s ${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
 }
 
 highstate() {
@@ -447,14 +447,14 @@ mandatory-solution-repo-description() {
     solution['subdir']="./"
    
     ### giving these values ###
-    solution['homedir']="${SALTFS}/community/${solution['entity']}/${solution[repo]}/${solution[subdir]}"
+    solution['homedir']="${SALTFS}/namespaces/${solution['entity']}/${solution[repo]}/${solution[subdir]}"
     solution['states']="${solution[homedir]}/file_roots"
     solution['pillars']="${solution[homedir]}/pillar_roots"
     solution['logdir']="/tmp/${solution[entity]}-${solution[repo]}"
 
     ### YOUR STUFF HERE ###
-    your['states']="${SALTFS}/community/your/file_roots"
-    your['pillars']="${SALTFS}/community/your/pillar_roots"
+    your['states']="${SALTFS}/namespaces/your/file_roots"
+    your['pillars']="${SALTFS}/namespaces/your/pillar_roots"
 
     mkdir -p ${solution[states]} ${solution[pillars]} ${your[states]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC}/salt 2>/dev/null
 }
