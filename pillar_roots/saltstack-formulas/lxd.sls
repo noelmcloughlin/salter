@@ -48,6 +48,6 @@ lxd:
       default:
         devices:
           eth0:
-            nictype: bridged
-            parent: lanbr0
+            nictype: macvlan
+            parent: eth1
             type: nic
