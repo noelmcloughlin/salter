@@ -463,7 +463,7 @@ optional-developer-settings() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="fixes"
-    fork['solutions']="opensds-installer salt-formula salter docker-formula samba-formula packages-formula"
+    fork['solutions']="opensds-installer salter packages-formula golang-formula lxd-formula"
 }
 
 solution-tasks() {
@@ -471,7 +471,11 @@ solution-tasks() {
 }
 
 optional-post-install-work(){
-    echo "not implemented"
+    LXD=${SALTFS}/namespaces/saltstack-formulas/lxd-formula
+    # see https://github.com/saltstack-formulas/lxd-formula#clone-and-symlink
+    [ -d "${LXD}/_modules" ] && ln -s ${LXD}/_modules ${SALTFS}/_modules 2>/dev/null
+    [ -d "${LXD}/_states" ] && ln -s ${LXD}/_states ${SALTFS}/_states 2>/dev/null
+
 }
 
 ## MAIN ##
