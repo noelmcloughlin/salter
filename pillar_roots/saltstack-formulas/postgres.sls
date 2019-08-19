@@ -112,7 +112,6 @@ postgres:
       password: '98ruj923h4rf'
       createdb: False
       createroles: False
-      createuser: False
       inherit: True
       replication: False
 
@@ -121,7 +120,6 @@ postgres:
       password: '98ruj923h4rf'
       createdb: False
       createroles: False
-      createuser: False
       inherit: True
       replication: False
 

@@ -1,3 +1,4 @@
+# For quick and dirty brute-force test of upstream/local states/pillars
 base:
   '*':
     - apache
@@ -5,7 +6,7 @@ base:
     - chrony
     # linuxvda
     - deepsea
-    - devstack
+    #- devstack
     - docker
     - eclipse
     - etcd

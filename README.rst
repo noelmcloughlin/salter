@@ -37,24 +37,16 @@ Upstream community repositories contain building blocks for profiles-
 Integration recommendation
 ==========================
 
-Separate business logic artifacts from the consuming system. Store your salt artifacts in a separate git repository. You can integrate salter with your repo as follows (see `Reference Solution`_)-
+Separate your business logic artifacts from salt - store your states/pillars in separate repositories (i.e. not this repo).
 
-1. Create following directories in your repository.
+Optionally merge "salter" into your own repo on-the-fly with ``scripts/overlay-salt.sh`` script, by adopting this directory structure-
 
-  * ``profiles/`` directory for your profiles; can be contributed upstream
+* ``profiles/``    your salt high(states)
+* ``configs/``    your pillar data
 
-  * ``configs/`` directory for your config or empty.
+and then running::
 
-  * ``formulas/`` directory for your private formulas or empty.
-
-  * ``scripts/overlay-salt.sh`` script like the working example in `./contrib/` directory.
-
-2. Move your pillars/states to these new directories.
-
-3. Overlay salter::
-
-    curl -o scripts/overlay-salt.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/contrib/overlay-salt.sh
-    sudo ./scripts/overlay-salt.sh
+    curl -o scripts/overlay-salt.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/contrib/overlay-salt.sh && sudo ./scripts/overlay-salt.sh
 
 See `Reference Solution`_.
 

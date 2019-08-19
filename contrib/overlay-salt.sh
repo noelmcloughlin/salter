@@ -1,22 +1,38 @@
 #!/usr/bin/env bash
 #----------------------------------------------------------------
-# Optionally overlay your salt integrations onto salt-desktop
-# Your repo should contain
+# Copyright 2019 Saltstack Formulas
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Original work from: https://github.com/saltstack-formulas/salter
+#----------------------------------------------------------------
+
+# Overlay salter onto your repo/filesystem, assuming this structure
+#
 #   - ./profiles directory (copied to salt file_roots)
 #   - ./configs directory (copied to salt pillar_roots)
-#   - ./formulas directory (copied to salt file_roots)
-#   - ./scripts/salter.sh (a customized installer)
-# This script merges both repos and installs salt-desktop
+#   - ./formulas directory (copied to salt file_roots); optional
+#   - ./scripts/salter.sh (a customized installer); optional
 #----------------------------------------------------------------
 git config user.email "not@important.com"                                   ##keep git happy
 git config user.name "not important"
 git init                                                                    ##forget our history
-git remote add salt https://github.com/noelmcloughlin/salt-desktop.git      ##overlay salt-desktop repo
-git pull salt fixes  --allow-unrelated-histories -f >/dev/null              ##typically master branch
+git remote add salter https://github.com/noelmcloughlin/salter.git          ##overlay salter repo
+git pull salt master --allow-unrelated-histories -f >/dev/null              ##typically master branch
 if (( $? == 0 )); then
     ## your salt artifacts
     FILE_ROOTS=/srv/salt && [ -d /usr/local/etc/salt/states ] && FILE_ROOTS=/usr/local/etc/salt/states
-    TARGET_DIR=${FILE_ROOTS}/community/your
+    TARGET_DIR=${FILE_ROOTS}/namespaces/your
     mkdir -p ${TARGET_DIR}/contrib ${TARGET_DIR}/file_roots ${TARGET_DIR}/pillar_roots 2>/dev/null
 
     cp -Rp ./scripts/* ${TARGET_DIR}/contrib/                               ##Your contrib

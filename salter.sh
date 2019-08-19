@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-#----------------------------------------------------------------------
-# Copyright 2019 Saltstack Formulas, The OpenSDS Authors
+#-------------------------------------------------------------------------
+# Copyright 2019 Saltstack Formulas
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#-----------------------------------------------------------------------
+#
+# Original work from: https://github.com/saltstack-formulas/salter
+# MODIFIED WORK SECTION has additional copyright under this "License".
+#--------------------------------------------------------------------------
 #
 # This script allows common bootstrapping for any project using salt
 #
@@ -264,7 +267,7 @@ setup-log() {
     LOG=${1}
     mkdir -p ${solution['logdir']} 2>/dev/null
     salt-call --versions >>${LOG} 2>&1
-    [ -f "${PILLARFS}.site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
+    [ -f "${PILLARFS}/site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
     [ -n "${DEBUGG_ON}" ] && salt-call pillar.items --local >> ${LOG} 2>&1 && echo >>${LOG} 2>&1
     salt-call state.show_top --local | tee -a ${LOG} 2>&1
     echo >>${LOG} 2>&1
@@ -274,17 +277,17 @@ setup-log() {
 gitclone() {
     URI=${1} && ENTITY=${2} && REPO=${3} && ALIAS=${4} && SUBDIR=${5}
     echo "cloning ${REPO} from ${ENTITY} ..."
-    rm -fr ${SALTFS}/community/${ENTITY}/${REPO} 2>/dev/null
+    rm -fr ${SALTFS}/namespaces/${ENTITY}/${REPO} 2>/dev/null
 
     echo "${fork[solutions]}" | grep "${REPO}" >/dev/null 2>&1
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/community/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
-        cd  ${SALTFS}/community/${ENTITY}/${REPO} && git checkout ${fork[branch]}
+        git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
+        cd  ${SALTFS}/namespaces/${ENTITY}/${REPO} && git checkout ${fork[branch]}
     else
-        git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/community/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
+        git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
     fi
-    echo && ln -s ${SALTFS}/community/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
+    echo && ln -s ${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
 }
 
 highstate() {
@@ -334,7 +337,7 @@ highstate() {
     [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null && echo "See full log in [ ${LOG} ]"
     echo
     echo "/////////////////////////////////////////////////////////////////"
-    echo "        $(basename ${PROFILE}) for ${solution[repo]} has completed"
+    echo "        $(basename ${TARGET}) for ${solution[repo]} has completed"
     echo "////////////////////////////////////////////////////////////////"
     echo
 }
@@ -414,19 +417,24 @@ business-logic() {
                 rm /usr/local/bin/salter.sh 2>/dev/null
                 ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter.sh ;;
 
-    ${solution[repo]})
-                solution-tasks ${solution[repo]} ;;
+    ${solution[alias]})
+                solution-tasks ${solution[alias]} ;;
 
     *)          ## PROFILES (STATES/FORMULAS)
                 echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
                 if (( $? == 0 )) || [ -f ${solution[states]}/install/${TARGET}.sls ]; then
                     highstate install ${solution[states]} ${TARGET}
-                    optional-post-install-work
+                    optional-post-install-work ${TARGET}
                 fi
     esac
 }
 
-##### everything above is generic; some things below are customized #####
+#########################################################################
+#
+# MODIFIED WORK SECTION
+# Copyright 2019 Saltstack Formulas
+#
+#########################################################################
 
 mandatory-solution-repo-description() {
     ### repo details ###
@@ -439,14 +447,14 @@ mandatory-solution-repo-description() {
     solution['subdir']="./"
    
     ### giving these values ###
-    solution['homedir']="${SALTFS}/community/${solution['entity']}/${solution[repo]}/${solution[subdir]}"
+    solution['homedir']="${SALTFS}/namespaces/${solution['entity']}/${solution[repo]}/${solution[subdir]}"
     solution['states']="${solution[homedir]}/file_roots"
     solution['pillars']="${solution[homedir]}/pillar_roots"
     solution['logdir']="/tmp/${solution[entity]}-${solution[repo]}"
 
     ### YOUR STUFF HERE ###
-    your['states']="${SALTFS}/community/your/file_roots"
-    your['pillars']="${SALTFS}/community/your/pillar_roots"
+    your['states']="${SALTFS}/namespaces/your/file_roots"
+    your['pillars']="${SALTFS}/namespaces/your/pillar_roots"
 
     mkdir -p ${solution[states]} ${solution[pillars]} ${your[states]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC}/salt 2>/dev/null
 }
@@ -455,7 +463,7 @@ optional-developer-settings() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="fixes"
-    fork['solutions']="opensds-installer salt-formula salter docker-formula samba-formula packages-formula"
+    fork['solutions']="opensds-installer salter packages-formula golang-formula lxd-formula"
 }
 
 solution-tasks() {
@@ -463,7 +471,11 @@ solution-tasks() {
 }
 
 optional-post-install-work(){
-    echo "not implemented"
+    LXD=${SALTFS}/namespaces/saltstack-formulas/lxd-formula
+    # see https://github.com/saltstack-formulas/lxd-formula#clone-and-symlink
+    [ -d "${LXD}/_modules" ] && ln -s ${LXD}/_modules ${SALTFS}/_modules 2>/dev/null
+    [ -d "${LXD}/_states" ] && ln -s ${LXD}/_states ${SALTFS}/_states 2>/dev/null
+
 }
 
 ## MAIN ##
