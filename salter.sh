@@ -197,7 +197,6 @@ salt-bootstrap() {
              su - ${USER} -c 'curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py'
              sudo python ${PWD}/get-pip.py 2>/dev/null
 
-             # [ -x /usr/local/bin/brew ] | su - ${USER} -c '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
              su - ${USER} -c '/usr/local/bin/pip install --upgrade wrapper barcodenumber npyscreen'
              [[ ! -x /usr/local/bin/brew ]] && echo "Install homebrew (https://docs.brew.sh/Installation.html)" && exit 1
 
@@ -470,7 +469,7 @@ optional-developer-settings() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="fixes"
-    fork['solutions']="opensds-installer salter packages-formula golang-formula postgres-formula lxd-formula"
+    fork['solutions']="salter packages-formula golang-formula postgres-formula"
 }
 
 solution-tasks() {
