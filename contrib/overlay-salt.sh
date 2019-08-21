@@ -49,16 +49,19 @@ fi
 ## Check for a contributed/custom salter.sh script and install salt
 [ -f contrib/salter.sh ] && mv contrib/salter.sh salter.sh && chmod +x salter.sh
  
-# macos needs brew installed
-if [ "`uname`" = "Darwin" ]; then
-    USER=$( stat -f "%Su" /dev/console )
-    [ -x /usr/local/bin/brew ] | su - ${USER} -c '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
-fi
-
 # bash version must be modern
-RC=0 && declare -A detect_modern_bash_version 2>/dev/null || RC=$?
-(( RC > 0 )) && echo "[info] your bash version is really old - upgrade to a modern version"
-(( RC > 0 )) && [ "`uname`" = "Darwin" ] &&  echo "[info] installing newer bash version ..." && su - ${USER} -c 'brew install bash'
+RC=0 && (declare -A your solution fork || RC=$?)
+if [ "$( uname )" = "Darwin" ]; then
+    # macos needs brew
+    USER=$( stat -f "%Su" /dev/console )
+    [ -x /usr/local/bin/brew ] || su - ${USER} -c '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+    # macos needs modern bash
+    (( RC > 0 )) && (su - ${USER} -c 'brew install bash' || exit 12) && RC=0
+else
+    # linux needs modern bash
+    echo "[info] your bash version is too old ...."
+    exit ${RC}
+fi
 
 ## salt-bootstrap plus additions
 RC=0 && ./salter.sh -i bootstrap || exit 1

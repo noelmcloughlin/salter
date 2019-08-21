@@ -31,20 +31,24 @@ if [ `uname` == 'FreeBSD' ]; then
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
     STATEDIR=states
-elif [ `uname` == 'Darwin' ]; then
-    USER=$( stat -f "%Su" /dev/console )
 fi
 PILLARFS=${BASE:-/srv}/pillar
 SALTFS=${BASE:-/srv}/salt/${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
 
-# macos needs brew installed
-[ "`uname`" = "Darwin" ] && ([ -x /usr/local/bin/brew ] | su - ${USER} -c '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"')
-
 # bash version must be modern
-RC=0 && declare -A your solution fork || RC=$?
-(( RC > 0 )) && echo "[info] your bash version is really old - upgrade to a modern version" && exit 1
-(( RC > 0 )) && [ "`uname`" = "Darwin" ] &&  echo "[info] installing newer bash version ..." && su - ${USER} -c 'brew install bash'
+RC=0 && (declare -A your solution fork || RC=$?)
+if [ "$( uname )" = "Darwin" ]; then
+    # macos needs brew
+    USER=$( stat -f "%Su" /dev/console )
+    [ -x /usr/local/bin/brew ] || su - ${USER} -c '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+    # macos needs modern bash
+    (( RC > 0 )) && (su - ${USER} -c 'brew install bash' || exit 12) && RC=0
+else
+    # linux needs modern bash
+    echo "[info] your bash version is too old ...."
+    exit ${RC}
+fi
 
 #-----------------------------------------
 #   Adaption layer for OS package handling
