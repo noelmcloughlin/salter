@@ -282,7 +282,7 @@ setup-log() {
 }
 
 gitclone() {
-    [ -n "${SKIP_UNNECESSARY_CLONE}" ] && unset SKIP_UNNECESSARY_CLONE && return 0
+    [ -n "${SKIP_UNNECESSARY_CLONE}" ] && return 0
 
     URI=${1} && ENTITY=${2} && REPO=${3} && ALIAS=${4} && SUBDIR=${5}
     echo "cloning ${REPO} from ${ENTITY} ..."
@@ -448,7 +448,6 @@ developer-definitions() {
 }
 
 solution-definitions() {
-    ### solution polyrepo ###
     solution['saltmaster']=""
     solution['uri']="https://github.com"
     solution['entity']="saltstack-formulas"
