@@ -28,13 +28,14 @@ RC=0
 BASE=/srv
 BASE_ETC=/etc
 STATEDIR=''
-if [ `uname` == 'FreeBSD' ]; then
+if [ `uname` == "FreeBSD" ]; then
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
     STATEDIR=states
+    SUBDIR=salt
 fi
 HOMEBREW=/usr/local/bin/brew
-PILLARFS=${BASE:-/srv}/pillar
+PILLARFS=${BASE:-/srv}/${SUBDIR}/pillar
 SALTFS=${BASE:-/srv}/salt/${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
 TERM_PS1=${PS1} && unset PS1
@@ -86,6 +87,8 @@ pkg-query() {
          /usr/bin/dpkg-query --list | grep ${PACKAGE}
     elif [ -f "/usr/bin/pacman" ]; then
          /usr/bin/pacman -Qi ${PACKAGE}
+    elif [[ -f "/usr/sbin/pkg" ]]; then
+         /usr/sbin/pkg query ${PACKAGE}
     fi
 }
 
@@ -107,7 +110,8 @@ pkg-install() {
              fi
              ;;
 
-    linux*)  if [ -f "/usr/bin/zypper" ]; then
+    linux*|freebsd*)
+             if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper update -y || exit 1
                  /usr/bin/zypper --non-interactive install ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
@@ -119,14 +123,17 @@ pkg-install() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf install -y --best --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y || exit 1 
-                 /usr/bin/yum install -y ${PACKAGES} || exit 1 
+                 /usr/bin/yum update -y || exit 1
+                 /usr/bin/yum install -y ${PACKAGES} || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get update --fix-missing -y || exit 1
                  /usr/bin/apt-add-repository universe
                  /usr/bin/apt autoremove -y
                  /usr/bin/apt-get update -y
                  /usr/bin/apt-get install -y ${PACKAGES} || exit 1
+             elif [[ -f "/usr/sbin/pkg" ]]; then
+                 /usr/sbin/pkg update -f --quiet || exit 1
+                 /usr/sbin/pkg install --automatic --yes ${PACKAGES} || exit 1
              fi
     esac
 }
@@ -147,9 +154,11 @@ pkg-update() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf upgrade -y --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y ${PACKAGES} || exit 1 
+                 /usr/bin/yum update -y ${PACKAGES} || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get upgrade -y ${PACKAGES} || exit 1
+             elif [[ -f "/usr/sbin/pkg" ]]; then
+                 /usr/sbin/pkg upgrade --yes ${PACKAGES} || exit 1
              fi
     esac
 }
@@ -161,7 +170,8 @@ pkg-remove() {
                  su - ${USER} -c "${HOMEBREW} uninstall ${p} --force"
              done
              ;;
-    linux*)  if [ -f "/usr/bin/zypper" ]; then
+    linux*|freebsd*)
+             if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper --non-interactive rm ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
                  /usr/bin/emerge -C ${PACKAGES} || exit 1
@@ -170,9 +180,11 @@ pkg-remove() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf remove -y ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum remove -y ${PACKAGES} || exit 1 
+                 /usr/bin/yum remove -y ${PACKAGES} || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get remove -y ${PACKAGES} || exit 1
+             elif [[ -f "/usr/sbin/pkg" ]]; then
+                 /usr/sbin/pkg delete --yes ${PACKAGES} || exit 1
              fi
     esac
 }
@@ -244,8 +256,9 @@ salt-bootstrap() {
              export HOMEBREW_CURLRC=1
              ;;
 
-     linux*) pkg-update 2>/dev/null
-             echo "Setup Linux baseline and install saltstack masterless minion ..."
+     linux*|freebsd*)
+             pkg-update 2>/dev/null
+             echo "Setup Linux/FreeBSD baseline and install saltstack masterless minion ..."
              if [ -f "/usr/bin/dnf" ]; then
                  PACKAGES="--best --allowerasing git wget redhat-rpm-config"
              elif [ -f "/usr/bin/yum" ]; then
@@ -256,6 +269,8 @@ salt-bootstrap() {
                  PACKAGES="git ssh wget curl software-properties-common"
              elif [ -f "/usr/bin/pacman" ]; then
                  PACKAGES="git wget psutils"
+             elif [ -f "/usr/sbin/pkg" ]; then
+                 PACKAGES="git wget psutils"
              fi
              pkg-install ${PACKAGES} 2>/dev/null
              if (( $? > 0 )); then
@@ -265,6 +280,7 @@ salt-bootstrap() {
              wget -O install_salt.sh https://bootstrap.saltstack.com || exit 10
              (sh install_salt.sh -x python3 ${SALT_VERSION} && rm -f install_salt.sh) || exit 10
              rm -f install_salt.sh 2>/dev/null
+             ;;
     esac
     ### stop debian interference with services (https://wiki.debian.org/chroot)
     if [ -f "/usr/bin/apt-get" ]; then
@@ -276,22 +292,30 @@ EOF
         ### Enforce python3
         rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
     fi
-    ### install salt-api (except arch/macos)
-    [ ! -f "/etc/arch-release" ] && [ "$(uname)" != "Darwin" ] && pkg-install salt-api
+    ### install salt-api (except arch/macos/freebsd)
+    [ ! -f "/etc/arch-release" ] && [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "FreeBSD" ] && pkg-install salt-api
 
-    ### salt services
+    ### salt minion
+    [ ! -f "${BASE_ETC}/salt/minion" ] && echo "File ${BASE_ETC}/salt/minion not found" && exit 1
     if [[ "`uname`" == "FreeBSD" ]] || [[ "`uname`" == "Darwin" ]]; then
         sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
     else
         sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
     fi
+    ### salt services
     (systemctl enable salt-api && systemctl start salt-api) 2>/dev/null || service start salt-api 2>/dev/null
     (systemctl enable salt-master && systemctl start salt-master) 2>/dev/null || service start salt-master 2>/dev/null
     (systemctl enable salt-minion && systemctl start salt-minion) 2>/dev/null || service start salt-minion 2>/dev/null
     salt-key -A --yes >/dev/null 2>&1     ##accept pending registrations
+
+    ### reboot to activate a new kernel?
     echo && KERNEL_VERSION=$( uname -r | awk -F. '{print $1"."$2"."$3"."$4"."$5}' )
     echo "kernel before: ${KERNEL_VERSION}"
-    echo "kernel after: $( pkg-query linux 2>/dev/null )"
+    if [ "$(uname)" == "FreeBSD" ]; then
+        echo "kernel after: $( /bin/freebsd-version -k 2>/dev/null )"
+    else
+        echo "kernel after: $( pkg-query linux 2>/dev/null )"
+    fi
     echo "Reboot if kernel was major-upgraded; if unsure reboot!"
     echo
 }
@@ -322,6 +346,8 @@ gitclone() {
     else
         git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
     fi
+    ## Its important to ensure symlink points to *this* formula
+    rm -f ${SALTFS}/${ALIAS} 2>/dev/null ## this is important make sure symlink is current
     echo && ln -s ${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
 }
 
@@ -527,8 +553,8 @@ solution-definitions() {
 }
 
 custom-install() {
-    ### not required - salter-engine is sufficient ###
     echo
+    ### required if salter-engine is insufficient ###
 }
 
 custom-postinstall() {
@@ -536,6 +562,12 @@ custom-postinstall() {
     # see https://github.com/saltstack-formulas/lxd-formula#clone-and-symlink
     [ -d "${LXD}/_modules" ] && ln -s ${LXD}/_modules ${SALTFS}/_modules 2>/dev/null
     [ -d "${LXD}/_states" ] && ln -s ${LXD}/_states ${SALTFS}/_states 2>/dev/null
+
+    # SUSE/Deepsea/Ceph
+    if (( $? == 0 )) && [[ "${1}" == "deepsea" ]]; then
+       salt-call --local grains.append deepsea default ${solution['saltmaster']}
+       cp ${solution['homedir']}/file_roots/install/deepsea_post.sls ${SALTFS}/${STATES_DIR}/top.sls
+    fi
 }
 
 ### MAIN
