@@ -236,7 +236,7 @@ salt-bootstrap() {
              ### https://stackoverflow.com/questions/34386527/symbol-not-found-pycodecinfo-getincrementaldecoder
              su - ${USER} -c 'hash -r python'
 
-             ### Secure install https://pip.pypa.io/en/stable/installing/
+             ### Secure-install https://pip.pypa.io/en/stable/installing/
              su - ${USER} -c 'curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py'
              sudo python ${PWD}/get-pip.py 2>/dev/null
 
@@ -260,7 +260,7 @@ salt-bootstrap() {
 
      linux*|freebsd*)
              pkg-update 2>/dev/null
-             echo "Setup Linux/FreeBSD baseline and install saltstack masterless minion ..."
+             echo "Setup Linux/FreeBSD baseline and Salt masterless minion ..."
              if [ -f "/usr/bin/dnf" ]; then
                  PACKAGES="--best --allowerasing git wget redhat-rpm-config"
              elif [ -f "/usr/bin/yum" ]; then
@@ -405,12 +405,12 @@ highstate() {
 
 usage() {
     echo "Example usage:"
-    echo "  salter install PROFILE..."
+    echo "  salter add PROFILE..."
     echo "  salter remove PROFILE..."
     echo 1>&2
     echo "Synopsis:"
-    echo "  sudo $0 install PROFILE [ OPTIONS ] [ -u username ]" 1>&2
-    echo "  sudo $0 install PROFILE [ OPTIONS ]" 1>&2
+    echo "  sudo $0 add PROFILE [ OPTIONS ] [ -u username ]" 1>&2
+    echo "  sudo $0 add PROFILE [ OPTIONS ]" 1>&2
     echo "  sudo $0 remove PROFILE [ OPTIONS ]" 1>&2
     echo 1>&2
     echo "Profiles" 1>&2
@@ -423,7 +423,7 @@ usage() {
         echo "${solution[targets]}, etc" 1>&2
         echo 1>&2
     fi
-    echo -e "  PROFILE\tInstall the profile named PROFILE" 1>&2
+    echo -e "  PROFILE\tAdd profile named PROFILE" 1>&2
     echo 1>&2
     echo "Options:"
     echo "  [-u <username>]" 1>&2
@@ -434,11 +434,11 @@ usage() {
     echo "  [-l <all|debug|warning|error|quiet]" 1>&2
     echo "      Optional log-level (default warning)" 1>&2
     echo 1>&2
-    echo "Installer" 1>&2
+    echo "Installer:" 1>&2
     echo 1>&2
-    echo -e "  bootstrap\t(re)install Salt" 1>&2
+    echo -e "  sudo salter.sh bootstrap\t(re)install Salt" 1>&2
     echo 1>&2
-    echo -e "  salter\t(re)install Salter software" 1>&2
+    echo -e "  sudo salter.sh add salter\t(re)install Salter" 1>&2
     echo 1>&2
     exit 1
 }
@@ -458,12 +458,12 @@ salter-engine() {
         fi
     fi
 
-    ## install option
+    ## add option
     case "${PROFILE}" in
-    bootstrap)  interact "==> This script will install: Salt"
+    bootstrap)  interact "==> This script will bootstrap: Salt"
                 salt-bootstrap ;;
 
-    salter)     echo "==> "This script will install:"
+    salter)     echo "==> "This script will add salter:"
                 echo "${SALTFS}/salter/salter.sh" (salter orchestrator)"
                 echo "/usr/local/bin/salter.sh    (salter symlink)"
                 echo "salt                        (orchestrator-of-infra-and-apps-at-scale)"
@@ -474,23 +474,23 @@ salter-engine() {
 
                 gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
                 gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
-                highstate install "${solution[saltdir]}" salt
+                highstate add "${solution[saltdir]}" salt
                 rm /usr/local/bin/salter.sh 2>/dev/null
                 ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter.sh
                 ;;
 
     ${solution[alias]})
-                interact "==> This script will install: ${solution[entity]}"
-                custom-install ${solution[alias]} ;;
+                interact "==> This script will add: ${solution[entity]}"
+                custom-add ${solution[alias]} ;;
 
     menu)       pip${PY_VER} install --pre wrapper barcodenumber npyscreen || exit 1
                 ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[saltdir]}/install) || exit 2
-                highstate install "${solution[saltdir]}" ${PROFILE} ;;
+                highstate add "${solution[saltdir]}" ${PROFILE} ;;
 
-    *)          interact "==> This script will install: ${solution[alias]}"
+    *)          interact "==> This script will add: ${solution[alias]}"
                 if [ -f ${solution[saltdir]}/install/${PROFILE}.sls ]; then
-                    highstate install ${solution[saltdir]} ${PROFILE}
-                    custom-postinstall ${PROFILE}
+                    highstate add ${solution[saltdir]} ${PROFILE}
+                    custom-postadd ${PROFILE}
                 fi
     esac
 }
@@ -527,12 +527,12 @@ solution-definitions() {
     mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC}/salt 2>/dev/null
 }
 
-custom-install() {
+custom-add() {
     echo
     ### required if salter-engine is insufficient ###
 }
 
-custom-postinstall() {
+custom-postadd() {
     LXD=${SALTFS}/namespaces/saltstack-formulas/lxd-formula
     # see https://github.com/saltstack-formulas/lxd-formula#clone-and-symlink
     [ -d "${LXD}/_modules" ] && ln -s ${LXD}/_modules ${SALTFS}/_modules 2>/dev/null
@@ -548,9 +548,10 @@ custom-postinstall() {
 cli-options() {
     (( $# == 0 )) && usage
     case ${1} in
+    add|remove)    ACTION=${1} && shift ;;
     bootstrap)     ACTION=bootstrap ;;
-    menu|install)  ACTION=install && shift ;;
-    remove)        ACTION=remove && shift ;;
+    install)       echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
+    menu)          ACTION=add && shift ;;   ## not maintained
     *)             usage ;;
     esac
     PROFILE=${1:-menu}
