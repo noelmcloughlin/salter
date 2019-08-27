@@ -14,29 +14,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Original work from: https://github.com/saltstack-formulas/salter
-# MODIFIED WORK SECTION has additional copyright under this "License".
+# Original development at:
+# * https://github.com/noelmcloughlin/salter
+# * https://github.com/saltstack-formulas/salter
+# SOLUTION section has additional copyright under this "License".
 #--------------------------------------------------------------------------
 #
 # This script allows common bootstrapping for any project using salt
 #
 #-----------------------------------------------------------------------
 trap exit SIGINT SIGTERM
-[ `id -u` != 0 ] && echo && echo "Run script with sudo, exiting" && echo && exit 1
+[ `id -u` != 0 ] && echo -e "\nRun script with sudo, exiting\n" && exit 1
 
 RC=0
 BASE=/srv
 BASE_ETC=/etc
 STATEDIR=''
-if [ `uname` == 'FreeBSD' ]; then
+if [ `uname` == "FreeBSD" ]; then
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
-    STATEDIR=states
+    STATEDIR=/states
+    SUBDIR=/salt
 fi
-PILLARFS=${BASE:-/srv}/pillar
-SALTFS=${BASE:-/srv}/salt/${STATEDIR}
-SKIP_UNNECESSARY_CLONE=''
 HOMEBREW=/usr/local/bin/brew
+PILLARFS=${BASE:-/srv}${SUBDIR}/pillar
+SALTFS=${BASE:-/srv}/salt${STATEDIR}
+SKIP_UNNECESSARY_CLONE=''
+TERM_PS1=${PS1} && unset PS1
+USERNAME=
+PROFILE=
+DEBUGG=
 
 # bash version must be modern
 declare -A your solution fork 2>/dev/null || RC=$?
@@ -70,10 +77,12 @@ pkg-query() {
          /usr/bin/dpkg-query --list | grep ${PACKAGE}
     elif [ -f "/usr/bin/pacman" ]; then
          /usr/bin/pacman -Qi ${PACKAGE}
+    elif [[ -f "/usr/sbin/pkg" ]]; then
+         /usr/sbin/pkg query ${PACKAGE}
     fi
 }
 
-pkg-install() {
+pkg-add() {
     PACKAGES=${@}
     case ${OSTYPE} in
     darwin*) for p in ${PACKAGES}; do
@@ -91,7 +100,8 @@ pkg-install() {
              fi
              ;;
 
-    linux*)  if [ -f "/usr/bin/zypper" ]; then
+    linux*|freebsd*)
+             if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper update -y || exit 1
                  /usr/bin/zypper --non-interactive install ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
@@ -103,14 +113,17 @@ pkg-install() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf install -y --best --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y || exit 1 
-                 /usr/bin/yum install -y ${PACKAGES} || exit 1 
+                 /usr/bin/yum update -y || exit 1
+                 /usr/bin/yum install -y ${PACKAGES} || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get update --fix-missing -y || exit 1
                  /usr/bin/apt-add-repository universe
                  /usr/bin/apt autoremove -y
                  /usr/bin/apt-get update -y
                  /usr/bin/apt-get install -y ${PACKAGES} || exit 1
+             elif [[ -f "/usr/sbin/pkg" ]]; then
+                 /usr/sbin/pkg update -f --quiet || exit 1
+                 /usr/sbin/pkg install --automatic --yes ${PACKAGES} || exit 1
              fi
     esac
 }
@@ -131,9 +144,11 @@ pkg-update() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf upgrade -y --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y ${PACKAGES} || exit 1 
+                 /usr/bin/yum update -y ${PACKAGES} || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get upgrade -y ${PACKAGES} || exit 1
+             elif [[ -f "/usr/sbin/pkg" ]]; then
+                 /usr/sbin/pkg upgrade --yes ${PACKAGES} || exit 1
              fi
     esac
 }
@@ -145,7 +160,8 @@ pkg-remove() {
                  su - ${USER} -c "${HOMEBREW} uninstall ${p} --force"
              done
              ;;
-    linux*)  if [ -f "/usr/bin/zypper" ]; then
+    linux*|freebsd*)
+             if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper --non-interactive rm ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
                  /usr/bin/emerge -C ${PACKAGES} || exit 1
@@ -154,9 +170,11 @@ pkg-remove() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf remove -y ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum remove -y ${PACKAGES} || exit 1 
+                 /usr/bin/yum remove -y ${PACKAGES} || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get remove -y ${PACKAGES} || exit 1
+             elif [[ -f "/usr/sbin/pkg" ]]; then
+                 /usr/sbin/pkg delete --yes ${PACKAGES} || exit 1
              fi
     esac
 }
@@ -206,7 +224,7 @@ salt-bootstrap() {
              ### https://stackoverflow.com/questions/34386527/symbol-not-found-pycodecinfo-getincrementaldecoder
              su - ${USER} -c 'hash -r python'
 
-             ### Secure install https://pip.pypa.io/en/stable/installing/
+             ### pip https://pip.pypa.io/en/stable
              su - ${USER} -c 'curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py'
              sudo python ${PWD}/get-pip.py 2>/dev/null
 
@@ -228,8 +246,9 @@ salt-bootstrap() {
              export HOMEBREW_CURLRC=1
              ;;
 
-     linux*) pkg-update 2>/dev/null
-             echo "Setup Linux baseline and install saltstack masterless minion ..."
+     linux*|freebsd*)
+             pkg-update 2>/dev/null
+             echo "Setup Linux/FreeBSD baseline and Salt masterless minion ..."
              if [ -f "/usr/bin/dnf" ]; then
                  PACKAGES="--best --allowerasing git wget redhat-rpm-config"
              elif [ -f "/usr/bin/yum" ]; then
@@ -240,15 +259,17 @@ salt-bootstrap() {
                  PACKAGES="git ssh wget curl software-properties-common"
              elif [ -f "/usr/bin/pacman" ]; then
                  PACKAGES="git wget psutils"
+             elif [ -f "/usr/sbin/pkg" ]; then
+                 PACKAGES="git wget psutils"
              fi
-             pkg-install ${PACKAGES} 2>/dev/null
+             pkg-add ${PACKAGES} 2>/dev/null
              if (( $? > 0 )); then
-                echo "Failed to install packages"
+                echo "Failed to add packages"
                 exit 1
              fi
-             wget -O install_salt.sh https://bootstrap.saltstack.com || exit 10
-             (sh install_salt.sh -x python3 ${SALT_VERSION} && rm -f install_salt.sh) || exit 10
-             rm -f install_salt.sh 2>/dev/null
+             wget -O bootstrap_salt.sh https://bootstrap.saltstack.com || exit 10
+             (sh bootstrap_salt.sh -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
+             ;;
     esac
     ### stop debian interference with services (https://wiki.debian.org/chroot)
     if [ -f "/usr/bin/apt-get" ]; then
@@ -260,22 +281,30 @@ EOF
         ### Enforce python3
         rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
     fi
-    ### install salt-api (except arch/macos)
-    [ ! -f "/etc/arch-release" ] && [ "$(uname)" != "Darwin" ] && pkg-install salt-api
+    ### salt-api (except arch/macos/freebsd)
+    [ ! -f "/etc/arch-release" ] && [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "FreeBSD" ] && pkg-add salt-api
 
-    ### salt services
+    ### salt minion
+    [ ! -f "${BASE_ETC}/salt/minion" ] && echo "File ${BASE_ETC}/salt/minion not found" && exit 1
     if [[ "`uname`" == "FreeBSD" ]] || [[ "`uname`" == "Darwin" ]]; then
         sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
     else
         sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
     fi
+    ### salt services
     (systemctl enable salt-api && systemctl start salt-api) 2>/dev/null || service start salt-api 2>/dev/null
     (systemctl enable salt-master && systemctl start salt-master) 2>/dev/null || service start salt-master 2>/dev/null
     (systemctl enable salt-minion && systemctl start salt-minion) 2>/dev/null || service start salt-minion 2>/dev/null
     salt-key -A --yes >/dev/null 2>&1     ##accept pending registrations
+
+    ### reboot to activate a new kernel?
     echo && KERNEL_VERSION=$( uname -r | awk -F. '{print $1"."$2"."$3"."$4"."$5}' )
     echo "kernel before: ${KERNEL_VERSION}"
-    echo "kernel after: $( pkg-query linux 2>/dev/null )"
+    if [ "$(uname)" == "FreeBSD" ]; then
+        echo "kernel after: $( /bin/freebsd-version -k 2>/dev/null )"
+    else
+        echo "kernel after: $( pkg-query linux 2>/dev/null )"
+    fi
     echo "Reboot if kernel was major-upgraded; if unsure reboot!"
     echo
 }
@@ -306,6 +335,8 @@ gitclone() {
     else
         git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
     fi
+    ## Its important to ensure symlink points to *this* correct namespace
+    rm -f ${SALTFS}/${ALIAS} 2>/dev/null ## this is important make sure symlink is current
     echo && ln -s ${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
 }
 
@@ -313,13 +344,13 @@ highstate() {
     (get-salt-master-hostname && [ -d ${solution[homedir]} ]) || usage
 
     ## prepare states
-    ACTION=${1} && STATEDIR=${2} && TARGET=${3}
-    for PROFILE in ${solution[saltdir]}/${ACTION}/${TARGET} ${your[saltdir]}/${ACTION}/${TARGET}
+    ACTION=${1} && STATEDIR=${2} && PROFILE=${3}
+    for profile in ${solution[saltdir]}/${ACTION}/${PROFILE} ${your[saltdir]}/${ACTION}/${PROFILE}
     do  
-        [ -f ${PROFILE}.sls ] && cp ${PROFILE}.sls ${SALTFS}/top.sls && break
-        [ -f ${PROFILE}/init.sls ] && cp ${PROFILE}/init.sls ${SALTFS}/top.sls && break
+        [ -f ${profile}.sls ] && cp ${profile}.sls ${SALTFS}/top.sls && break
+        [ -f ${profile}/init.sls ] && cp ${profile}/init.sls ${SALTFS}/top.sls && break
     done
-    [ ! -f ${SALTFS}/top.sls ] && echo "Failed to find ${TARGET}.sls or ${TARGET}/init.sls" && usage
+    [ ! -f ${SALTFS}/top.sls ] && echo "Failed to find ${PROFILE}.sls or ${PROFILE}/init.sls" && usage
 
     ## prepare pillars
     cp -Rp ${solution[pillars]}/* ${PILLARFS}/ 2>/dev/null
@@ -354,94 +385,103 @@ highstate() {
     [ -f "${LOG}" ] && (tail -6 ${LOG} | head -4) 2>/dev/null && echo "See full log in [ ${LOG} ]"
     echo
     echo "/////////////////////////////////////////////////////////////////"
-    echo "        $(basename ${TARGET}) for ${solution[repo]} has completed"
+    echo "        $(basename ${PROFILE}) for ${solution[repo]} has completed"
     echo "////////////////////////////////////////////////////////////////"
     echo
 }
 
 usage() {
-    echo "Usage: sudo $0 -i TARGET [ OPTIONS ] [ -u username ]" 1>&2
-    echo "Usage: sudo $0 -r TARGET [ OPTIONS ]" 1>&2
+    echo "Example usage:"
+    echo "  salter add PROFILE..."
+    echo "  salter remove PROFILE..."
     echo 1>&2
+    echo "Synopsis:"
+    echo "  sudo $0 add PROFILE [ OPTIONS ] [ -u username ]" 1>&2
+    echo "  sudo $0 add PROFILE [ OPTIONS ]" 1>&2
+    echo "  sudo $0 remove PROFILE [ OPTIONS ]" 1>&2
+    echo 1>&2
+    echo "Profiles:" 1>&2
+    echo -e "  PROFILE\tAdd profile named PROFILE" 1>&2
+    echo 1>&2
+    if [ "${solution[alias]}" != "salter" ]; then
+        echo 1>&2
+        echo -e "\t${solution[entity]}\t${solution[repo]} profile" 1>&2
+        echo 1>&2
+    fi
+    if [ -n "${solution[targets]}" ]; then
+        echo 1>&2
+        echo "${solution[targets]}, etc" 1>&2
+        echo 1>&2
+    fi
+    echo "Options:"
     echo "  [-u <username>]" 1>&2
     echo "        A Loginname (current or corporate or root user)." 1>&2
-    echo "        its mandatory for some Linux profiles" 1>&2
+    echo "        Optional for MacOS and many Linux profiles" 1>&2
     echo "        but not required on MacOS" 1>&2 
-    echo 1>&2
-    echo "  TARGETS" 1>&2
-    echo 1>&2
-    echo "\tbootstrap\t\tRun salt-bootstrap with additions" 1>&2
-    echo 1>&2
-    echo "\tsalter\t\tInstall salter and salt-formula" 1>&2
-    echo 1>&2
-    if [ "${solution[entity]}" != "salter" ]; then
-       echo "\t${solution[entity]}\tDeploy ${solution[repo]}" 1>&2
-       echo 1>&2
-    fi
-    echo " ${solution[targets]}" 1>&2
-    echo "\t\t\tApply specific ${solution[repo]} state" 1>&2
-    echo 1>&2
-    echo "  OPTIONS" 1>&2
     echo 1>&2
     echo "  [-l <all|debug|warning|error|quiet]" 1>&2
     echo "      Optional log-level (default warning)" 1>&2
     echo 1>&2
-    echo "   [ -l debug ]    Debug output in logs." 1>&2
+    echo "Salter Installer" 1>&2
+    echo -e "  sudo salter bootstrap\t\tre-bootstrap Salt" 1>&2
+    echo -e "  sudo salter add salter\tre-bootstrap Salter" 1>&2
     echo 1>&2
     exit 1
 }
 
-(( $# == 0 )) && usage
-USERNAME=''
-while getopts ":i:l:r:u:" option; do
-    case "${option}" in
-    i)  ACTION=install && TARGET=${OPTARG:-menu} ;;
-    r)  ACTION=remove && TARGET=${OPTARG} ;;
-    l)  case ${OPTARG} in
-        'all'|'garbage'|'trace'|'debug'|'warning'|'error') DEBUGG="-l${OPTARG}" && set -xv
-           ;;
-        'quiet'|'info') DEBUGG="-l${OPTARG}"
-           ;;
-        *) DEBUGG="-lwarning"
-        esac ;;
-    u)  USERNAME=${OPTARG}
-        ([ "${USERNAME}" == "username" ] || [ -z "${USERNAME}" ]) && usage
-    esac
-done
-shift $((OPTIND-1))
+explain_add_salter() {
+    echo
+    echo "==> This script will add:"
+    echo "${SALTFS}/salter/salter.sh   (salter orchestrator)"
+    echo "/usr/local/bin/salter        (salter symlink)"
+    echo "Salt                         (orchestrator-of-infra-and-apps-at-scale)"
+    echo "${SALTFS}/namespaces/*       (namespaces and profiles)"
+    echo "${PILLARFS}/*                (namespaces and configs)"
+    echo
+    echo "==> Your namespace is:"
+    echo "${SALTFS}your/*              (profiles/configs designed by you)"
+}
+
+interact() {
+    echo -e "$*\npress return to continue or control-c to abort"
+    [ -n "$PS1" ] && read
+}
 
 salter-engine() {
     ## remove option
-    if [ "${ACTION}" == 'remove' ] && [ -n "${TARGET}" ]; then
-        echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
-        if (( $? == 0 )) || [ -f ${solution[saltdir]}/${ACTION}/${TARGET}.sls ]; then
-           highstate remove ${solution[saltdir]} ${TARGET}
+    if [ "${ACTION}" == 'remove' ] && [ -n "${PROFILE}" ]; then
+        echo "${solution[targets]}" | grep "${PROFILE}" >/dev/null 2>&1
+        if (( $? == 0 )) || [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
+           highstate remove ${solution[saltdir]} ${PROFILE}
            return 0
         fi
     fi
 
-    ## install option
-    case "${TARGET}" in
-    bootstrap)  salt-bootstrap ;;
+    ## add option
+    case "${PROFILE}" in
+    bootstrap)  interact "==> This script will bootstrap: Salt"
+                salt-bootstrap ;;
+
+    salter)     explain_add_salter && interact
+                gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
+                gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
+                highstate add "${solution[saltdir]}" salt
+                rm /usr/local/bin/salter 2>/dev/null
+                ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter
+                ;;
+
+    ${solution[alias]})
+                interact "==> This script will add: ${solution[entity]}"
+                custom-add ${solution[alias]} ;;
 
     menu)       pip${PY_VER} install --pre wrapper barcodenumber npyscreen || exit 1
                 ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[saltdir]}/install) || exit 2
-                highstate install "${solution[saltdir]}" ${TARGET} ;;
+                highstate add "${solution[saltdir]}" ${PROFILE} ;;
 
-    salter)     gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
-                gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
-                highstate install "${solution[saltdir]}" salt
-                rm /usr/local/bin/salter.sh 2>/dev/null
-                ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter.sh ;;
-
-    ${solution[alias]})
-                custom-install ${solution[alias]} ;;
-
-    *)          ## PROFILES (STATES/FORMULAS)
-                echo "${solution[targets]}" | grep "${TARGET}" >/dev/null 2>&1
-                if (( $? == 0 )) || [ -f ${solution[saltdir]}/install/${TARGET}.sls ]; then
-                    highstate install ${solution[saltdir]} ${TARGET}
-                    custom-postinstall ${TARGET}
+    *)          interact "==> This script will add: ${solution[alias]}"
+                if [ -f ${solution[saltdir]}/add/${PROFILE}.sls ]; then
+                    highstate add ${solution[saltdir]} ${PROFILE}
+                    custom-postadd ${PROFILE}
                 fi
     esac
 }
@@ -478,22 +518,56 @@ solution-definitions() {
     mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC}/salt 2>/dev/null
 }
 
-custom-install() {
-    ### not required - salter-engine is sufficient ###
+custom-add() {
     echo
+    ### required if salter-engine is insufficient ###
 }
 
-custom-postinstall() {
+custom-postadd() {
     LXD=${SALTFS}/namespaces/saltstack-formulas/lxd-formula
     # see https://github.com/saltstack-formulas/lxd-formula#clone-and-symlink
     [ -d "${LXD}/_modules" ] && ln -s ${LXD}/_modules ${SALTFS}/_modules 2>/dev/null
     [ -d "${LXD}/_states" ] && ln -s ${LXD}/_states ${SALTFS}/_states 2>/dev/null
+
+    # SUSE/Deepsea/Ceph
+    if (( $? == 0 )) && [[ "${1}" == "deepsea" ]]; then
+       salt-call --local grains.append deepsea default ${solution['saltmaster']}
+       cp ${solution['homedir']}/file_roots/add/deepsea_post.sls ${SALTFS}/${STATES_DIR}/top.sls
+    fi
+}
+
+cli-options() {
+    (( $# == 0 )) && usage
+    case ${1} in
+    add|remove)    ACTION=${1} && shift ;;
+    bootstrap)     ACTION=bootstrap ;;
+    install)       echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
+    menu)          ACTION=add && shift ;;   ## not maintained
+    *)             usage ;;
+    esac
+    PROFILE=${1:-menu}
+
+    while getopts ":i:l:u:" option; do
+        case "${option}" in
+        i)  PS1=TERM_PS1 ;;
+        l)  case ${OPTARG} in
+            'all'|'garbage'|'trace'|'debug'|'warning'|'error') DEBUGG="-l${OPTARG}" && set -xv
+               ;;
+            'quiet'|'info') DEBUGG="-l${OPTARG}"
+               ;;
+            *) DEBUGG="-lwarning"
+            esac ;;
+        u)  USERNAME=${OPTARG}
+            ([ "${USERNAME}" == "username" ] || [ -z "${USERNAME}" ]) && usage
+        esac
+    done
+    shift $((OPTIND-1))
 }
 
 ### MAIN
 
 developer-definitions
 solution-definitions
+cli-options $*
 salter-engine
 exit $?
-
