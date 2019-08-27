@@ -39,7 +39,9 @@ PILLARFS=${BASE:-/srv}/${SUBDIR}/pillar
 SALTFS=${BASE:-/srv}/salt/${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
 TERM_PS1=${PS1} && unset PS1
-USERNAME=''
+USERNAME=
+PROFILE=
+DEBUGG=
 
 explain_salter_install() {
     
@@ -413,7 +415,7 @@ usage() {
     echo 1>&2
     echo "Profiles" 1>&2
     echo 1>&2
-    if [ "${solution[entity]}" != "salter" ]; then
+    if [ "${solution[alias]}" != "salter" ]; then
         echo -e "\t${solution[entity]}\t${solution[repo]} profile" 1>&2
         echo 1>&2
     fi
@@ -421,7 +423,7 @@ usage() {
         echo "${solution[targets]}, etc" 1>&2
         echo 1>&2
     fi
-    echo -e "\tPROFILE\tPROFILE profile" 1>&2
+    echo -e "  PROFILE\tInstall the profile named PROFILE" 1>&2
     echo 1>&2
     echo "Options:"
     echo "  [-u <username>]" 1>&2
@@ -432,41 +434,14 @@ usage() {
     echo "  [-l <all|debug|warning|error|quiet]" 1>&2
     echo "      Optional log-level (default warning)" 1>&2
     echo 1>&2
-    echo "   [ -l debug ]    Debug output in logs." 1>&2
-    echo 1>&2
     echo "Installer" 1>&2
     echo 1>&2
-    echo -e "\tbootstrap\t\t(re)install Salt" 1>&2
+    echo -e "  bootstrap\t(re)install Salt" 1>&2
     echo 1>&2
-    echo -e "\tsalter\t\t(re)install Salter software" 1>&2
+    echo -e "  salter\t(re)install Salter software" 1>&2
     echo 1>&2
     exit 1
 }
-
-(( $# == 0 )) && usage
-case ${1} in
-bootstrap)     ACTION=bootstrap ;;
-menu|install)  ACTION=install && shift ;;
-remove)        ACTION=remove && shift ;;
-*)             usage ;;
-esac
-PROFILE=${1:-menu} ;;
-
-while getopts ":i:l:u:" option; do
-    case "${option}" in
-    i)  PS1=TERM_PS1 ;;
-    l)  case ${OPTARG} in
-        'all'|'garbage'|'trace'|'debug'|'warning'|'error') DEBUGG="-l${OPTARG}" && set -xv
-           ;;
-        'quiet'|'info') DEBUGG="-l${OPTARG}"
-           ;;
-        *) DEBUGG="-lwarning"
-        esac ;;
-    u)  USERNAME=${OPTARG}
-        ([ "${USERNAME}" == "username" ] || [ -z "${USERNAME}" ]) && usage
-    esac
-done
-shift $((OPTIND-1))
 
 interact() {
     echo -e "$*\npress return to continue or control-c to abort"
@@ -570,10 +545,37 @@ custom-postinstall() {
     fi
 }
 
+cli-options() {
+    (( $# == 0 )) && usage
+    case ${1} in
+    bootstrap)     ACTION=bootstrap ;;
+    menu|install)  ACTION=install && shift ;;
+    remove)        ACTION=remove && shift ;;
+    *)             usage ;;
+    esac
+    PROFILE=${1:-menu}
+
+    while getopts ":i:l:u:" option; do
+        case "${option}" in
+        i)  PS1=TERM_PS1 ;;
+        l)  case ${OPTARG} in
+            'all'|'garbage'|'trace'|'debug'|'warning'|'error') DEBUGG="-l${OPTARG}" && set -xv
+               ;;
+            'quiet'|'info') DEBUGG="-l${OPTARG}"
+               ;;
+            *) DEBUGG="-lwarning"
+            esac ;;
+        u)  USERNAME=${OPTARG}
+            ([ "${USERNAME}" == "username" ] || [ -z "${USERNAME}" ]) && usage
+        esac
+    done
+    shift $((OPTIND-1))
+}
+
 ### MAIN
 
 developer-definitions
 solution-definitions
+cli-options $*
 salter-engine
 exit $?
-
