@@ -32,8 +32,9 @@ if [ `uname` == "FreeBSD" ]; then
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
     STATEDIR=states
+    SUBDIR=salt
 fi
-PILLARFS=${BASE:-/srv}/pillar
+PILLARFS=${BASE:-/srv}/${SUBDIR}/pillar
 SALTFS=${BASE:-/srv}/salt/${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
 HOMEBREW=/usr/local/bin/brew
@@ -329,6 +330,8 @@ gitclone() {
     else
         git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
     fi
+    ## Its important to ensure symlink points to *this* formula
+    rm -f ${SALTFS}/${ALIAS} 2>/dev/null ## this is important make sure symlink is current
     echo && ln -s ${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
 }
 
@@ -393,16 +396,16 @@ usage() {
     echo 1>&2
     echo "  TARGETS" 1>&2
     echo 1>&2
-    echo "\tbootstrap\t\tRun salt-bootstrap with additions" 1>&2
+    echo -e "\tbootstrap\t\tRun salt-bootstrap with additions" 1>&2
     echo 1>&2
-    echo "\tsalter\t\tInstall salter and salt-formula" 1>&2
+    echo -e "\tsalter\t\tInstall salter and salt-formula" 1>&2
     echo 1>&2
     if [ "${solution[entity]}" != "salter" ]; then
-       echo "\t${solution[entity]}\tDeploy ${solution[repo]}" 1>&2
+       echo -e "\t${solution[entity]}\tDeploy ${solution[repo]}" 1>&2
        echo 1>&2
     fi
     echo " ${solution[targets]}" 1>&2
-    echo "\t\t\tApply specific ${solution[repo]} state" 1>&2
+    echo -e "\t\t\tApply specific ${solution[repo]} state" 1>&2
     echo 1>&2
     echo "  OPTIONS" 1>&2
     echo 1>&2
@@ -502,8 +505,8 @@ solution-definitions() {
 }
 
 custom-install() {
-    ### not required - salter-engine is sufficient ###
     echo
+    ### required if salter-engine is insufficient ###
 }
 
 custom-postinstall() {
@@ -511,6 +514,12 @@ custom-postinstall() {
     # see https://github.com/saltstack-formulas/lxd-formula#clone-and-symlink
     [ -d "${LXD}/_modules" ] && ln -s ${LXD}/_modules ${SALTFS}/_modules 2>/dev/null
     [ -d "${LXD}/_states" ] && ln -s ${LXD}/_states ${SALTFS}/_states 2>/dev/null
+
+    # SUSE/Deepsea/Ceph
+    if (( $? == 0 )) && [[ "${1}" == "deepsea" ]]; then
+       salt-call --local grains.append deepsea default ${solution['saltmaster']}
+       cp ${solution['homedir']}/file_roots/install/deepsea_post.sls ${SALTFS}/${STATES_DIR}/top.sls
+    fi
 }
 
 ### MAIN
