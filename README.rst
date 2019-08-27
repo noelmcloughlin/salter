@@ -64,15 +64,22 @@ The list of all downstream solutions using Salter is:
 
 .. _`opensds`: https://github.com/opensds/opensds
 
-No Salter fork
+Avoiding maintaining your own Salter fork
 ==============
-DevOps desperate to avoid maintaining a fork of Salter inside their own company can try `creative integrations`_ (see the `contrib/overlay-salt.sh` script).
+DevOps wanting to avoid maintaining their own "Salter" fork can consider `creative integrations`_ (see `contrib/overlay-salt.sh`).
 
 .. _`creative integrations`: https://github.com/noelmcloughlin/salter-overlay-demo
 
+
+Design by
+=========
+* noelmcloughlin
+* Contributors
+
+
 .. _`saltstack-formulas-profiles`: Saltstack-Formulas Profiles
 ===========================
-Here is a list of profiles maintained by the `saltstack-formulas`_ namespace:
+The `saltstack-formulas`_ namespace supports at-least these profiles:
 
 ```$ sudo salter add accumulo```
 ```$ sudo salter add aegir```

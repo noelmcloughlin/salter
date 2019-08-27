@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Original work from: https://github.com/saltstack-formulas/salter
-# MODIFIED WORK SECTION has additional copyright under this "License".
+# Original development at:
+# * https://github.com/noelmcloughlin/salter
+# * https://github.com/saltstack-formulas/salter
+# SOLUTION section has additional copyright under this "License".
 #--------------------------------------------------------------------------
 #
 # This script allows common bootstrapping for any project using salt
@@ -31,31 +33,17 @@ STATEDIR=''
 if [ `uname` == "FreeBSD" ]; then
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
-    STATEDIR=states
-    SUBDIR=salt
+    STATEDIR=/states
+    SUBDIR=/salt
 fi
 HOMEBREW=/usr/local/bin/brew
-PILLARFS=${BASE:-/srv}/${SUBDIR}/pillar
-SALTFS=${BASE:-/srv}/salt/${STATEDIR}
+PILLARFS=${BASE:-/srv}${SUBDIR}/pillar
+SALTFS=${BASE:-/srv}/salt${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
 TERM_PS1=${PS1} && unset PS1
 USERNAME=
 PROFILE=
 DEBUGG=
-
-explain_salter_install() {
-    
-    echo "==> "This script will install:"
-    echo "${SALTFS}/salter/salter.sh" (salter orchestrator)"
-    echo "/usr/local/bin/salter.sh    (salter symlink)"
-    echo "salt                        (orchestrator-of-infra-and-apps-at-scale)"
-    echo "${SALTFS}/namespaces/*      (namespaces and profiles)"
-    echo "${PILLARFS}/*               (namespaces and configs)"
-    echo "${SALTFS}/your/*            (namespaces and profiles/configs designed by you"
-    echo
-    echo "press return to continue or control-c to abort"
-    read
-}
 
 # bash version must be modern
 declare -A your solution fork 2>/dev/null || RC=$?
@@ -94,7 +82,7 @@ pkg-query() {
     fi
 }
 
-pkg-install() {
+pkg-add() {
     PACKAGES=${@}
     case ${OSTYPE} in
     darwin*) for p in ${PACKAGES}; do
@@ -236,7 +224,7 @@ salt-bootstrap() {
              ### https://stackoverflow.com/questions/34386527/symbol-not-found-pycodecinfo-getincrementaldecoder
              su - ${USER} -c 'hash -r python'
 
-             ### Secure-install https://pip.pypa.io/en/stable/installing/
+             ### pip https://pip.pypa.io/en/stable
              su - ${USER} -c 'curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py'
              sudo python ${PWD}/get-pip.py 2>/dev/null
 
@@ -274,14 +262,13 @@ salt-bootstrap() {
              elif [ -f "/usr/sbin/pkg" ]; then
                  PACKAGES="git wget psutils"
              fi
-             pkg-install ${PACKAGES} 2>/dev/null
+             pkg-add ${PACKAGES} 2>/dev/null
              if (( $? > 0 )); then
-                echo "Failed to install packages"
+                echo "Failed to add packages"
                 exit 1
              fi
-             wget -O install_salt.sh https://bootstrap.saltstack.com || exit 10
-             (sh install_salt.sh -x python3 ${SALT_VERSION} && rm -f install_salt.sh) || exit 10
-             rm -f install_salt.sh 2>/dev/null
+             wget -O bootstrap_salt.sh https://bootstrap.saltstack.com || exit 10
+             (sh bootstrap_salt.sh -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
     esac
     ### stop debian interference with services (https://wiki.debian.org/chroot)
@@ -294,8 +281,8 @@ EOF
         ### Enforce python3
         rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
     fi
-    ### install salt-api (except arch/macos/freebsd)
-    [ ! -f "/etc/arch-release" ] && [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "FreeBSD" ] && pkg-install salt-api
+    ### salt-api (except arch/macos/freebsd)
+    [ ! -f "/etc/arch-release" ] && [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "FreeBSD" ] && pkg-add salt-api
 
     ### salt minion
     [ ! -f "${BASE_ETC}/salt/minion" ] && echo "File ${BASE_ETC}/salt/minion not found" && exit 1
@@ -348,7 +335,7 @@ gitclone() {
     else
         git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
     fi
-    ## Its important to ensure symlink points to *this* formula
+    ## Its important to ensure symlink points to *this* correct namespace
     rm -f ${SALTFS}/${ALIAS} 2>/dev/null ## this is important make sure symlink is current
     echo && ln -s ${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR} ${SALTFS}/${ALIAS} 2>/dev/null
 }
@@ -413,18 +400,19 @@ usage() {
     echo "  sudo $0 add PROFILE [ OPTIONS ]" 1>&2
     echo "  sudo $0 remove PROFILE [ OPTIONS ]" 1>&2
     echo 1>&2
-    echo "Profiles" 1>&2
+    echo "Profiles:" 1>&2
+    echo -e "  PROFILE\tAdd profile named PROFILE" 1>&2
     echo 1>&2
     if [ "${solution[alias]}" != "salter" ]; then
+        echo 1>&2
         echo -e "\t${solution[entity]}\t${solution[repo]} profile" 1>&2
         echo 1>&2
     fi
     if [ -n "${solution[targets]}" ]; then
+        echo 1>&2
         echo "${solution[targets]}, etc" 1>&2
         echo 1>&2
     fi
-    echo -e "  PROFILE\tAdd profile named PROFILE" 1>&2
-    echo 1>&2
     echo "Options:"
     echo "  [-u <username>]" 1>&2
     echo "        A Loginname (current or corporate or root user)." 1>&2
@@ -434,13 +422,24 @@ usage() {
     echo "  [-l <all|debug|warning|error|quiet]" 1>&2
     echo "      Optional log-level (default warning)" 1>&2
     echo 1>&2
-    echo "Installer:" 1>&2
-    echo 1>&2
-    echo -e "  sudo salter.sh bootstrap\t(re)install Salt" 1>&2
-    echo 1>&2
-    echo -e "  sudo salter.sh add salter\t(re)install Salter" 1>&2
+    echo "Salter Installer" 1>&2
+    echo -e "  sudo salter bootstrap\t\tre-bootstrap Salt" 1>&2
+    echo -e "  sudo salter add salter\tre-bootstrap Salter" 1>&2
     echo 1>&2
     exit 1
+}
+
+explain_add_salter() {
+    echo
+    echo "==> This script will add:"
+    echo "${SALTFS}/salter/salter.sh   (salter orchestrator)"
+    echo "/usr/local/bin/salter        (salter symlink)"
+    echo "Salt                         (orchestrator-of-infra-and-apps-at-scale)"
+    echo "${SALTFS}/namespaces/*       (namespaces and profiles)"
+    echo "${PILLARFS}/*                (namespaces and configs)"
+    echo
+    echo "==> Your namespace is:"
+    echo "${SALTFS}your/*              (profiles/configs designed by you)"
 }
 
 interact() {
@@ -463,20 +462,12 @@ salter-engine() {
     bootstrap)  interact "==> This script will bootstrap: Salt"
                 salt-bootstrap ;;
 
-    salter)     echo "==> "This script will add salter:"
-                echo "${SALTFS}/salter/salter.sh  (salter orchestrator)"
-                echo "/usr/local/bin/salter.sh    (salter symlink)"
-                echo "salt                        (orchestrator-of-infra-and-apps-at-scale)"
-                echo "${SALTFS}/namespaces/*      (namespaces and profiles)"
-                echo "${PILLARFS}/*               (namespaces and configs)"
-                echo "${SALTFS}/your/*            (namespaces and profiles/configs designed by you"
-                interact
-
+    salter)     explain_add_salter && interact
                 gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
                 gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
                 highstate add "${solution[saltdir]}" salt
-                rm /usr/local/bin/salter.sh 2>/dev/null
-                ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter.sh
+                rm /usr/local/bin/salter 2>/dev/null
+                ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter
                 ;;
 
     ${solution[alias]})
@@ -488,7 +479,7 @@ salter-engine() {
                 highstate add "${solution[saltdir]}" ${PROFILE} ;;
 
     *)          interact "==> This script will add: ${solution[alias]}"
-                if [ -f ${solution[saltdir]}/install/${PROFILE}.sls ]; then
+                if [ -f ${solution[saltdir]}/add/${PROFILE}.sls ]; then
                     highstate add ${solution[saltdir]} ${PROFILE}
                     custom-postadd ${PROFILE}
                 fi
@@ -541,7 +532,7 @@ custom-postadd() {
     # SUSE/Deepsea/Ceph
     if (( $? == 0 )) && [[ "${1}" == "deepsea" ]]; then
        salt-call --local grains.append deepsea default ${solution['saltmaster']}
-       cp ${solution['homedir']}/file_roots/install/deepsea_post.sls ${SALTFS}/${STATES_DIR}/top.sls
+       cp ${solution['homedir']}/file_roots/add/deepsea_post.sls ${SALTFS}/${STATES_DIR}/top.sls
     fi
 }
 

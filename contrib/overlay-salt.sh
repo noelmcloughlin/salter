@@ -76,7 +76,7 @@ else
     exit ${RC} 
 fi
 
-## Check for a contributed/custom salter.sh script and install salt
+## Check for a contributed/custom salter.sh script
 [ -f /tmp/mysalter.sh ] && cp /tmp/mysalter.sh contrib/salter.sh                  ## developers?
 [ -f contrib/salter.sh ] && mv contrib/salter.sh salter.sh && chmod +x salter.sh  ## integrators?
  
