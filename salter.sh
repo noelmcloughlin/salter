@@ -464,7 +464,7 @@ salter-engine() {
                 salt-bootstrap ;;
 
     salter)     echo "==> "This script will add salter:"
-                echo "${SALTFS}/salter/salter.sh" (salter orchestrator)"
+                echo "${SALTFS}/salter/salter.sh  (salter orchestrator)"
                 echo "/usr/local/bin/salter.sh    (salter symlink)"
                 echo "salt                        (orchestrator-of-infra-and-apps-at-scale)"
                 echo "${SALTFS}/namespaces/*      (namespaces and profiles)"
