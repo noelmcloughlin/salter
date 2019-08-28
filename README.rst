@@ -12,8 +12,8 @@ Paste this in a Terminal::
 
     curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh bootstrap && sudo bash salter.sh add salter
 
-Usage
-=====
+Usage Examples
+==============
 
 Add profiles::
 
@@ -23,7 +23,7 @@ Remove profile::
 
     sudo salter remove kubernetes
 
-Create your own profiles::
+Create your own profile(s)::
 
     vi /srv/salt/namespaces/your/mystuff
 
