@@ -25,7 +25,7 @@ Remove profile::
 
 Create your own profile(s)::
 
-    vi /srv/salt/namespaces/your/mystuff
+    sudo salter edit mystuff
 
     base:
       *:
