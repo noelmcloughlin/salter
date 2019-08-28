@@ -15,17 +15,30 @@ Paste this in a Terminal::
 Usage Examples
 ==============
 
-Add profiles::
+Add profile::
 
     sudo salter add intellij
+    sudo salter add apache
 
 Remove profile::
 
     sudo salter remove kubernetes
 
-Create your own profile(s)::
+Create profile::
 
     sudo salter edit mystuff
+    # This is a profile template which you must customize
+    # The format is a YAML list; indention is important
+    # See https://github.com/saltstack-formulas for valid entries
+    base:
+      '*':
+        - item1    #<-- changeme
+        - item2    #<-- changeme
+        - .etc.    #<-- changeme
+
+Show profile::
+
+    sudo salter show  mystuff
 
     base:
       *:
@@ -34,6 +47,7 @@ Create your own profile(s)::
         - kubernetes
         - chrome
 
+Test new profile::
 
     $ sudo salter add mystuff
     $ sudo salter remove mystuff
