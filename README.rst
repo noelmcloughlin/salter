@@ -57,7 +57,7 @@ Namespaces
 ==========
 Pre-written salt states are maintained by open source communities upstream:
 
-* `saltstack-formulas`_ (default)
+* `saltstack-formulas`_ (default) I only test this!!!
 * `salt-formulas`_ (future maybe)
 * `eligundry`_ (why not)
 * many more
