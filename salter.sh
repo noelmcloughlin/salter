@@ -393,12 +393,14 @@ highstate() {
 usage() {
     echo "Example usage:"
     echo "  salter add PROFILE..."
+    echo "  salter edit PROFILE..."
     echo "  salter remove PROFILE..."
     echo 1>&2
     echo "Synopsis:"
     echo "  sudo $0 add PROFILE [ OPTIONS ] [ -u username ]" 1>&2
     echo "  sudo $0 add PROFILE [ OPTIONS ]" 1>&2
     echo "  sudo $0 remove PROFILE [ OPTIONS ]" 1>&2
+    echo "  sudo $0 edit PROFILE [ OPTIONS ]" 1>&2
     echo 1>&2
     echo "Profiles:" 1>&2
     echo -e "  PROFILE\tAdd profile named PROFILE" 1>&2
@@ -448,41 +450,47 @@ interact() {
 }
 
 salter-engine() {
-    ## remove option
-    if [ "${ACTION}" == 'remove' ] && [ -n "${PROFILE}" ]; then
-        echo "${solution[targets]}" | grep "${PROFILE}" >/dev/null 2>&1
-        if (( $? == 0 )) || [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
-           highstate remove ${solution[saltdir]} ${PROFILE}
-           return 0
-        fi
-    fi
+    case ${ACTION} in
+    remove) if [ -n "${PROFILE}" ] && [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
+                highstate remove ${solution[saltdir]} ${PROFILE}
+                return 0
+            else
+                echo "No profile named [${PROFILE}] found" && usage
+            fi ;;
 
-    ## add option
-    case "${PROFILE}" in
-    bootstrap)  interact "==> This script will bootstrap: Salt"
-                salt-bootstrap ;;
+    edit)   if [ -n"${PROFILE}" ] && [ ! -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
+                echo "Creating profile named [${PROFILE}]"
+                cp ${solution[saltdir]}/${ACTION}/template.sls ${solution[saltdir]}/${ACTION}/${PROFILE}.sls
+            fi
+            vi ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ;;
 
-    salter)     explain_add_salter && interact
-                gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
-                gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
-                highstate add "${solution[saltdir]}" salt
-                rm /usr/local/bin/salter 2>/dev/null
-                ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter
-                ;;
+    add)    case ${PROFILE} in
+            bootstrap)  interact "==> This script will bootstrap: Salt"
+                        salt-bootstrap ;;
 
-    ${solution[alias]})
-                interact "==> This script will add: ${solution[entity]}"
-                custom-add ${solution[alias]} ;;
+            salter)     explain_add_salter && interact
+                        gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
+                        gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
+                        highstate add "${solution[saltdir]}" salt
+                        rm /usr/local/bin/salter 2>/dev/null
+                        ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter
+                        ;;
 
-    menu)       pip${PY_VER} install --pre wrapper barcodenumber npyscreen || exit 1
-                ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[saltdir]}/install) || exit 2
-                highstate add "${solution[saltdir]}" ${PROFILE} ;;
+            ${solution[alias]})
+                        interact "==> This script will add: ${solution[entity]}"
+                        custom-add ${solution[alias]} ;;
 
-    *)          interact "==> This script will add: ${solution[alias]}"
-                if [ -f ${solution[saltdir]}/add/${PROFILE}.sls ]; then
-                    highstate add ${solution[saltdir]} ${PROFILE}
-                    custom-postadd ${PROFILE}
-                fi
+            menu)       pip${PY_VER} install --pre wrapper barcodenumber npyscreen || exit 1
+                        ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[saltdir]}/install) || exit 2
+                        highstate add "${solution[saltdir]}" ${PROFILE} ;;
+
+            *)          interact "==> This script will add: ${solution[alias]}"
+                        if [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
+                            highstate add ${solution[saltdir]} ${PROFILE}
+                            custom-postadd ${PROFILE}
+                        fi
+            esac
+            ;;
     esac
 }
 
@@ -539,11 +547,11 @@ custom-postadd() {
 cli-options() {
     (( $# == 0 )) && usage
     case ${1} in
-    add|remove)    ACTION=${1} && shift ;;
-    bootstrap)     ACTION=bootstrap ;;
-    install)       echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
-    menu)          ACTION=add && shift ;;   ## not maintained
-    *)             usage ;;
+    add|remove|edit)    ACTION=${1} && shift ;;
+    bootstrap)          ACTION=bootstrap ;;
+    install)            echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
+    menu)               ACTION=add && shift ;;   ## not maintained
+    *)                  usage ;;
     esac
     PROFILE=${1:-menu}
 
