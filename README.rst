@@ -1,7 +1,7 @@
 =======
 Salter:
 =======
-A meta profile manager for MacOS, FreeBSD, and Linux.
+A software meta profile manager for MacOS, FreeBSD, and Linux.
 
 .. contents:: **Table of Contents**
 
