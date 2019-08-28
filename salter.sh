@@ -315,7 +315,7 @@ setup-log() {
     salt-call --versions >>${LOG} 2>&1
     [ -f "${PILLARFS}/site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
     [ -n "${DEBUGG_ON}" ] && salt-call pillar.items --local >> ${LOG} 2>&1 && echo >>${LOG} 2>&1
-    salt-call state.show_top --local | tee -a ${LOG} 2>&1
+    #salt-call state.show_top --local | tee -a ${LOG} 2>&1   ## too slow - too many pillar files = needs refactoring
     echo >>${LOG} 2>&1
     echo "run salt: this takes a while, please be patient ..."
 }
@@ -393,12 +393,16 @@ highstate() {
 usage() {
     echo "Example usage:"
     echo "  salter add PROFILE..."
+    echo "  salter edit PROFILE..."
+    echo "  salter show PROFILE..."
     echo "  salter remove PROFILE..."
     echo 1>&2
     echo "Synopsis:"
     echo "  sudo $0 add PROFILE [ OPTIONS ] [ -u username ]" 1>&2
     echo "  sudo $0 add PROFILE [ OPTIONS ]" 1>&2
     echo "  sudo $0 remove PROFILE [ OPTIONS ]" 1>&2
+    echo "  sudo $0 edit PROFILE [ OPTIONS ]" 1>&2
+    echo "  sudo $0 show PROFILE [ OPTIONS ]" 1>&2
     echo 1>&2
     echo "Profiles:" 1>&2
     echo -e "  PROFILE\tAdd profile named PROFILE" 1>&2
@@ -448,41 +452,57 @@ interact() {
 }
 
 salter-engine() {
-    ## remove option
-    if [ "${ACTION}" == 'remove' ] && [ -n "${PROFILE}" ]; then
-        echo "${solution[targets]}" | grep "${PROFILE}" >/dev/null 2>&1
-        if (( $? == 0 )) || [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
-           highstate remove ${solution[saltdir]} ${PROFILE}
-           return 0
-        fi
-    fi
+    case ${ACTION} in
+    remove) if [ -n "${PROFILE}" ] && [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
+                highstate remove ${solution[saltdir]} ${PROFILE}
+                return 0
+            else
+                echo "No profile named [${PROFILE}] found" && usage
+            fi ;;
 
-    ## add option
-    case "${PROFILE}" in
-    bootstrap)  interact "==> This script will bootstrap: Salt"
-                salt-bootstrap ;;
+    edit|show)
+            ACTION_DIR=add
+            [ -f ${solution[saltdir]}/remove/${PROFILE}.sls ] && ACTION_DIR=remove
+            [ -f ${solution[saltdir]}/add/${PROFILE}.sls ] && ACTION_DIR=add
+            if [ "${ACTION}" == 'show' ]; then
+                [ ! -f "${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls" ] && echo "profile ${PROFILE} not found" && exit 1
+                cat ${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls
+                return
+            elif [ ! -f ${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls ]; then
+                cp ${solution[saltdir]}/edit/template.sls ${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls
+            fi
+            vi ${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls
+            [ ! -f "${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls" ] && echo "you aborted" && exit 1
+            echo -e "\nNow run: sudo salter ${ACTION_DIR} ${PROFILE}"
+            ;;
 
-    salter)     explain_add_salter && interact
-                gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
-                gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
-                highstate add "${solution[saltdir]}" salt
-                rm /usr/local/bin/salter 2>/dev/null
-                ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter
-                ;;
+    add)    case ${PROFILE} in
+            bootstrap)  interact "==> This script will bootstrap: Salt"
+                        salt-bootstrap ;;
 
-    ${solution[alias]})
-                interact "==> This script will add: ${solution[entity]}"
-                custom-add ${solution[alias]} ;;
+            salter)     explain_add_salter && interact
+                        gitclone 'https://github.com' "${solution[provider]}" salt-formula salt salt
+                        gitclone ${solution[uri]} ${solution[entity]} ${solution[repo]} ${solution[alias]} ${solution[subdir]}
+                        highstate add "${solution[saltdir]}" salt
+                        rm /usr/local/bin/salter 2>/dev/null
+                        ln -s ${solution[homedir]}/salter.sh /usr/local/bin/salter
+                        ;;
 
-    menu)       pip${PY_VER} install --pre wrapper barcodenumber npyscreen || exit 1
-                ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[saltdir]}/install) || exit 2
-                highstate add "${solution[saltdir]}" ${PROFILE} ;;
+            ${solution[alias]})
+                        interact "==> This script will add: ${solution[entity]}"
+                        custom-add ${solution[alias]} ;;
 
-    *)          interact "==> This script will add: ${solution[alias]}"
-                if [ -f ${solution[saltdir]}/add/${PROFILE}.sls ]; then
-                    highstate add ${solution[saltdir]} ${PROFILE}
-                    custom-postadd ${PROFILE}
-                fi
+            menu)       pip${PY_VER} install --pre wrapper barcodenumber npyscreen || exit 1
+                        ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[saltdir]}/install) || exit 2
+                        highstate add "${solution[saltdir]}" ${PROFILE} ;;
+
+            *)          interact "==> This script will add: ${solution[alias]}"
+                        if [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
+                            highstate add ${solution[saltdir]} ${PROFILE}
+                            custom-postadd ${PROFILE}
+                        fi
+            esac
+            ;;
     esac
 }
 
@@ -539,13 +559,13 @@ custom-postadd() {
 cli-options() {
     (( $# == 0 )) && usage
     case ${1} in
-    add|remove)    ACTION=${1} && shift ;;
-    bootstrap)     ACTION=bootstrap ;;
-    install)       echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
-    menu)          ACTION=add && shift ;;   ## not maintained
-    *)             usage ;;
+    add|remove|edit|show)   ACTION=${1} && shift ;;
+    bootstrap)              ACTION=bootstrap ;;
+    install)                echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
+    menu)                   ACTION=add && shift ;;   ## not maintained
+    *)                      usage ;;
     esac
-    PROFILE=${1:-menu}
+    PROFILE="$( echo ${1%%.*} )"
 
     while getopts ":i:l:u:" option; do
         case "${option}" in
