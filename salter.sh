@@ -27,6 +27,7 @@ trap exit SIGINT SIGTERM
 [ `id -u` != 0 ] && echo -e "\nRun script with sudo, exiting\n" && exit 1
 
 RC=0
+ACTION=
 BASE=/srv
 BASE_ETC=/etc
 STATEDIR=''
@@ -315,7 +316,7 @@ setup-log() {
     salt-call --versions >>${LOG} 2>&1
     [ -f "${PILLARFS}/site.j2" ] && cat ${PILLARFS}/site.j2 >>${LOG} 2>&1
     [ -n "${DEBUGG_ON}" ] && salt-call pillar.items --local >> ${LOG} 2>&1 && echo >>${LOG} 2>&1
-    #salt-call state.show_top --local | tee -a ${LOG} 2>&1   ## too slow - too many pillar files = needs refactoring
+    salt-call state.show_top --local | tee -a ${LOG} 2>&1   ## slow with many pillar files = needs refactoring
     echo >>${LOG} 2>&1
     echo "run salt: this takes a while, please be patient ..."
 }
@@ -443,7 +444,7 @@ explain_add_salter() {
     echo "${PILLARFS}/*                (namespaces and configs)"
     echo
     echo "==> Your namespace is:"
-    echo "${SALTFS}your/*              (profiles/configs designed by you)"
+    echo "${SALTFS}/your/*             (profiles/configs designed by you)"
 }
 
 interact() {
@@ -560,7 +561,7 @@ cli-options() {
     (( $# == 0 )) && usage
     case ${1} in
     add|remove|edit|show)   ACTION=${1} && shift ;;
-    bootstrap)              ACTION=bootstrap ;;
+    bootstrap)              ACTION=add ;;
     install)                echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
     menu)                   ACTION=add && shift ;;   ## not maintained
     *)                      usage ;;
