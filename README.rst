@@ -10,7 +10,7 @@ Installation
 
 Paste this in a Terminal::
 
-    curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh bootstrap && sudo bash salter.sh add salter
+    curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh add bootstrap && sudo bash salter.sh add salter
 
 Usage Examples
 ==============
