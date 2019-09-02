@@ -27,6 +27,7 @@ trap exit SIGINT SIGTERM
 [ `id -u` != 0 ] && echo -e "\nRun script with sudo, exiting\n" && exit 1
 
 RC=0
+ACTION=
 BASE=/srv
 BASE_ETC=/etc
 STATEDIR=''
@@ -560,7 +561,7 @@ cli-options() {
     (( $# == 0 )) && usage
     case ${1} in
     add|remove|edit|show)   ACTION=${1} && shift ;;
-    bootstrap)              ACTION=bootstrap ;;
+    bootstrap)              ACTION=add ;;
     install)                echo "install is deprecated - use 'add' instead" && ACTION=add && shift ;;
     menu)                   ACTION=add && shift ;;   ## not maintained
     *)                      usage ;;
