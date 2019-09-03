@@ -30,39 +30,38 @@ RC=0
 ACTION=
 BASE=/srv
 BASE_ETC=/etc
+PY_VER=3
 STATEDIR=''
+USER=
 if [ `uname` == "FreeBSD" ]; then
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
     STATEDIR=/states
     SUBDIR=/salt
+elif [ "$( uname )" = "Darwin" ]; then
+    # macos needs homebrew (unattended https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
+    USER=$( stat -f "%Su" /dev/console )
+    HOMEBREW=/usr/local/bin/brew
+    ${HOMEBREW} >/dev/null 2>&1
+    (( $? == 127 )) && su - ${USER} -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
 fi
 HOMEBREW=/usr/local/bin/brew
 PILLARFS=${BASE:-/srv}${SUBDIR}/pillar
 SALTFS=${BASE:-/srv}/salt${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
 TERM_PS1=${PS1} && unset PS1
-USERNAME=
 PROFILE=
 DEBUGG=
 
 # bash version must be modern
 declare -A your solution fork 2>/dev/null || RC=$?
-if (( RC > 0 )) && [ "$( uname )" = "Darwin" ]; then
-    echo "[warning] your bash version is too old ..."
-    # macos needs homebrew (unattended https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
-    export PY_VER=3
-    export USER=$( stat -f "%Su" /dev/console )
-    export HOMEBREW=/usr/local/bin/brew
-    ${HOMEBREW} >/dev/null 2>&1
-    (( $? == 127 )) && su - ${USER} -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
-    # macos needs modern bash
-    (( RC > 0 )) && (su - ${USER} -c "${HOMEBREW} install bash" || exit 12) && RC=0
-fi
 if (( RC > 0 )); then
-    # linux needs modern bash
-    echo "[error] your bash version is too old ..."
-    exit ${RC}
+    echo "[warning] your bash version is too old ..."
+    if [ "$( uname )" = "Darwin" ]; then
+        (( RC > 0 )) && (su - ${USER} -c "${HOMEBREW} install bash" || exit 12) && RC=0
+    else
+        exit ${RC}
+    fi
 fi
 
 #-----------------------------------------
@@ -356,12 +355,12 @@ highstate() {
     ## prepare pillars
     cp -Rp ${solution[pillars]}/* ${PILLARFS}/ 2>/dev/null
     cp -Rp ${your[pillars]}/* ${PILLARFS}/ 2>/dev/null
-    if [ -n "${USERNAME}" ]; then
+    if [ -n "${USER}" ]; then
         ### find/replace dummy usernames in pillar data ###
         case "$OSTYPE" in
-        darwin*) grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i '' "s/undefined_user/${USERNAME}/g" 2>/dev/null
+        darwin*) grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i '' "s/undefined_user/${USER}/g" 2>/dev/null
                  ;;
-        linux*)  grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i "s/undefined_user/${USERNAME}/g" 2>/dev/null
+        linux*)  grep -rl 'undefined_user' ${PILLARFS} | xargs sed -i "s/undefined_user/${USER}/g" 2>/dev/null
         esac
     fi
 
@@ -444,7 +443,7 @@ explain_add_salter() {
     echo "${PILLARFS}/*                (namespaces and configs)"
     echo
     echo "==> Your namespace is:"
-    echo "${SALTFS}your/*              (profiles/configs designed by you)"
+    echo "${SALTFS}/your/*             (profiles/configs designed by you)"
 }
 
 interact() {
@@ -578,8 +577,8 @@ cli-options() {
                ;;
             *) DEBUGG="-lwarning"
             esac ;;
-        u)  USERNAME=${OPTARG}
-            ([ "${USERNAME}" == "username" ] || [ -z "${USERNAME}" ]) && usage
+        u)  USER=${OPTARG}
+            ([ "${USER}" == "username" ] || [ -z "${USER}" ]) && usage
         esac
     done
     shift $((OPTIND-1))
