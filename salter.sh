@@ -496,7 +496,7 @@ salter-engine() {
                         ([ -x ${SALTFS}/contrib/menu.py ] && ${SALTFS}/contrib/menu.py ${solution[saltdir]}/install) || exit 2
                         highstate add "${solution[saltdir]}" ${PROFILE} ;;
 
-            *)          interact "==> This script will add: ${solution[alias]}"
+            *)          interact "==> This script will add: ${PROFILE}"
                         if [ -f ${solution[saltdir]}/${ACTION}/${PROFILE}.sls ]; then
                             highstate add ${solution[saltdir]} ${PROFILE}
                             custom-postadd ${PROFILE}
