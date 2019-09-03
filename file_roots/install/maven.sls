@@ -1,3 +1,4 @@
 base:
   '*':
     - maven
+    - maven.env
