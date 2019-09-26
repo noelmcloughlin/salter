@@ -26,6 +26,7 @@
 trap exit SIGINT SIGTERM
 [ `id -u` != 0 ] && echo -e "\nRun script with sudo, exiting\n" && exit 1
 
+SALT_VERSION='stable 2018.3.4'    ##stick with stable previous release
 RC=0
 ACTION=
 BASE=/srv
