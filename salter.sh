@@ -514,7 +514,7 @@ developer-definitions() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="fixes"
-    fork['solutions']="salter golang-formula"
+    fork['solutions']="salter golang-formula salt-formula"
 }
 
 solution-definitions() {
