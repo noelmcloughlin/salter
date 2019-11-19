@@ -115,16 +115,7 @@ pkg-add() {
                  /usr/bin/dnf install -y --best --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
                  /usr/bin/yum update -y || exit 1
-                 /usr/bin/yum install -y ${PACKAGES} yum-utils
-                 (( $? >= 0 )) && echo "failed to install ${PACKAGES}" && exit 1
-                 ## here we are installing git 2.x
-                 /usr/bin/yum install centos-release-scl -y
-                 (( $? >= 0 )) && echo "failed to install software collections" && exit 1
-                 RHVERSION="$(grep -i 'inux release ' /etc/redhat-release  |awk '{print $4}' |cut -d. -f1)"
-                 /usr/bin/yum-config-manager --enable rhel-server-rhscl-${RHVERSION}-rpms
-                 ## git v29 is available in scl
-                 /usr/bin/yum install rh-git29 -y | exit 1
-                 /usr/bin/scl enable rh-git29 bash | exit 1
+                 /usr/bin/yum install -y ${PACKAGES} --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get update --fix-missing -y || exit 1
                  /usr/bin/apt-add-repository universe
@@ -576,7 +567,6 @@ cli-options() {
     *)                      usage ;;
     esac
     PROFILE="$( echo ${1%%.*} )"
-    shift   #check for options
 
     while getopts ":i:l:u:" option; do
         case "${option}" in
