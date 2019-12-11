@@ -52,7 +52,7 @@ GIT="$( which git)"
 ${GIT} config user.email "not@important.com"                                   ##keep everyone happy
 ${GIT} config user.name "not important"
 ${GIT} init                                                                    ##forget our history
-${GIT} remote remove salter
+${GIT} remote remove salter >/dev/null 2>&1
 ${GIT} remote add salter https://github.com/noelmcloughlin/salter.git          ##overlay salter repo
 ${GIT} pull salter master --allow-unrelated-histories -f >/dev/null || RC=$?   ##typically master branch
 # problem
