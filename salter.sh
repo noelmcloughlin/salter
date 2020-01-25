@@ -263,7 +263,12 @@ salt-bootstrap() {
              elif [ -f "/usr/sbin/pkg" ]; then
                  PACKAGES="git wget psutils"
              fi
-             pkg-add ${PACKAGES} 2>/dev/null
+             if [ -f "/usr/bin/yum" ]; then
+                 # centos/rhel have many old package versions so we allow newer upstream packages
+                 pkg-add ${PACKAGES} --skip-broken 2>/dev/null
+             else
+                 pkg-add ${PACKAGES} 2>/dev/null
+             fi
              if (( $? > 0 )); then
                 echo "Failed to add packages"
                 exit 1

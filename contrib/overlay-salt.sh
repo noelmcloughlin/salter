@@ -48,11 +48,13 @@ if (( RC > 0 )); then
 fi
 
 # merge unrelated repos
-git config user.email "not@important.com"                                   ##keep git happy
-git config user.name "not important"
-git init                                                                    ##forget our history
-git remote add salter https://github.com/noelmcloughlin/salter.git          ##overlay salter repo
-git pull salter master --allow-unrelated-histories -f >/dev/null || RC=$?   ##typically master branch
+GIT="$( which git)"
+${GIT} config user.email "not@important.com"                                   ##keep everyone happy
+${GIT} config user.name "not important"
+${GIT} init                                                                    ##forget our history
+${GIT} remote remove salter >/dev/null 2>&1
+${GIT} remote add salter https://github.com/noelmcloughlin/salter.git          ##overlay salter repo
+${GIT} pull salter master --allow-unrelated-histories -f >/dev/null || RC=$?   ##typically master branch
 # problem
 if (( RC > 0 )) && [ "$( uname )" = "Darwin" ]; then
     ## macos issue https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
@@ -69,7 +71,7 @@ if (( RC == 0 )); then
     cp -Rp ./profiles/* ${TARGET_DIR}/file_roots/ 2>/dev/null               ##Your profiles/highstatesa ..
     cp -Rp ./configs/* ${TARGET_DIR}/pillar_roots/ 2>/dev/null              ##Your pillar data ..
     rm -fr ./scripts ./profiles ./configs 2>/dev/null                       ##cleanup local dirs
-    git init                                                                ##forget what just happened
+    ${GIT} init                                                                ##forget what just happened
 else
     # problem
     echo "Error - something is wrong - ensure your OS is uptodate (git 2.9 or later) and network is up"
