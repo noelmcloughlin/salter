@@ -572,6 +572,7 @@ cli-options() {
     *)                      usage ;;
     esac
     PROFILE="$( echo ${1%%.*} )"
+    shift
 
     while getopts ":i:l:u:" option; do
         case "${option}" in
