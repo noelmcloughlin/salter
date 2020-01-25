@@ -20,16 +20,14 @@ When in doubt pass the '-u username' argument, when it makes sense.
 Usage Examples
 ==============
 
-The '-u username' option is never required on MacOS. On Linux, its required for "Developer-type" software (IDEs, etc). 
-When in doubt pass the '-u username' argument, when it makes sense.
-
-Add profiles on Linux::
+Add profiles::
 
     sudo salter add intelli -u vagrant
     sudo salter add apache
 
 Remove profile::
 
+    sudo salter add kubernetes -u vagrant
     sudo salter remove kubernetes
 
 Create profile::
