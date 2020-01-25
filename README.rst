@@ -12,11 +12,16 @@ Paste this in a Terminal::
 
     curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh add bootstrap && sudo bash salter.sh add salter
 
+User
+====
+The '-u username' option is never required on MacOS. On Linux, its required for "Developer-type" software (IDEs, etc). 
+When in doubt pass the '-u username' argument, when it makes sense.
+
 Usage Examples
 ==============
 
 The '-u username' option is never required on MacOS. On Linux, its required for "Developer-type" software (IDEs, etc). 
-When in doubt pass the '-u username' arguments, where it makes sense.
+When in doubt pass the '-u username' argument, when it makes sense.
 
 Add profiles on Linux::
 
@@ -41,7 +46,7 @@ Create profile::
 
 Show profile::
 
-    sudo salter show  mystuff
+    sudo salter show mystuff
 
     base:
       *:
@@ -73,21 +78,21 @@ Saltstack Formulas Namespace
     sudo salter add accumulo
     sudo salter add aegir
     sudo salter add apache
-    sudo salter add appcode
+    sudo salter add appcode -u vagrant
     sudo salter add apt
     sudo salter add aptly
     sudo salter add avahi
-    sudo salter add aws
+    sudo salter add aws -u vagrant
     sudo salter add backupninja
     sudo salter add backuptocloud
     sudo salter add bareos
     sudo salter add barman
-    sudo salter add beats
+    sudo salter add beats -u vagrant
     sudo salter add beaver
     sudo salter add bigtest
     sudo salter add bind
     sudo salter add bro
-    sudo salter add cassandra
+    sudo salter add cassandra -u vagrant
     sudo salter add ceph
     sudo salter add cerebro
     sudo salter add cert
@@ -97,7 +102,7 @@ Saltstack Formulas Namespace
     sudo salter add ckan
     sudo salter add clamav
     sudo salter add clion
-    sudo salter add cloudfoundry
+    sudo salter add cloudfoundry -u vagrant
     sudo salter add cobbler
     sudo salter add cockroachdb
     sudo salter add collectd
@@ -105,24 +110,24 @@ Saltstack Formulas Namespace
     sudo salter add couchdb
     sudo salter add cron
     sudo salter add crontab
-    sudo salter add datagrip
+    sudo salter add datagrip -u vagrant
     sudo salter add ddclient
     sudo salter add deepsea
     sudo salter add deepsea_post
     sudo salter add dehydrated
     sudo salter add dev
-    sudo salter add devstack
+    sudo salter add devstack -u vagrant
     sudo salter add dhcpd
     sudo salter add dirvish
     sudo salter add django
     sudo salter add dnsmasq
     sudo salter add docker-compose
     sudo salter add docker-containers
-    sudo salter add docker
+    sudo salter add docker -u vagrant
     sudo salter add dovecot
-    sudo salter add eclipse
+    sudo salter add eclipse -u vagrant
     sudo salter add elasticsearch
-    sudo salter add emacs
+    sudo salter add emacs -u vagrant
     sudo salter add emby
     sudo salter add epazote
     sudo salter add epel
@@ -139,8 +144,8 @@ Saltstack Formulas Namespace
     sudo salter add git
     sudo salter add gitlab
     sudo salter add gitolite
-    sudo salter add goland
-    sudo salter add golang
+    sudo salter add goland -u vagrant
+    sudo salter add golang -u vagrant
     sudo salter add grafana
     sudo salter add graphite
     sudo salter add graylog
@@ -153,7 +158,7 @@ Saltstack Formulas Namespace
     sudo salter add icinga2
     sudo salter add immortal
     sudo salter add influxdb
-    sudo salter add intellij
+    sudo salter add intellij -u vagrant
     sudo salter add iptables
     sudo salter add iscsi
     sudo salter add ius
@@ -163,7 +168,7 @@ Saltstack Formulas Namespace
     sudo salter add kafka
     sudo salter add keepalived
     sudo salter add kibana
-    sudo salter add kubernetes
+    sudo salter add kubernetes -u vagrant
     sudo salter add latex
     sudo salter add letsencrypt
     sudo salter add librenms
@@ -179,13 +184,13 @@ Saltstack Formulas Namespace
     sudo salter add lynis
     sudo salter add macbook
     sudo salter add mailhog
-    sudo salter add maven
+    sudo salter add maven -u vagrant
     sudo salter add memcached
     sudo salter add mercurial
     sudo salter add metricbeat
     sudo salter add mirth
     sudo salter add molten
-    sudo salter add mongodb
+    sudo salter add mongodb -u vagrant
     sudo salter add monit
     sudo salter add moosefs
     sudo salter add msdtc
@@ -218,7 +223,7 @@ Saltstack Formulas Namespace
     sudo salter add perl
     sudo salter add pfring
     sudo salter add php
-    sudo salter add phpstorm
+    sudo salter add phpstorm -u vagrant
     sudo salter add pimpmylog
     sudo salter add pip
     sudo salter add piwik
@@ -230,13 +235,13 @@ Saltstack Formulas Namespace
     sudo salter add proftpd
     sudo salter add prometheus
     sudo salter add pulp
-    sudo salter add pycharm
+    sudo salter add pycharm -u vagrant
     sudo salter add rabbitmq
     sudo salter add redis
     sudo salter add redmine
     sudo salter add remi
     sudo salter add resolver
-    sudo salter add rider
+    sudo salter add rider -u vagrant
     sudo salter add rinetd
     sudo salter add rkhunter
     sudo salter add rspamd
@@ -271,7 +276,7 @@ Saltstack Formulas Namespace
     sudo salter add timezone
     sudo salter add tinc
     sudo salter add tmux
-    sudo salter add tomcat
+    sudo salter add tomcat -u vagrant
     sudo salter add twemproxy
     sudo salter add ufw
     sudo salter add ulog
@@ -279,13 +284,13 @@ Saltstack Formulas Namespace
     sudo salter add vagrant
     sudo salter add varnish
     sudo salter add vault
-    sudo salter add vim
-    sudo salter add virtualenv
+    sudo salter add vim -u vagrant
+    sudo salter add virtualenv -u vagrant
     sudo salter add vmbuilder
     sudo salter add vmware-tools
     sudo salter add vsftpd
-    sudo salter add webstorm
-    sudo salter add wordpress
+    sudo salter add webstorm -u vagrant
+    sudo salter add wordpress -u vagrant
     sudo salter add xinetd
     sudo salter add zabbix
     sudo salter add zendserver
