@@ -336,10 +336,16 @@ gitclone() {
     echo "${fork[solutions]}" | grep "${REPO}" >/dev/null 2>&1
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
-        cd  ${SALTFS}/namespaces/${ENTITY}/${REPO} && git checkout ${fork[branch]}
+        git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1
+        if (( $? > 0 )); then
+            echo "git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
+            exit 1
+        fi
+        cd ${SALTFS}/namespaces/${ENTITY}/${REPO}
+        git checkout ${fork[branch]}
+        (( $? > 0 )) && pwd && echo "git checkout ${fork[branch]} failed" && exit 1
     else
-        git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 11
+        git clone ${URI}/${ENTITY}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} >/dev/null 2>&1 || exit 1
     fi
     ## Its important to ensure symlink points to *this* correct namespace
     rm -f ${SALTFS}/${ALIAS} 2>/dev/null ## this is important make sure symlink is current
@@ -372,7 +378,7 @@ highstate() {
 
     ## prepare formulas
     for formula in $( grep '^.* - ' ${SALTFS}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
-     do
+    do
          ## adjust mismatched state/formula names
          case ${formula} in
          resharper|pycharm|goland|rider|datagrip|clion|rubymine|appcode|webstorm|phpstorm)
@@ -444,9 +450,9 @@ explain_add_salter() {
     echo "==> This script will add:"
     echo "${SALTFS}/salter/salter.sh   (salter orchestrator)"
     echo "/usr/local/bin/salter        (salter symlink)"
-    echo "Salt                         (orchestrator-of-infra-and-apps-at-scale)"
+    echo "salt                         (orchestrator-of-infra-and-apps-at-scale)"
     echo "${SALTFS}/namespaces/*       (namespaces and profiles)"
-    echo "${PILLARFS}/*                (namespaces and configs)"
+    echo "${PILLARFS}/namespaces/*     (namespaces and configs)"
     echo
     echo "==> Your namespace is:"
     echo "${SALTFS}/your/*             (profiles/configs designed by you)"

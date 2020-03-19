@@ -49,7 +49,7 @@ fi
 
 # merge unrelated repos
 GIT="$( which git)"
-${GIT} config user.email "not@important.com"                                   ##keep everyone happy
+${GIT} config user.email "not@important.com"                                   ##keep ${GIT} happy
 ${GIT} config user.name "not important"
 ${GIT} init                                                                    ##forget our history
 ${GIT} remote remove salter >/dev/null 2>&1
@@ -79,12 +79,15 @@ else
 fi
 
 ## Check for a contributed/custom salter.sh script
-[ -f /tmp/mysalter.sh ] && cp /tmp/mysalter.sh contrib/salter.sh                  ## developers?
-[ -f contrib/salter.sh ] && mv contrib/salter.sh salter.sh && chmod +x salter.sh  ## integrators?
+[ -f /tmp/mysalter.sh ] && cp /tmp/mysalter.sh contrib/salter.sh
+[ -f contrib/salter.sh ] && mv contrib/salter.sh salter.sh && chmod +x salter.sh
  
 ## modern bash plus salt-bootstrap plus additions
-./salter.sh bootstrap || exit 1
-./salter.sh add salter || exit 1
+./salter.sh add bootstrap || (echo "add bootstrap failed" && exit 1)
+./salter.sh add salter || (echo "add salter failed" && exit 1)
+if [ $? != 0 ]; then
+    exit 1
+fi
 
 ## copy/overlay formulas found in ./formulas/ local directory
 SOURCE_DIR=formulas
@@ -93,14 +96,11 @@ if [ -d "${SOURCE_DIR}" ]; then
     for formula in $( ls ./${SOURCE_DIR}/ 2>/dev/null | grep '\-formula' | awk -F'-' '{print $1}' )
     do
         if [ -d "${SOURCE_DIR}/${formula}-formula/${formula}" ]; then
-            rm -fr ${TARGET_DIR}/${formula}-formula ${FILE_ROOTS}/${formula} 2>/dev/null               ##cleanup
-            mv ${SOURCE_DIR}/${formula}-formula ${TARGET_DIR}/                                         ##integrate
-            ln -s  ${TARGET_DIR}/${formula}-formula/${formula} ${FILE_ROOTS}/${formula} 2>/dev/null    ##symlink
+            # cleanup, integrate, symlink
+            rm -fr ${TARGET_DIR}/${formula}-formula ${FILE_ROOTS}/${formula} 2>/dev/null
+            mv ${SOURCE_DIR}/${formula}-formula ${TARGET_DIR}/
+            ln -s  ${TARGET_DIR}/${formula}-formula/${formula} ${FILE_ROOTS}/${formula} 2>/dev/null
         fi
     done
 fi
-
-## Check status/cleanup
-rm ./salter.sh 2>/dev/null
-echo "Salter script linked to /usr/local/bin/salter.sh"
 exit 0
