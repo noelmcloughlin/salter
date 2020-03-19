@@ -7,7 +7,7 @@ base:
     - postgres
     
     - sun-java
-    - sun-java.jce
+    # sun-java.jce
 
     - tomcat
     - tomcat.config
