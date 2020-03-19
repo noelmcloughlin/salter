@@ -64,7 +64,7 @@ class TestApp(npyscreen.NPSApp, outdir='/srv/salt'):
                 select_list.append('postgres.server.image')
             if item == self.java:
                 select_list.append('sun-java')
-                select_list.append('sun-java.jce')
+                #select_list.append('sun-java.jce')
                 select_list.append('sun-java.env')
             if item == self.tomcat:
                 select_list.append('tomcat')
