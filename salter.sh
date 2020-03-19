@@ -520,7 +520,7 @@ developer-definitions() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="fixes"
-    fork['solutions']="golang-formula salt-formula"
+    fork['solutions']=""
 }
 
 solution-definitions() {
