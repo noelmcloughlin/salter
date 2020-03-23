@@ -34,7 +34,9 @@ BASE_ETC=/etc
 PY_VER=3
 STATEDIR=''
 USER=
-if [ `uname` == "FreeBSD" ]; then
+OSNAME=`uname`
+if [ "${OSNAME}" == "FreeBSD" ] || [ "${OSNAME}" == "Darwin" ]; then
+    # FreeBSD and Darwin ('/' is readonly in Catalina)
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
     STATEDIR=/states
