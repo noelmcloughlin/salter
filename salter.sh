@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #-------------------------------------------------------------------------
-# Copyright 2019 Saltstack Formulas
+# Copyright 2020 Saltstack Formulas
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 trap exit SIGINT SIGTERM
 [ `id -u` != 0 ] && echo -e "\nRun script with sudo, exiting\n" && exit 1
 
-SALT_VERSION='stable 2019.2.0'    ##stick with stable previous release
+SALT_VERSION='stable 2019.2.3'    ##go with latest stable release
 RC=0
 ACTION=
 BASE=/srv
@@ -34,7 +34,9 @@ BASE_ETC=/etc
 PY_VER=3
 STATEDIR=''
 USER=
-if [ `uname` == "FreeBSD" ]; then
+OSNAME=`uname`
+if [ "${OSNAME}" == "FreeBSD" ] || [ "${OSNAME}" == "Darwin" ]; then
+    # FreeBSD and Darwin ('/' is readonly in Catalina)
     BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
     STATEDIR=/states
