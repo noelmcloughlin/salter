@@ -61,7 +61,7 @@ DEBUGG=
 declare -A your solution fork 2>/dev/null || RC=$?
 if (( RC > 0 )); then
     echo "[warning] your bash version is pretty old ..."
-    if [ "$( uname )" = "Darwin" ]; then
+    if [ "${OSNAME}" == "Darwin" ]; then
         (( RC > 0 )) && (su - ${USER} -c "${HOMEBREW} install bash" || exit 12) && RC=0
     else
         exit ${RC}
@@ -291,11 +291,11 @@ EOF
         rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
     fi
     ### salt-api (except arch/macos/freebsd)
-    [ ! -f "/etc/arch-release" ] && [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "FreeBSD" ] && pkg-add salt-api
+    [ ! -f "/etc/arch-release" ] && [ "${OSNAME}" != "Darwin" ] && [ "${OSNAME}" != "FreeBSD" ] && pkg-add salt-api
 
     ### salt minion
     [ ! -f "${BASE_ETC}/salt/minion" ] && echo "File ${BASE_ETC}/salt/minion not found" && exit 1
-    if [[ "`uname`" == "FreeBSD" ]] || [[ "`uname`" == "Darwin" ]]; then
+    if [[ "${OSNAME}" == "FreeBSD" ]] || [[ "${OSNAME}" == "Darwin" ]]; then
         sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
     else
         sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
@@ -306,15 +306,17 @@ EOF
     (systemctl enable salt-minion && systemctl start salt-minion) 2>/dev/null || service start salt-minion 2>/dev/null
     salt-key -A --yes >/dev/null 2>&1     ##accept pending registrations
 
-    ### reboot to activate a new kernel?
-    echo && KERNEL_VERSION=$( uname -r | awk -F. '{print $1"."$2"."$3"."$4"."$5}' )
-    echo "kernel before: ${KERNEL_VERSION}"
-    if [ "$(uname)" == "FreeBSD" ]; then
-        echo "kernel after: $( /bin/freebsd-version -k 2>/dev/null )"
-    else
-        echo "kernel after: $( pkg-query linux 2>/dev/null )"
+    if [ "$OSTYPE" != "Darwin" ]; then
+        ### reboot to activate a new linux kernel
+        echo && KERNEL_VERSION=$( uname -r | awk -F. '{print $1"."$2"."$3"."$4"."$5}' )
+        echo "kernel before: ${KERNEL_VERSION}"
+        if [ "${OSNAME}" == "FreeBSD" ]; then
+            echo "kernel after: $( /bin/freebsd-version -k 2>/dev/null )"
+        else
+            echo "kernel after: $( pkg-query linux 2>/dev/null )"
+        fi
+        echo "Reboot if kernel was major-upgraded; if unsure reboot!"
     fi
-    echo "Reboot if kernel was major-upgraded; if unsure reboot!"
     echo
 }
 
