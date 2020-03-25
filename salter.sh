@@ -306,7 +306,7 @@ EOF
     (systemctl enable salt-minion && systemctl start salt-minion) 2>/dev/null || service start salt-minion 2>/dev/null
     salt-key -A --yes >/dev/null 2>&1     ##accept pending registrations
 
-    if [ "$OSTYPE" != "Darwin" ]; then
+    if [ "$OSNAME" != "Darwin" ]; then
         ### reboot to activate a new linux kernel
         echo && KERNEL_VERSION=$( uname -r | awk -F. '{print $1"."$2"."$3"."$4"."$5}' )
         echo "kernel before: ${KERNEL_VERSION}"
