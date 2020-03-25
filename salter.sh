@@ -37,7 +37,7 @@ USER=
 OSNAME=`uname`
 if [ "${OSNAME}" == "FreeBSD" ] || [ "${OSNAME}" == "Darwin" ]; then
     # FreeBSD and Darwin ('/' is readonly in Catalina)
-    BASE=/usr/local/etc
+    BASE=/usr/local/srv
     [ "${OSNAME}" == "FreeBSD" ] && BASE_ETC=/usr/local/etc
     STATEDIR=/states
     SUBDIR=/salt
