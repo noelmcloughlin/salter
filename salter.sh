@@ -35,16 +35,17 @@ PY_VER=3
 STATEDIR=''
 USER=
 OSNAME=`uname`
-if [ "${OSNAME}" == "FreeBSD" ] || [ "${OSNAME}" == "Darwin" ]; then
-    # FreeBSD and Darwin ('/' is readonly in Catalina)
+if [ "${OSNAME}" == "FreeBSD" ]; then
+    # FreeBSD
     BASE=/usr/local/srv
-    [ "${OSNAME}" == "FreeBSD" ] && BASE_ETC=/usr/local/etc
+    BASE_ETC=/usr/local/etc
     STATEDIR=/states
     SUBDIR=/salt
 fi
-if [ "$( uname )" = "Darwin" ]; then
-    # homebrew unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
+if [ "${OSNAME}" == "Darwin" ]; then
+    BASE=/usr/local/srv
     USER=$( stat -f "%Su" /dev/console )
+    # homebrew unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
     HOMEBREW=/usr/local/bin/brew
     ${HOMEBREW} >/dev/null 2>&1
     (( $? == 127 )) && su - ${USER} -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
