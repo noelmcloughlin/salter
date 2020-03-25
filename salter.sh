@@ -252,7 +252,7 @@ salt-bootstrap() {
              sed -i"bak" "s@#    - /srv/salt@    - ${BASE}/srv/salt@" /etc/salt/minion 2>/dev/null
              # pillar directory
              sed -i"bak" 's@#pillar_roots:$@pillar_roots:@' /etc/salt/minion 2>/dev/null
-             sed -i"bak" "s@#    - /srv/pillar@    - ${BASE}/srv/pillar@' /etc/salt/minion 2>/dev/null
+             sed -i"bak" "s@#    - /srv/pillar@    - ${BASE}/srv/pillar@" /etc/salt/minion 2>/dev/null
 
              ##Workaround https://github.com/Homebrew/brew/issues/4099
              echo '--no-alpn' >> ~/.curlrc
