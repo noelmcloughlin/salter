@@ -38,11 +38,12 @@ OSNAME=`uname`
 if [ "${OSNAME}" == "FreeBSD" ] || [ "${OSNAME}" == "Darwin" ]; then
     # FreeBSD and Darwin ('/' is readonly in Catalina)
     BASE=/usr/local/etc
-    BASE_ETC=/usr/local/etc
+    [ "${OSNAME}" == "FreeBSD" ] && BASE_ETC=/usr/local/etc
     STATEDIR=/states
     SUBDIR=/salt
-elif [ "$( uname )" = "Darwin" ]; then
-    # macos needs homebrew (unattended https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
+endif
+if [ "$( uname )" = "Darwin" ]; then
+    # homebrew unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
     USER=$( stat -f "%Su" /dev/console )
     HOMEBREW=/usr/local/bin/brew
     ${HOMEBREW} >/dev/null 2>&1
@@ -59,7 +60,7 @@ DEBUGG=
 # bash version must be modern
 declare -A your solution fork 2>/dev/null || RC=$?
 if (( RC > 0 )); then
-    echo "[warning] your bash version is too old ..."
+    echo "[warning] your bash version is pretty old ..."
     if [ "$( uname )" = "Darwin" ]; then
         (( RC > 0 )) && (su - ${USER} -c "${HOMEBREW} install bash" || exit 12) && RC=0
     else
