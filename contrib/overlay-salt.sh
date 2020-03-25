@@ -63,7 +63,9 @@ if (( RC > 0 )) && [ "$( uname )" = "Darwin" ]; then
 fi
 # no problem
 if (( RC == 0 )); then
-    FILE_ROOTS=/srv/salt && [ -d /usr/local/etc/salt/states ] && FILE_ROOTS=/usr/local/etc/salt/states
+    FILE_ROOTS=/srv/salt
+    [ -d /usr/local/etc/salt/states ] && FILE_ROOTS=/usr/local/etc/salt/states
+    [ -d /usr/local/srv/salt ] && FILE_ROOTS=/usr/local/srv/salt
     TARGET_DIR=${FILE_ROOTS}/namespaces/your
     mkdir -p ${TARGET_DIR}/contrib ${TARGET_DIR}/file_roots ${TARGET_DIR}/pillar_roots 2>/dev/null
 
