@@ -41,7 +41,7 @@ if [ "${OSNAME}" == "FreeBSD" ] || [ "${OSNAME}" == "Darwin" ]; then
     [ "${OSNAME}" == "FreeBSD" ] && BASE_ETC=/usr/local/etc
     STATEDIR=/states
     SUBDIR=/salt
-endif
+fi
 if [ "$( uname )" = "Darwin" ]; then
     # homebrew unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
     USER=$( stat -f "%Su" /dev/console )
