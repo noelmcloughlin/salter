@@ -226,7 +226,7 @@ salt-bootstrap() {
              sudo chmod -R 0755 /usr/local/* /Library/Python/2.7/site-packages/pip* /Users/${USER}/Library/Caches/pip 2>/dev/null
 
              ### https://stackoverflow.com/questions/34386527/symbol-not-found-pycodecinfo-getincrementaldecoder
-             su - ${USER} -c 'hash -r python'
+             su - ${USER} -c 'hash -r python' 2>/dev/null
 
              ### pip https://pip.pypa.io/en/stable
              su - ${USER} -c 'curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py'
