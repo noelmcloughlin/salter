@@ -5,6 +5,8 @@ salt:
       base:
             {%- if grains['kernel'] in ['FreeBSD', 'OpenBSD', 'NetBSD'] %}
         - /usr/local/etc/salt/states
+            {%- elif grains['kernel'] in ['Darwin',] %}
+        - /usr/local/etc/salt
             {%- else %}
         - /srv/salt
             {%- endif %}
@@ -16,6 +18,8 @@ salt:
       base:
             {%- if grains['kernel'] in ['FreeBSD', 'OpenBSD', 'NetBSD'] %}
         - /usr/local/etc/salt/states
+            {%- elif grains['kernel'] in ['Darwin',] %}
+        - /usr/local/etc/salt
             {%- else %}
         - /srv/salt
             {%- endif %}
@@ -34,6 +38,8 @@ salt_formulas:
       baseurl: https://github.com/saltstack-formulas
          {%- if grains['kernel'] in ['FreeBSD', 'OpenBSD', 'NetBSD'] %}
       basedir: /usr/local/etc/salt/states/namespaces/saltstack-formulas
+            {%- elif grains['kernel'] in ['Darwin',] %}
+      basedir: /usr/local/etc/salt/namespaces/saltstack-formulas
          {%- else %}
       basedir: /srv/salt/namespaces/saltstack-formulas
          {%- endif %}

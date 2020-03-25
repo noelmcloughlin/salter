@@ -244,7 +244,14 @@ salt-bootstrap() {
              su - ${USER} -c "${HOMEBREW} tap homebrew/services"
              echo $( hostname ) >/etc/salt/minion_id
              cp /usr/local/etc/saltstack/minion /etc/salt/minion 2>/dev/null
-             sed -i"bak" "s/#file_client: remote/file_client: local/" /etc/salt/minion 2>/dev/null
+             sed -i"bak" 's@#file_client: remote$@file_client: local@' /etc/salt/minion 2>/dev/null
+             sed -i"bak" 's@#  base:$@  base:@g' /etc/salt/minion 2>/dev/null
+             # state directory
+             sed -i"bak" 's@#file_roots:$@file_roots:@' /etc/salt/minion 2>/dev/null
+             sed -i"bak" 's@#    - /srv/salt$@    - /usr/local/srv/salt@' /etc/salt/minion 2>/dev/null
+             # pillar directory
+             sed -i"bak" 's@#pillar_roots:$@pillar_roots:@' /etc/salt/minion 2>/dev/null
+             sed -i"bak" 's@#    - /srv/pillar$@    - /usr/local/srv/pillar@' /etc/salt/minion 2>/dev/null
 
              ##Workaround https://github.com/Homebrew/brew/issues/4099
              echo '--no-alpn' >> ~/.curlrc
