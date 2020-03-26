@@ -189,6 +189,7 @@ pkg-remove() {
 #-----------------------
 
 get-salt-master-hostname() {
+   [ -f "/usr/bin/zypper" ] && pkg-add net-tools 2>/dev/null
    hostname -f >/dev/null 2>&1
    if (( $? == 0 )); then
        FQDN=$(hostname -f)
