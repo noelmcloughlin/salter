@@ -37,7 +37,7 @@ USER=
 OSNAME=`uname`
 if [ "${OSNAME}" == "FreeBSD" ]; then
     # FreeBSD
-    BASE=/usr/local/srv
+    BASE=/usr/local/etc
     BASE_ETC=/usr/local/etc
     STATEDIR=/states
     SUBDIR=/salt
