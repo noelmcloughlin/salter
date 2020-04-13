@@ -1,0 +1,3 @@
+base:
+  '*':
+    - postman.clean
