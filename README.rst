@@ -76,6 +76,7 @@ Saltstack Formulas Namespace
     sudo salter add accumulo
     sudo salter add aegir
     sudo salter add apache
+    sudo salter add androidstudio
     sudo salter add appcode -u vagrant
     sudo salter add apt
     sudo salter add aptly
@@ -94,8 +95,11 @@ Saltstack Formulas Namespace
     sudo salter add ceph
     sudo salter add cerebro
     sudo salter add cert
+    sudo salter add charles
     sudo salter add chef
     sudo salter add chrony
+    sudo salter add chrome
+    sudo salter add chromium
     sudo salter add circus
     sudo salter add ckan
     sudo salter add clamav
@@ -109,6 +113,7 @@ Saltstack Formulas Namespace
     sudo salter add cron
     sudo salter add crontab
     sudo salter add datagrip -u vagrant
+    sudo salter add dbeaver
     sudo salter add ddclient
     sudo salter add deepsea
     sudo salter add deepsea_post
@@ -137,6 +142,7 @@ Saltstack Formulas Namespace
     sudo salter add fluentbit
     sudo salter add flume
     sudo salter add frr
+    sudo salter add gasmask
     sudo salter add gce
     sudo salter add gerrit
     sudo salter add git
@@ -155,6 +161,7 @@ Saltstack Formulas Namespace
     sudo salter add hugo
     sudo salter add icinga2
     sudo salter add immortal
+    sudo salter add insomnia
     sudo salter add influxdb
     sudo salter add intellij -u vagrant
     sudo salter add iptables
@@ -227,6 +234,7 @@ Saltstack Formulas Namespace
     sudo salter add piwik
     sudo salter add plex
     sudo salter add postfix
+    sudo salter add postman
     sudo salter add postgres
     sudo salter add powerdns
     sudo salter add pppoe
@@ -235,6 +243,7 @@ Saltstack Formulas Namespace
     sudo salter add pulp
     sudo salter add pycharm -u vagrant
     sudo salter add rabbitmq
+    sudo salter add rectangle
     sudo salter add redis
     sudo salter add redmine
     sudo salter add remi
@@ -242,7 +251,9 @@ Saltstack Formulas Namespace
     sudo salter add rider -u vagrant
     sudo salter add rinetd
     sudo salter add rkhunter
+    sudo salter add rlang
     sudo salter add rspamd
+    sudo salter add rstudio
     sudo salter add rsyncd
     sudo salter add rsyslog
     sudo salter add ruby
@@ -286,10 +297,12 @@ Saltstack Formulas Namespace
     sudo salter add virtualenv -u vagrant
     sudo salter add vmbuilder
     sudo salter add vmware-tools
+    sudo salter add vscode
     sudo salter add vsftpd
     sudo salter add webstorm -u vagrant
     sudo salter add wordpress -u vagrant
     sudo salter add xinetd
+    sudo salter add yed
     sudo salter add zabbix
     sudo salter add zendserver
     sudo salter add zookeeper
