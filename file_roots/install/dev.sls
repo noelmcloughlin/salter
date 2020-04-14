@@ -42,3 +42,13 @@ base:
     - pycharm.linuxenv
     - sqldeveloper.linuxenv
     {% endif %}
+
+    - docker
+    - charles
+    - chrome
+    - vscode
+    - yed
+    - dbeaver
+    - node
+    - insomnia
+    - postman

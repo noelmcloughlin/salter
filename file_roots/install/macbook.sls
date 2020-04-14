@@ -34,3 +34,14 @@ base:
     - eclipse.developer
     - eclipse.plugins
 
+    - docker
+    - charles
+    - chrome
+    - gasmask
+    - vscode
+    - yed
+    - dbeaver
+    - node
+    - insomnia
+    - postman
+    - rectangle
