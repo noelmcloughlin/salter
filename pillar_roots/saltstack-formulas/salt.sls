@@ -12,7 +12,13 @@ salt:
             {%- endif %}
     pillar_roots:
       base:
+            {%- if grains['kernel'] in ['FreeBSD', 'OpenBSD', 'NetBSD'] %}
+        - /usr/local/etc/salt/pillaar
+            {%- elif grains['kernel'] in ['Darwin',] %}
+        - /usr/local/srv/pillar
+            {%- else %}
         - /srv/pillar
+            {%- endif %}
   minion:
     file_roots:
       base:
@@ -25,7 +31,13 @@ salt:
             {%- endif %}
     pillar_roots:
       base:
+            {%- if grains['kernel'] in ['FreeBSD', 'OpenBSD', 'NetBSD'] %}
+        - /usr/local/etc/salt/pillaar
+            {%- elif grains['kernel'] in ['Darwin',] %}
+        - /usr/local/srv/pillar
+            {%- else %}
         - /srv/pillar
+            {%- endif %}
   ssh_roster:
     controller1:
       host: {{ grains.ipv4[0] or grains.ipv6[1] }}

@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,14 +20,14 @@
 # Overlay salter with any git repo. Extend Salter by exposing
 # your salt files in this directory structure:
 #
-#   - ./profiles/
-#   - ./configs/
-#   - ./scripts/
+#  - ./profiles/
+#  - ./configs/
+#  - ./scripts/
 #
 # Your content overlay Salter's directory hierarchy, extending
 # Salter's features and overriding default salt configuration.
 #
-##################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # bash version must be modern
 RC=0
 declare -A your solution fork 2>/dev/null || RC=$?
@@ -49,15 +49,15 @@ fi
 
 # merge unrelated repos
 GIT="$( which git)"
-${GIT} config user.email "not@important.com"                                   ##keep ${GIT} happy
+${GIT} config user.email "not@important.com"     # keep ${GIT} happy
 ${GIT} config user.name "not important"
-${GIT} init                                                                    ##forget our history
+${GIT} init                                      # forget our history
 ${GIT} remote remove salter >/dev/null 2>&1
-${GIT} remote add salter https://github.com/noelmcloughlin/salter.git          ##overlay salter repo
-${GIT} pull salter master --allow-unrelated-histories -f >/dev/null || RC=$?   ##typically master branch
+${GIT} remote add salter https://github.com/noelmcloughlin/salter.git          # overlay salter repo
+${GIT} pull salter master --allow-unrelated-histories -f >/dev/null || RC=$?   # typically master branch
 # problem
 if (( RC > 0 )) && [ "$( uname )" = "Darwin" ]; then
-    ## macos issue https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
+    # macos issue https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
     /usr/bin/xcode-select -p 1>/dev/null && RC=$?
     (( $RC > 0 )) && /usr/bin/xcode-select --install && RC=0
 fi
@@ -69,29 +69,29 @@ if (( RC == 0 )); then
     TARGET_DIR=${FILE_ROOTS}/namespaces/your
     mkdir -p ${TARGET_DIR}/contrib ${TARGET_DIR}/file_roots ${TARGET_DIR}/pillar_roots 2>/dev/null
 
-    cp -Rp ./scripts/* ${TARGET_DIR}/contrib/ 2>/dev/null                   ##Your contrib
-    cp -Rp ./profiles/* ${TARGET_DIR}/file_roots/ 2>/dev/null               ##Your profiles/highstatesa ..
-    cp -Rp ./configs/* ${TARGET_DIR}/pillar_roots/ 2>/dev/null              ##Your pillar data ..
-    rm -fr ./scripts ./profiles ./configs 2>/dev/null                       ##cleanup local dirs
-    ${GIT} init                                                                ##forget what just happened
+    cp -Rp ./scripts/* ${TARGET_DIR}/contrib/ 2>/dev/null         # Your contrib
+    cp -Rp ./profiles/* ${TARGET_DIR}/file_roots/ 2>/dev/null     # Your profiles/highstatesa ..
+    cp -Rp ./configs/* ${TARGET_DIR}/pillar_roots/ 2>/dev/null    # Your pillar data ..
+    rm -fr ./scripts ./profiles ./configs 2>/dev/null             # cleanup local dirs
+    ${GIT} init                                                   # forget what just happened
 else
     # problem
     echo "Error - something is wrong - ensure your OS is uptodate (git 2.9 or later) and network is up"
     exit ${RC} 
 fi
 
-## Check for a contributed/custom salter.sh script
+# Check for a contributed/custom salter.sh script
 [ -f /tmp/mysalter.sh ] && cp /tmp/mysalter.sh contrib/salter.sh
 [ -f contrib/salter.sh ] && mv contrib/salter.sh salter.sh && chmod +x salter.sh
  
-## modern bash plus salt-bootstrap plus additions
+# modern bash plus salt-bootstrap plus additions
 ./salter.sh add bootstrap || (echo "add bootstrap failed" && exit 1)
 ./salter.sh add salter || (echo "add salter failed" && exit 1)
 if [ $? != 0 ]; then
     exit 1
 fi
 
-## copy/overlay formulas found in ./formulas/ local directory
+# copy/overlay formulas found in ./formulas/ local directory
 SOURCE_DIR=formulas
 if [ -d "${SOURCE_DIR}" ]; then
     mkdir -p ${TARGET_DIR} 2>/dev/null
