@@ -1,6 +1,4 @@
 
-  {% if grains.os not in ('Windows', 'MacOS',) %}
-
 chrony:
   ntpservers:
     # walkover firewalled ntp servers example
@@ -32,5 +30,3 @@ chrony:
     - 'generatecommandkey'
     - 'noclientlog'
     - 'logchange 0.5'
-
-  {%- endif %}

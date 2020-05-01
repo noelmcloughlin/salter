@@ -1,8 +1,4 @@
 golang:
-  pkg:
-    archive:
-      uri: https://storage.googleapis.com/golang
-
     {%- if grains.kernel|lower == 'linux' %}
   linux:
     # 'Alternatives system' priority: zero disables (default)

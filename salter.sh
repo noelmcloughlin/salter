@@ -376,7 +376,7 @@ highstate() {
     ## prepare states
     ACTION=${1} && STATEDIR=${2} && PROFILE=${3}
     for profile in ${solution[saltdir]}/${ACTION}/${PROFILE} ${your[saltdir]}/${ACTION}/${PROFILE}
-    do  
+    do
         [ -f ${profile}.sls ] && cp ${profile}.sls ${SALTFS}/top.sls && break
         [ -f ${profile}/init.sls ] && cp ${profile}/init.sls ${SALTFS}/top.sls && break
     done
@@ -399,7 +399,7 @@ highstate() {
     do
          ## adjust mismatched state/formula names
          case ${formula} in
-         resharper|pycharm|goland|rider|datagrip|clion|rubymine|appcode|webstorm|phpstorm)
+         resharper|pycharm|goland|rider|datagrip|clion|rubymine|appcode|webstorm|phpstorm|teamcity)
                      source="jetbrains-${formula}" ;;
          linuxvda)   source='citrix-linuxvda' ;;
          salt)       continue;;                    ##already cloned?
@@ -451,7 +451,7 @@ usage() {
     echo "  [-u <username>]" 1>&2
     echo "        A Loginname (current or corporate or root user)." 1>&2
     echo "        Optional for MacOS and many Linux profiles" 1>&2
-    echo "        but not required on MacOS" 1>&2 
+    echo "        but not required on MacOS" 1>&2
     echo 1>&2
     echo "  [-l <all|debug|warning|error|quiet]" 1>&2
     echo "      Optional log-level (default warning)" 1>&2
@@ -568,17 +568,21 @@ cli-options() {
         esac
     done
     shift $((OPTIND-1))
+    if [ "$OSTYPE" == "linux" ] && [ -z "${USER}" ]; then
+        print "Please pass some username to command (-u option)"
+        exit 1
+    fi
 }
 
 #########################################################################
-# SOLUTION: Copyright 2019 Saltstack Formulas
+# SOLUTION: Copyright 2020 Saltstack Formulas
 #########################################################################
 
 developer-definitions() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
-    fork['branch']="fixes"
-    fork['solutions']=""
+    fork['branch']="latest"
+    fork['solutions']="resharper pycharm goland rider datagrip clion rubymine appcode webstorm phpstorm teamcity intellij sqldeveloper sqlplus java kubernetes maven"
 }
 
 solution-definitions() {
@@ -589,7 +593,6 @@ solution-definitions() {
     solution['alias']="salter"
     solution['subdir']="./"
     solution['provider']="saltstack-formulas"
-    solution['profiles']="corpsys/dev|corpsys/joindomain|corpsys/linuxvda|devstack|everything|mysql|sudo|deepsea|docker-compose|java|packages|tomcat|deepsea_post|docker-containers|lxd|postgres|dev|etcd|macbook|salt"
 
     ### derivatives
     solution['homedir']="${SALTFS}/namespaces/${solution[entity]}/${solution[repo]}/${solution[subdir]}"

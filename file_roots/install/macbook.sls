@@ -6,9 +6,7 @@ base:
     - users
     - postgres
     
-    - sun-java
-    # sun-java.jce
-
+    - java
     - tomcat
     - tomcat.config
     - tomcat.native
