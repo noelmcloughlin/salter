@@ -1,6 +1,4 @@
 
-  {% if grains.os not in ('Windows', 'MacOS',) %}
-
 resolver:
   ng:
     resolvconf:
@@ -15,5 +13,3 @@ resolver:
     - rotate
     - timeout:1
     - attempts:5
-
-  {%- endif %}

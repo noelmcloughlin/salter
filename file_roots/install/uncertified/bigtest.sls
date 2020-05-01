@@ -29,7 +29,7 @@ base:
     - maven
     - mysql
     - mongodb
-    - sun-java
+    - java
     - packages
     - postgres
     - resolver

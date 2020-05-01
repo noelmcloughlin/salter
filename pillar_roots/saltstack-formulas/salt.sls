@@ -78,6 +78,7 @@ salt_formulas:
      - sqlplus-formula
      - sqldeveloper-formula
      - sun-java-formula
+     - java-formula
      - users-formula
      - kubernetes-formula
      - cloudfoundry-formula
