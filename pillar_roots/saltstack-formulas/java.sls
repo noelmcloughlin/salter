@@ -36,7 +36,7 @@ java:
     jvm: hotspot
     javaversion: 8.252.09.1
     # javaversion: 11.0.7.10.1
-    javaversion: 11.0.7+10
+    # javaversion: 11.0.7+10
     # javaversion: 11.0.7+10_openj9-0.20.0
     pkg:
       use_upstream_archive: true
