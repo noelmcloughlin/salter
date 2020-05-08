@@ -582,7 +582,7 @@ developer-definitions() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="latest"
-    fork['solutions']="resharper pycharm goland rider datagrip clion rubymine appcode webstorm phpstorm teamcity intellij sqldeveloper sqlplus java kubernetes maven"
+    fork['solutions']="resharper pycharm goland rider datagrip clion rubymine appcode webstorm phpstorm teamcity intellij sqldeveloper sqlplus java kubernetes maven golang"
 }
 
 solution-definitions() {
