@@ -30,16 +30,18 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # bash version must be modern
 RC=0
-declare -A your solution fork 2>/dev/null || RC=$?
+declare -A _ 2>/dev/null || RC=$?
 if (( RC > 0 )) && [ "$( uname )" = "Darwin" ]; then
     echo "[warning] your bash version is too old ..."
     # macos needs homebrew (unattended https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
-    export USER=$( stat -f "%Su" /dev/console )
+    USER=$( stat -f "%Su" /dev/console )
+    export USER
     export HOMEBREW=/usr/local/bin/brew
     ${HOMEBREW} >/dev/null 2>&1
-    (( $? == 127 )) && su - ${USER} -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+    # shellcheck disable=SC2016
+    (( $? == 127 )) && su - "${USER}" -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
     # macos needs modern bash
-    (( RC > 0 )) && (su - ${USER} -c "${HOMEBREW} install bash" || exit 12) && RC=0
+    (( RC > 0 )) && (su - "${USER}" -c "${HOMEBREW} install bash" || exit 12) && RC=0
 fi
 if (( RC > 0 )); then
     # linux needs modern bash
@@ -48,6 +50,7 @@ if (( RC > 0 )); then
 fi
 
 # merge unrelated repos
+# shellcheck disable=SC2230
 GIT="$( which git)"
 ${GIT} config user.email "not@important.com"     # keep ${GIT} happy
 ${GIT} config user.name "not important"
@@ -59,7 +62,7 @@ ${GIT} pull salter master --allow-unrelated-histories -f >/dev/null || RC=$?   #
 if (( RC > 0 )) && [ "$( uname )" = "Darwin" ]; then
     # macos issue https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
     /usr/bin/xcode-select -p 1>/dev/null && RC=$?
-    (( $RC > 0 )) && /usr/bin/xcode-select --install && RC=0
+    (( RC > 0 )) && /usr/bin/xcode-select --install && RC=0
 fi
 # no problem
 if (( RC == 0 )); then
@@ -87,6 +90,7 @@ fi
 # modern bash plus salt-bootstrap plus additions
 ./salter.sh add bootstrap || (echo "add bootstrap failed" && exit 1)
 ./salter.sh add salter || (echo "add salter failed" && exit 1)
+# shellcheck disable=SC2181
 if [ $? != 0 ]; then
     exit 1
 fi
@@ -95,13 +99,14 @@ fi
 SOURCE_DIR=formulas
 if [ -d "${SOURCE_DIR}" ]; then
     mkdir -p ${TARGET_DIR} 2>/dev/null
-    for formula in $( ls ./${SOURCE_DIR}/ 2>/dev/null | grep '\-formula' | awk -F'-' '{print $1}' )
+    # shellcheck disable=SC2012
+    for formula in $( ls "./${SOURCE_DIR}/*\-formula" 2>/dev/null | awk -F'-' '{print $1}' )
     do
         if [ -d "${SOURCE_DIR}/${formula}-formula/${formula}" ]; then
             # cleanup, integrate, symlink
-            rm -fr ${TARGET_DIR}/${formula}-formula ${FILE_ROOTS}/${formula} 2>/dev/null
-            mv ${SOURCE_DIR}/${formula}-formula ${TARGET_DIR}/
-            ln -s  ${TARGET_DIR}/${formula}-formula/${formula} ${FILE_ROOTS}/${formula} 2>/dev/null
+            rm -fr ${TARGET_DIR:?}/"${formula}"-formula ${FILE_ROOTS:?}/"${formula}" 2>/dev/null
+            mv "${SOURCE_DIR}/${formula}-formula" "${TARGET_DIR}/"
+            ln -s  "${TARGET_DIR}/${formula}-formula/${formula}" "${FILE_ROOTS}/${formula}" 2>/dev/null
         fi
     done
 fi
