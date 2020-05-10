@@ -90,7 +90,7 @@ pkg-query() {
 }
 
 pkg-add() {
-    PACKAGES=${*}
+    PACKAGES=${@}
     case ${OSTYPE} in
     darwin*) for p in ${PACKAGES}; do
                  su - "${USER}" -c "${HOMEBREW} install ${p}"
@@ -110,33 +110,35 @@ pkg-add() {
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper update -y || exit 1
-                 /usr/bin/zypper --non-interactive install "${PACKAGES}" || exit 1
+                 /usr/bin/zypper --non-interactive install ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
-                 /usr/bin/emerge --oneshot "${PACKAGES}" || exit 1
+                 /usr/bin/emerge --oneshot ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
                  [ -x '/usr/bin/pacman-mirrors' ] && /usr/bin/pacman-mirrors -g
                  /usr/bin/pacman -Syyu --noconfirm
-                 /usr/bin/pacman -S --noconfirm "${PACKAGES}" || exit 1
+                 /usr/bin/pacman -S --noconfirm ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
-                 /usr/bin/dnf install -y --best --allowerasing "${PACKAGES}" || exit 1
+                 /usr/bin/dnf install -y --best --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
                  /usr/bin/yum update -y || exit 1
-                 /usr/bin/yum install -y "${PACKAGES}" --skip-broken || exit 1
+                 /usr/bin/yum install -y ${PACKAGES} --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get update --fix-missing -y || exit 1
                  /usr/bin/apt-add-repository universe
                  /usr/bin/apt autoremove -y
                  /usr/bin/apt-get update -y
-                 /usr/bin/apt-get install -y "${PACKAGES}" || exit 1
+                 /usr/bin/apt-get install -y ${PACKAGES} || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
                  /usr/sbin/pkg update -f --quiet || exit 1
-                 /usr/sbin/pkg install --automatic --yes "${PACKAGES}" || exit 1
+                 /usr/sbin/pkg install --automatic --yes ${PACKAGES} || exit 1
              fi
     esac
 }
 
 pkg-update() {
-    PACKAGES=${*}
+    PACKAGES=${@}
+    [ -z "${PACKAGES}" ] && return
+
     case ${OSTYPE} in
     darwin*) for p in ${PACKAGES}; do
                  su - "${USER}" -c "${HOMEBREW} upgrade ${p}"
@@ -158,6 +160,7 @@ pkg-update() {
                  /usr/sbin/pkg upgrade --yes "${PACKAGES}" || exit 1
              fi
     esac
+    return 0
 }
 
 pkg-remove() {
@@ -268,7 +271,7 @@ salt-bootstrap() {
              ;;
 
      linux*|freebsd*)
-             pkg-update "$@" 2>/dev/null
+             pkg-update '' 2>/dev/null
              echo "Setup Linux/FreeBSD baseline and Salt masterless minion ..."
              if [ -f "/usr/bin/dnf" ]; then
                  PACKAGES="--best --allowerasing git wget redhat-rpm-config"
@@ -283,11 +286,13 @@ salt-bootstrap() {
              elif [ -f "/usr/sbin/pkg" ]; then
                  PACKAGES="git wget psutils"
              fi
-             if [ -f "/usr/bin/yum" ]; then
+             if [ -f "/usr/bin/dnf" ]; then
+                 pkg-add ${PACKAGES} 2>/dev/null
+             elif [ -f "/usr/bin/yum" ]; then
                  # centos/rhel have many old package versions so we allow newer upstream packages
-                 pkg-add "${PACKAGES}" --skip-broken 2>/dev/null
+                 pkg-add ${PACKAGES} --skip-broken 2>/dev/null
              else
-                 pkg-add "${PACKAGES}" 2>/dev/null
+                 pkg-add ${PACKAGES} 2>/dev/null
              fi
              # shellcheck disable=SC2181
              if (( $? > 0 )); then
@@ -641,6 +646,6 @@ custom-postadd() {
 
 developer-definitions
 solution-definitions
-cli-options "$*"
-salter-engine "$*"
+cli-options $*
+salter-engine $*
 exit $?
