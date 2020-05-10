@@ -15,7 +15,7 @@ postgres:
   upstream:
     purgeall: true
     releases: ['9.2', '9.3', '9.4', '9.5', '9.6', '10',]
-    
+
   #Debian alternatives priority incremental. 0 disables feature.
   linux:
     altpriority: {{ range(1, 9100000) | random }}

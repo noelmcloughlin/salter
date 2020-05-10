@@ -23,7 +23,7 @@ docker-containers:
 
     javapp:
       image: tomcat:latest
-      cmd: 
+      cmd:
       runoptions:
         - "-v /home/undefined_user/javapp:/javapp"
         - "-p 8888:8080"

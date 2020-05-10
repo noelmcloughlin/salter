@@ -124,14 +124,7 @@ platforms:
       run_command: /usr/lib/systemd/systemd
 
 provisioner:
-  name: salt_solo
-  # log_level: debug
-  salt_install: none
-  require_chef: false
-  formula: maven
-  salt_copy_filter:
-    - .kitchen
-    - .git
+  name: script
 
 verifier:
   # https://www.inspec.io/
@@ -143,6 +136,3 @@ verifier:
 
 suites:
   - name: default
-    excludes:
-      - arch-base-latest-3000-2-py2
-      - arch-base-latest-2019-2-py2
