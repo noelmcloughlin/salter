@@ -224,7 +224,9 @@ salt-bootstrap() {
         # No major version pegged packages support for suse/freebsd/arch
         SALT_VERSION=''
     fi
-    rm -fr "${PILLARFS:?}"/* 2>/dev/null
+    if [ -s "${PILLARFS}" ] && [ "${PILLARFS}root" != "/root" ]; then
+        rm -fr "${PILLARFS}"/* 2>/dev/null
+    fi
     PWD=$( pwd )
     export PWD
 
@@ -396,8 +398,8 @@ highstate() {
     [ ! -f "${SALTFS}/top.sls" ] && echo "Failed to find ${PROFILE}.sls or ${PROFILE}/init.sls" && usage
 
     ## prepare pillars
-    cp -Rp "${solution[pillars]}/*" "${PILLARFS}/" 2>/dev/null
-    cp -Rp "${your[pillars]}/*" "${PILLARFS}/" 2>/dev/null
+    cp -Rp "${solution[pillars]}"/* "${PILLARFS}"/ 2>/dev/null
+    cp -Rp "${your[pillars]}"/* "${PILLARFS}"/ 2>/dev/null
     if [ -n "${USER}" ]; then
         ### find/replace dummy usernames in pillar data ###
         case "$OSTYPE" in
