@@ -240,6 +240,8 @@ salt-bootstrap() {
              ### https://stackoverflow.com/questions/34386527/symbol-not-found-pycodecinfo-getincrementaldecoder
              su - "${USER}" -c 'hash -r python' 2>/dev/null
 
+             ### https://github.com/ohmyzsh/ohmyzsh/issues/630#issuecomment-2433637 ###
+
              ### pip https://pip.pypa.io/en/stable
              su - "${USER}" -c "curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py"
              sudo python "${PWD}"/get-pip.py 2>/dev/null
