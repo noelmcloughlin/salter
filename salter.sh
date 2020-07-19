@@ -120,7 +120,8 @@ pkg-add() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf install -y --best --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y || exit 1
+		 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
+                 /usr/bin/yum update -y --skip-broken || exit 1
                  /usr/bin/yum install -y ${PACKAGES} --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get update --fix-missing -y || exit 1
@@ -152,8 +153,9 @@ pkg-update() {
                  /usr/bin/pacman -Syu --noconfirm "${PACKAGES}" || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf upgrade -y --allowerasing "${PACKAGES}" || exit 1
+		 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y "${PACKAGES}" || exit 1
+                 /usr/bin/yum update -y "${PACKAGES}" --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get upgrade -y "${PACKAGES}" || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
@@ -240,6 +242,8 @@ salt-bootstrap() {
              ### https://stackoverflow.com/questions/34386527/symbol-not-found-pycodecinfo-getincrementaldecoder
              su - "${USER}" -c 'hash -r python' 2>/dev/null
 
+             ### https://github.com/ohmyzsh/ohmyzsh/issues/630#issuecomment-2433637 ###
+
              ### pip https://pip.pypa.io/en/stable
              su - "${USER}" -c "curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py"
              sudo python "${PWD}"/get-pip.py 2>/dev/null
@@ -291,7 +295,7 @@ salt-bootstrap() {
              if [ -f "/usr/bin/dnf" ]; then
                  pkg-add ${PACKAGES} 2>/dev/null
              elif [ -f "/usr/bin/yum" ]; then
-                 # centos/rhel have many old package versions so we allow newer upstream packages
+		 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
                  pkg-add ${PACKAGES} --skip-broken 2>/dev/null
              else
                  pkg-add ${PACKAGES} 2>/dev/null
