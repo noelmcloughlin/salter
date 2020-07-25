@@ -1,3 +1,5 @@
 maven:
-  version: 3.2.5
-  source_hash: sha1=41009327d5494e0e8970b25b77ffed8934cd7ca1
+  version: 3.3.9
+  pkg:
+    archive:
+      source_hash: sha1=5b4c117854921b527ab6190615f9435da730ba05
