@@ -17,13 +17,12 @@ Paste this in a Terminal::
 
     curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh add bootstrap && sudo bash salter.sh add salter
 
-User
-====
-The '-u username' option is never required on MacOS. On Linux, its required for "Developer-type" software (IDEs, etc). 
-When in doubt pass the '-u username' argument, when it makes sense.
+
 
 Usage Examples
 ==============
+
+On Linux the '-u username' option is mandatory for developer-type formulas (i.e. no daemon)::
 
 Add profiles::
 
