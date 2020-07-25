@@ -605,7 +605,7 @@ developer-definitions() {
     fork['uri']="https://github.com"
     fork['entity']="noelmcloughlin"
     fork['branch']="latest"
-    fork['solutions']="sqldeveloper sqlplus java kubernetes"
+    fork['solutions']=""
 }
 
 solution-definitions() {
