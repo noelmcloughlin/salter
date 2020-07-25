@@ -17,16 +17,9 @@ base:
     - tomcat.context
 
     - intellij
-    - intellij.developer
-
     - pycharm
-    - pycharm.developer
-
     - sqlplus
-    - sqlplus.developer
-
     - sqldeveloper
-    - sqldeveloper.developer
 
     - eclipse
     - eclipse.developer

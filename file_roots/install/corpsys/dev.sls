@@ -7,33 +7,22 @@ base:
     - epel
         {%- endif %}
     - packages
-
     # example.config
     # example.groups
-
     - users
     - users.sudo
     - users.bashrc
     - users.profile
     - users.user_files
-
     - postgres
     - maven
-    - maven.env
-
     - intellij
-    - intellij.developer
     - pycharm
-    - pycharm.developer
-
     - eclipse
     - eclipse.developer
     - eclipse.plugins
-
     - sqlplus
-    - sqlplus.developer
     - sqldeveloper
-    - sqldeveloper.developer
 
     {% if grains.os not in ('MacOS', 'Windows',) %}
     - eclipse.linuxenv

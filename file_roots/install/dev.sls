@@ -5,36 +5,24 @@ base:
     - epel
        {%- endif %}
     - packages
-
     - users
     - users.sudo
     - users.bashrc
     - users.profile
     - users.user_files
-
     - postgres
     - maven
-    - maven.env
-
     # apache
     # apache.config
     # apache.modules
     # apache.mod_ssl
-
     - intellij
-    - intellij.developer
     - pycharm
-    - pycharm.developer
-
     - eclipse
     - eclipse.developer
     - eclipse.plugins
-
     - sqlplus
-    - sqlplus.developer
     - sqldeveloper
-    - sqldeveloper.developer
-
     {% if grains.os not in ('MacOS', 'Windows',) %}
     - eclipse.linuxenv
     - sqlplus.linuxenv
@@ -42,7 +30,6 @@ base:
     - pycharm.linuxenv
     - sqldeveloper.linuxenv
     {% endif %}
-
     - docker
     - charles
     - chrome
