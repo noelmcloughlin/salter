@@ -8,8 +8,6 @@ base:
     - tomcat.clean
     - intellij.clean
     - pycharm.clean
-    - sqlplus.clean
-    - sqldeveloper.clean
     - eclipse.clean
     - eclipse.clean
     - docker.clean

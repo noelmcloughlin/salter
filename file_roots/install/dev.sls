@@ -11,6 +11,7 @@ base:
     - users.profile
     - users.user_files
     - postgres
+    - java
     - maven
     # apache
     # apache.config
@@ -21,8 +22,6 @@ base:
     - eclipse
     - eclipse.developer
     - eclipse.plugins
-    - sqlplus
-    - sqldeveloper
     {% if grains.os not in ('MacOS', 'Windows',) %}
     - eclipse.linuxenv
     - sqlplus.linuxenv

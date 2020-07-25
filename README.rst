@@ -5,6 +5,11 @@ A software meta profile manager for MacOS, FreeBSD, and Linux.
 
 .. contents:: **Table of Contents**
 
+Assumption
+==========
+
+Salt works on MacOS (https://github.com/saltstack-formulas/salter/issues/75)
+
 Installation
 ============
 

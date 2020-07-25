@@ -2,10 +2,8 @@ base:
   '*':
     # timezone
     - packages
-
     - users
     - postgres
-
     - java
     - tomcat
     - tomcat.config
@@ -15,16 +13,11 @@ base:
     - tomcat.expires
     - tomcat.cluster
     - tomcat.context
-
     - intellij
     - pycharm
-    - sqlplus
-    - sqldeveloper
-
     - eclipse
     - eclipse.developer
     - eclipse.plugins
-
     - docker
     - charles
     - chrome

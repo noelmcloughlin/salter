@@ -8,12 +8,11 @@ base:
     - users.clean
     - postgres.clean
     - maven.clean
+    - java.clean
     # apache.clean
     - intellij.clean
     - pycharm.clean
     - eclipse.clean
-    - sqlplus.clean
-    - sqldeveloper.clean
     - docker.clean
     - charles.clean
     - chrome.clean
