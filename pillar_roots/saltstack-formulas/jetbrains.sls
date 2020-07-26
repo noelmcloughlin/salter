@@ -48,14 +48,12 @@ teamcity:
 
 intellij:
   edition: C       # community
-  flavour: linuxWithoutJBR
   identity:
     user: undefined_user
   linux:
     altpriority: {{ range(1, 9100000) | random }}
 
 pycharm:
-  flavour: linuxAnaconda
   identity:
     user: undefined_user
   linux:
