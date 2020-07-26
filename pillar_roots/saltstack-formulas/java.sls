@@ -22,7 +22,7 @@ java:
       use_upstream_macapp: false
       archive:
                 {%- if grains.kernel|lower == 'darwin' %}
-        source_hash: 2caed3ec07d108bda613f9b4614b22a8bdd196ccf2a432a126161cd4077f07a5  # jdk8
+        source_hash: 6e267893aae127a4bccfedb56d9893a891213a93de593a97f248629eaa0594ba  # jdk8
         # source_hash: f8206f0fef194c598de6b206a4773b2e517154913ea0e26c5726091562a034c8  # jre8
         # source_hash: 931a81f4bed38c48b364db57d4ebdd6e4b4ea1466e9bd0eaf8e0f1e47c4569e9  # jre11 mactgz
         # source_hash: 0941d739e3230d1d83dc1ee54cff6d17d90331e4f275d00739cb78fba41c5b96 # jre11openj9
