@@ -41,10 +41,20 @@ docker-pkg:
       - DOCKER_OPTS="-s btrfs --dns 8.8.8.8"
       - export http_proxy="http://10.20.30.40:3128"
 
-# Docker Compose
+# Docker
 docker:
   # version of docker-compose to install (defaults to latest)
   #compose_version: 1.9.0
+
+  pkg:
+        {%- if grains.os == 'MacOS' %}
+    use_upstream_app: true   a #docker desktop for mac
+        {%- else %}
+    use_upstream_app: false
+        {%- endif %}
+    app:
+      source: https://download.docker.com/mac/stable/Docker.dmg
+      source_hash: f69bd8f9d0863497819b998d27da4825b65884519f3f6a0e2ce1d4c5cdd26f5e
 
   # Global functions for docker_container.running states
   containers:
@@ -52,6 +62,7 @@ docker:
     force_present: False
     force_running: True
 
+  # Docker Compose
   compose:
     registry-datastore:
       dvc: True

@@ -11,7 +11,7 @@ java:
     altpriority: {{ range(1, 9100000) | random }}
 
   adopt:
-    javaversion: jdk8u252-b09
+    javaversion: 8u252-b09
     # javaversion: jdk-11.0.7+10
     # javaversion: jdk-11.0.7+10_openj9-0.20.0
     jvm: hotspot
