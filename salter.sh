@@ -26,7 +26,7 @@
 trap exit SIGINT SIGTERM
 [ "$(id -u)" != 0 ] && echo -e "\nRun script with sudo, exiting\n" && exit 1
 
-SALT_VERSION='stable 3000'    ##go with latest stable release
+SALT_VERSION='stable 3001'    ##go with latest stable release
 RC=0
 ACTION=
 BASE=/srv
