@@ -24,34 +24,50 @@
 #
 #-----------------------------------------------------------------------
 trap exit SIGINT SIGTERM
-[ "$(id -u)" != 0 ] && echo -e "\nRun script with sudo, exiting\n" && exit 1
+if [[ "$( uname )" == CYGWIN_NT* ]]; then
+    net session >/dev/null 2>&1
+    (( $? > 0 )) && echo -e "\nRun As Administrator, exiting\n" && exit 1
+else
+    [ "$(id -u)" != 0 ] && echo -e "\nRun with sudo, exiting\n" && exit 1
+fi
 
 SALT_VERSION='stable 3001'    ##go with latest stable release
 RC=0
 ACTION=
 BASE=/srv
-BASE_ETC=/etc
+BASE_ETC=/etc/salt
 PY_VER=3
 STATEDIR=''
 USER=
+EXTENSION=''
+CHOCO=/cygdrive/c/ProgramData/chocolatey/bin/choco
+HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
+POWERSHELL=/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe
 if [ "${OSNAME}" == "FreeBSD" ]; then
     # FreeBSD
     BASE=/usr/local/etc
-    BASE_ETC=/usr/local/etc
+    BASE_ETC=/usr/local/etc/salt
     STATEDIR=/states
     SUBDIR=/salt
-fi
-if [ "${OSNAME}" == "Darwin" ]; then
+elif [ "${OSNAME}" == "Darwin" ]; then
     BASE=/usr/local/srv
     USER=$( stat -f "%Su" /dev/console )
-    # homebrew unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
+    # unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
     HOMEBREW=/usr/local/bin/brew
     ${HOMEBREW} >/dev/null 2>&1
     # shellcheck disable=SC2016
     (( $? == 127 )) && su - "${USER}" -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+elif [[ "$( uname )" == CYGWIN_NT* ]]; then
+    EXTENSION=.bat
+    BASE=/cygdrive/c/salt/srv
+    BASE_ETC=/cygdrive/c/salt/conf
+    if [ ! -x "${CHOCO}" ]; then
+        curl -o install.ps1 -L https://chocolatey.org/install.ps1
+        ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./install.ps1"
+    fi
+    export PATH=${PATH}:/cygwin/c/salt
 fi
-HOMEBREW=/usr/local/bin/brew
 PILLARFS=${BASE:-/srv}${SUBDIR}/pillar
 SALTFS=${BASE:-/srv}/salt${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
@@ -92,6 +108,11 @@ pkg-query() {
 pkg-add() {
     PACKAGES=${@}
     case ${OSTYPE} in
+    cygwin)  for p in ${PACKAGES}; do
+                 ${CHOCO} install ${p} -y
+             done
+             ;;
+
     darwin*) for p in ${PACKAGES}; do
                  su - "${USER}" -c "${HOMEBREW} install ${p}"
                  su - "${USER}" -c "${HOMEBREW} unlink ${p} 2>/dev/null"
@@ -141,10 +162,16 @@ pkg-update() {
     [ -z "${PACKAGES}" ] && return
 
     case ${OSTYPE} in
+    cygwin)  for p in ${PACKAGES}; do
+                 ${CHOCO} upgrade ${p} -y
+             done
+             ;;
+
     darwin*) for p in ${PACKAGES}; do
                  su - "${USER}" -c "${HOMEBREW} upgrade ${p}"
              done
              ;;
+
     linux*)  if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper --non-interactive up "${PACKAGES}" || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
@@ -168,10 +195,16 @@ pkg-update() {
 pkg-remove() {
     PACKAGES=${*}
     case ${OSTYPE} in
+    cygwin)  for p in ${PACKAGES}; do
+                 ${CHOCO} uninstall ${p} -y
+             done
+             ;;
+
     darwin*) for p in ${PACKAGES}; do
                  su - "${USER}" -c "${HOMEBREW} uninstall ${p} --force"
              done
              ;;
+
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper --non-interactive rm "${PACKAGES}" || exit 1
@@ -212,12 +245,12 @@ get-salt-master-hostname() {
 
 HEREDOC
     fi
-    if [[ -f "${BASE_ETC}/salt/minion" ]]; then
-        MASTER=$( grep '^\s*master\s*:\s*' ${BASE_ETC}/salt/minion | awk '{print $2}')
+    if [[ -f "${BASE_ETC}/minion" ]]; then
+        MASTER=$( grep '^\s*master\s*:\s*' ${BASE_ETC}/minion | awk '{print $2}')
         [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=${MASTER}
     fi
     [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=$( hostname )
-    salt-key -A --yes >/dev/null 2>&1
+    salt-key${EXTENSION} -A --yes >/dev/null 2>&1 || true
 }
 
 salt-bootstrap() {
@@ -232,8 +265,21 @@ salt-bootstrap() {
     PWD=$( pwd )
     export PWD
 
+    echo "Setup OS known good baseline ..."
     case "$OSTYPE" in
-    darwin*) echo "Setup Darwin known good baseline ..."
+    cygwin)  # WINDOWS #
+             curl -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
+             # shellcheck disable=SC2016
+             ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
+             sed -i"bak" 's@#file_client: remote@file_client: local@' c:\salt\conf\minion 2>/dev/null
+             sed -i"bak" 's@^#file_roots:@file_roots:@' c:\salt\conf\minion 2>/dev/null
+             sed -i"bak" 's@#  base:$@  base:@g' c:\salt\conf\minion 2>/dev/null
+             sed -i"bak" "s@#    - /srv/salt@    - ${BASE}/salt@" c:\salt\conf\minion 2>/dev/null
+             sed -i"bak" 's@^#pillar_roots:@pillar_roots:@' c:\salt\conf\minion 2>/dev/null
+             sed -i"bak" "s@#    - /srv/pillar@    - ${BASE}/pillar@" c:\salt\conf\minion 2>/dev/null
+             ;;
+
+    darwin*) # MACOS #
              ### https://github.com/Homebrew/legacy-homebrew/issues/19670
              sudo chown -R "${USER}":admin /usr/local/*
              sudo chmod -R 0755 /usr/local/* /Library/Python/2.7/site-packages/pip* 2>/dev/null
@@ -319,31 +365,27 @@ EOF
         ### Enforce python3
         rm /usr/bin/python 2>/dev/null; ln -s /usr/bin/python3 /usr/bin/python
     fi
-    ### salt-api (except arch/macos/freebsd)
-    [ ! -f "/etc/arch-release" ] && [ "${OSNAME}" != "Darwin" ] && [ "${OSNAME}" != "FreeBSD" ] && pkg-add salt-api
+    ### salt-api (except arch/macos/freebsd/cygwin)
+    [[ "$( uname )" != CYGWIN_NT* ]] && [ ! -f "/etc/arch-release" ] && pkg-add salt-api
 
     ### salt minion
-    [ ! -f "${BASE_ETC}/salt/minion" ] && echo "File ${BASE_ETC}/salt/minion not found" && exit 1
+    [ ! -f "${BASE_ETC}/minion" ] && echo "File ${BASE_ETC}/minion not found" && exit 1
     if [[ "${OSNAME}" == "FreeBSD" ]] || [[ "${OSNAME}" == "Darwin" ]]; then
-        sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
+        sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/minion
     else
-        sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/salt/minion
+        sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/minion
     fi
     ### salt services
-    (systemctl enable salt-api && systemctl start salt-api) 2>/dev/null || service start salt-api 2>/dev/null
-    (systemctl enable salt-master && systemctl start salt-master) 2>/dev/null || service start salt-master 2>/dev/null
-    (systemctl enable salt-minion && systemctl start salt-minion) 2>/dev/null || service start salt-minion 2>/dev/null
-    salt-key -A --yes >/dev/null 2>&1     ##accept pending registrations
+    if $( echo "${OSTYPE}" | grep "linux"); then
+        (systemctl enable salt-api && systemctl start salt-api) 2>/dev/null || service start salt-api 2>/dev/null
+        (systemctl enable salt-master && systemctl start salt-master) 2>/dev/null || service start salt-master 2>/dev/null
+        (systemctl enable salt-minion && systemctl start salt-minion) 2>/dev/null || service start salt-minion 2>/dev/null
+        salt-key${EXTENSION} -A --yes >/dev/null 2>&1 || true    ##accept pending registrations
 
-    if [ "$OSNAME" != "Darwin" ]; then
         ### reboot to activate a new linux kernel
         echo && KERNEL_VERSION=$( uname -r | awk -F. '{print $1"."$2"."$3"."$4"."$5}' )
         echo "kernel before: ${KERNEL_VERSION}"
-        if [ "${OSNAME}" == "FreeBSD" ]; then
-            echo "kernel after: $( /bin/freebsd-version -k 2>/dev/null )"
-        else
-            echo "kernel after: $( pkg-query linux 2>/dev/null )"
-        fi
+        echo "kernel after: $( pkg-query linux 2>/dev/null )"
         echo "Reboot if kernel was major-upgraded; if unsure reboot!"
     fi
     echo
@@ -352,10 +394,10 @@ EOF
 setup-log() {
     LOG=${1}
     mkdir -p "${solution[logdir]}" 2>/dev/null
-    salt-call --versions >> "${LOG}" 2>&1
+    salt-call${EXTENSION} --versions >> "${LOG}" 2>&1
     [ -f "${PILLARFS}/site.j2" ] && cat ${PILLARFS}/site.j2 >> "${LOG}" 2>&1
-    [ -n "${DEBUGG_ON}" ] && salt-call pillar.items --local >> "${LOG}" 2>&1 && echo >> "${LOG}" 2>&1
-    salt-call state.show_top --local | tee -a "${LOG}" 2>&1   ## slow with many pillar files = needs refactoring
+    [ -n "${DEBUGG_ON}" ] && salt-call${EXTENSION} pillar.items --local >> "${LOG}" 2>&1 && echo >> "${LOG}" 2>&1
+    salt-call${EXTENSION} state.show_top --local | tee -a "${LOG}" 2>&1   ## slow if many pillar files = refactor
     echo >> "${LOG}" 2>&1
     echo "run salt: this takes a while, please be patient ..."
 }
@@ -408,7 +450,7 @@ highstate() {
         ### find/replace dummy usernames in pillar data ###
         case "$OSTYPE" in
         darwin*) grep -rl 'undefined_user' "${PILLARFS}" |xargs sed -i '' "s/undefined_user/${USER}/g" 2>/dev/null ;;
-        linux*)  grep -rl 'undefined_user' "${PILLARFS}" |xargs sed -i "s/undefined_user/${USER}/g" 2>/dev/null
+        *)  grep -rl 'undefined_user' "${PILLARFS}" |xargs sed -i "s/undefined_user/${USER}/g" 2>/dev/null
         esac
     fi
 
@@ -429,7 +471,7 @@ highstate() {
     ## run states
     LOG="${solution[logdir]}/log.$( date '+%Y%m%d%H%M' )"
     setup-log "${LOG}"
-    salt-call state.highstate --local "${DEBUGG_ON}" --retcode-passthrough saltenv=base  >> "${LOG}" 2>&1
+    salt-call${EXTENSION} state.highstate --local "${DEBUGG_ON}" --retcode-passthrough saltenv=base  >> "${LOG}" 2>&1
     [ -f "${LOG}" ] && (tail -6 "${LOG}" | head -4) 2>/dev/null && echo See full log in [ "${LOG}" ]
     echo
     echo "/////////////////////////////////////////////////////////////////"
@@ -561,7 +603,7 @@ salter-engine() {
 }
 
 cli-options() {
-    (( $# == 0 )) && usage
+    (( $# == 0 )) && echo -e "\nPass some arguments, exiting\n" && exit 1
     case ${1} in
     add|remove|edit|show)   ACTION="${1}" && shift ;;
     bootstrap)              ACTION=add ;;
@@ -625,7 +667,7 @@ solution-definitions() {
 
     your['saltdir']="${SALTFS}/namespaces/your/file_roots"
     your['pillars']="${SALTFS}/namespaces/your/pillar_roots"
-    mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC}/salt 2>/dev/null
+    mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC} 2>/dev/null
 }
 
 custom-add() {
@@ -642,7 +684,7 @@ custom-postadd() {
     # SUSE/Deepsea/Ceph
     # shellcheck disable=SC2181,SC2153
     if (( $? == 0 )) && [[ "${1}" == "deepsea" ]]; then
-       salt-call --local grains.append deepsea default ${solution['saltmaster']}
+       salt-call${EXTENSION} --local grains.append deepsea default ${solution['saltmaster']}
        # shellcheck disable=SC2086
        cp "${solution['homedir']}/file_roots/add/deepsea_post.sls" "${SALTFS}/${STATES_DIR}/top.sls"
     fi
