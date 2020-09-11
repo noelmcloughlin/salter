@@ -70,7 +70,7 @@ salt_formulas:
     user: root
       {%- if grains['kernel'] in ['FreeBSD', 'OpenBSD', 'NetBSD'] %}
     group: wheel
-      {%- else %}
+      {%- elif grains['kernel'] not in ('Windows',) %}
     group: root
       {%- endif %}
     mode: 755
