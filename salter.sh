@@ -66,7 +66,7 @@ elif [[ "$( uname )" == CYGWIN_NT* ]]; then
         curl -o install.ps1 -L https://chocolatey.org/install.ps1
         ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./install.ps1"
     fi
-    export PATH=${PATH}:/cygwin/c/salt
+    export PATH="${PATH}:/cygdrive/c/salt:c:\\salt"
 fi
 PILLARFS=${BASE:-/srv}${SUBDIR}/pillar
 SALTFS=${BASE:-/srv}/salt${STATEDIR}
@@ -141,7 +141,7 @@ pkg-add() {
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf install -y --best --allowerasing ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-		 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
+                 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
                  /usr/bin/yum update -y --skip-broken || exit 1
                  /usr/bin/yum install -y ${PACKAGES} --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
@@ -180,7 +180,7 @@ pkg-update() {
                  /usr/bin/pacman -Syu --noconfirm "${PACKAGES}" || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf upgrade -y --allowerasing "${PACKAGES}" || exit 1
-		 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
+                 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
              elif [ -f "/usr/bin/yum" ]; then
                  /usr/bin/yum update -y "${PACKAGES}" --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
@@ -271,12 +271,18 @@ salt-bootstrap() {
              curl -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
              # shellcheck disable=SC2016
              ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
-             sed -i"bak" 's@#file_client: remote@file_client: local@' c:\salt\conf\minion 2>/dev/null
-             sed -i"bak" 's@^#file_roots:@file_roots:@' c:\salt\conf\minion 2>/dev/null
-             sed -i"bak" 's@#  base:$@  base:@g' c:\salt\conf\minion 2>/dev/null
-             sed -i"bak" "s@#    - /srv/salt@    - ${BASE}/salt@" c:\salt\conf\minion 2>/dev/null
-             sed -i"bak" 's@^#pillar_roots:@pillar_roots:@' c:\salt\conf\minion 2>/dev/null
-             sed -i"bak" "s@#    - /srv/pillar@    - ${BASE}/pillar@" c:\salt\conf\minion 2>/dev/null
+	     for f in ${BASE_ETC}/minion ${BASE_ETC}/minion.d/f_defaults.conf ${BASE_ETC}/master.d/f_defaults.conf
+	     do
+                 sed -i"bak" 's@#file_client: remote@file_client: local@' ${f} 2>/dev/null
+                 sed -i"bak" 's@^#file_roots:@file_roots:@' ${f} 2>/dev/null
+                 sed -i"bak" 's@^#pillar_roots:@pillar_roots:@' ${f} 2>/dev/null
+                 sed -i"bak" 's@#  base:@  base:@g' ${f} 2>/dev/null
+                 sed -i"bak" 's@#    - /srv/salt/@    - c:\\salt\\srv\\salt\\@' ${f} 2>/dev/null
+                 sed -i"bak" 's@#    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
+                 sed -i"bak" 's@#    - /srv/pillar@    - c:\\salt\\srv\\pillar@' ${f} 2>/dev/null
+                 sed -i"bak" 's@#    - /srv/salt@    - c:\\salt@' ${f} 2>/dev/null
+		 sed -i"bak" 's@    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
+	     done
              ;;
 
     darwin*) # MACOS #
@@ -341,7 +347,7 @@ salt-bootstrap() {
              if [ -f "/usr/bin/dnf" ]; then
                  pkg-add ${PACKAGES} 2>/dev/null
              elif [ -f "/usr/bin/yum" ]; then
-		 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
+                 # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
                  pkg-add ${PACKAGES} --skip-broken 2>/dev/null
              else
                  pkg-add ${PACKAGES} 2>/dev/null

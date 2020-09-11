@@ -7,6 +7,8 @@ salt:
         - /usr/local/etc/salt/states
             {%- elif grains['kernel'] in ['Darwin',] %}
         - /usr/local/srv/salt
+            {%- elif grains['kernel'] in ['Windows',] %}
+        - c:\\salt\\srv\\salt
             {%- else %}
         - /srv/salt
             {%- endif %}
@@ -16,6 +18,8 @@ salt:
         - /usr/local/etc/salt/pillaar
             {%- elif grains['kernel'] in ['Darwin',] %}
         - /usr/local/srv/pillar
+            {%- elif grains['kernel'] in ['Windows',] %}
+        - c:\\salt\\srv\\pillar
             {%- else %}
         - /srv/pillar
             {%- endif %}
@@ -26,6 +30,8 @@ salt:
         - /usr/local/etc/salt/states
             {%- elif grains['kernel'] in ['Darwin',] %}
         - /usr/local/srv/salt
+            {%- elif grains['kernel'] in ['Windows',] %}
+        - c:\\salt\\srv\\salt
             {%- else %}
         - /srv/salt
             {%- endif %}
@@ -35,6 +41,8 @@ salt:
         - /usr/local/etc/salt/pillaar
             {%- elif grains['kernel'] in ['Darwin',] %}
         - /usr/local/srv/pillar
+            {%- elif grains['kernel'] in ['Windows',] %}
+        - c:\\salt\\srv\\pillar
             {%- else %}
         - /srv/pillar
             {%- endif %}
@@ -52,6 +60,8 @@ salt_formulas:
       basedir: /usr/local/etc/salt/states/namespaces/saltstack-formulas
             {%- elif grains['kernel'] in ['Darwin',] %}
       basedir: /usr/local/srv/salt/namespaces/saltstack-formulas
+            {%- elif grains['kernel'] in ['Windows',] %}
+      basedir: c:\\salt\\srv\\salt\\namespaces\\saltstack-formulas
          {%- else %}
       basedir: /srv/salt/namespaces/saltstack-formulas
          {%- endif %}
