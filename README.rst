@@ -15,9 +15,15 @@ Installation
 
 Paste this in a Terminal::
 
-    curl -o salter.sh https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh add bootstrap && sudo bash salter.sh add salter
+    curl -LO https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh add bootstrap && sudo bash salter.sh add salter
 
 
+Windows - Cygwin
+================
+
+Run ```cygwin-terminal``` As Administrator and Paste into Terminal:: 
+
+    curl -LO https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && bash salter.sh add bootstrap && bash salter.sh add salter
 
 Usage Examples
 ==============
