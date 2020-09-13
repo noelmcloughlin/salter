@@ -382,7 +382,7 @@ EOF
         sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/minion
     fi
     ### salt services
-    if $( echo "${OSTYPE}" | grep "linux"); then
+    if [[ "${OSTYPE}" == "linux-gnu" ]]; then
         (systemctl enable salt-api && systemctl start salt-api) 2>/dev/null || service start salt-api 2>/dev/null
         (systemctl enable salt-master && systemctl start salt-master) 2>/dev/null || service start salt-master 2>/dev/null
         (systemctl enable salt-minion && systemctl start salt-minion) 2>/dev/null || service start salt-minion 2>/dev/null
