@@ -5,25 +5,16 @@ A software meta profile manager for MacOS, Linux, Windows, and FreeBSD.
 
 .. contents:: **Table of Contents**
 
-Assumption
-==========
-
-Salt works on MacOS (https://github.com/saltstack-formulas/salter/issues/75)
+We assume Salt is functional on MacOS (https://github.com/saltstack-formulas/salter/issues/75)
 
 Installation
 ============
 
-Paste this in a Terminal::
+Paste this in a Terminal (on Windows run ``cygwin-terminal``` As Administrator)::
 
     curl -LO https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh add bootstrap && sudo bash salter.sh add salter
 
-
-Windows - Cygwin
-================
-
-Run ```cygwin-terminal``` As Administrator and Paste into Terminal:: 
-
-    curl -LO https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && bash salter.sh add bootstrap && bash salter.sh add salter
+We assume Salt is functional on MacOS (https://github.com/saltstack-formulas/salter/issues/75)
 
 Usage Examples
 ==============
