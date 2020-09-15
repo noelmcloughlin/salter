@@ -31,7 +31,7 @@ else
     [ "$(id -u)" != 0 ] && echo -e "\nRun with sudo, exiting\n" && exit 1
 fi
 
-SALT_VERSION='stable 3001'    ##go with latest stable release
+SALT_VERSION='stable 3000'    ## 3001 causes segmentation faults on ubuntu
 RC=0
 ACTION=
 BASE=/srv
