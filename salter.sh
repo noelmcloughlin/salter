@@ -629,9 +629,9 @@ cli-options() {
     PROFILE=$( echo "${1%%.*}" )
     shift   #check for options
 
-    while getopts ":i:l:u:" option; do
+    while getopts ":il:u:" option; do
         case "${option}" in
-        i)  IGNORE = true ;;
+        i)  IGNORE=true ;;
 
         l)  case ${OPTARG} in
             'all'|'garbage'|'trace'|'debug'|'warning'|'error') DEBUGG="-l${OPTARG}" && set -xv
