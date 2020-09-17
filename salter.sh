@@ -75,6 +75,7 @@ SKIP_UNNECESSARY_CLONE=''
 TERM_PS1=${PS1} && unset PS1
 PROFILE=
 DEBUGG=
+IGNORE=false
 
 # bash version must be modern
 declare -A your solution fork 2>/dev/null || RC=$?
@@ -130,8 +131,10 @@ pkg-add() {
 
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
-                 /usr/bin/zypper update -y || exit 1
-                 /usr/bin/zypper --non-interactive install ${PACKAGES} || exit 1
+                 /usr/bin/zypper update -y
+		 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
+                 /usr/bin/zypper --non-interactive install ${PACKAGES}
+		 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
              elif [ -f "/usr/bin/emerge" ]; then
                  /usr/bin/emerge --oneshot ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
@@ -489,20 +492,25 @@ highstate() {
 
 usage() {
     echo "Example usage:"
-    echo "  salter add PROFILE..."
-    echo "  salter edit PROFILE..."
-    echo "  salter show PROFILE..."
-    echo "  salter remove PROFILE..."
+    echo "  salter add PROFILE... [OPTIONS]"
+    echo "  salter edit PROFILE... [OPTIONS]"
+    echo "  salter show PROFILE... [OPTIONS]"
+    echo "  salter remove PROFILE... [OPTIONS]"
     echo 1>&2
-    echo "Synopsis:"
+    echo "SYNOPSIS:"
     echo "  sudo $0 add PROFILE [ OPTIONS ] [ -u username ]" 1>&2
     echo "  sudo $0 add PROFILE [ OPTIONS ]" 1>&2
     echo "  sudo $0 remove PROFILE [ OPTIONS ]" 1>&2
     echo "  sudo $0 edit PROFILE [ OPTIONS ]" 1>&2
     echo "  sudo $0 show PROFILE [ OPTIONS ]" 1>&2
     echo 1>&2
-    echo "Profiles:" 1>&2
-    echo -e "  PROFILE\tAdd profile named PROFILE" 1>&2
+    echo "OPTIONS:"
+    echo "-e   PROFILE\tEdit profile named PROFILE" 1>&2
+    echo "-u   USER\tExisting user" 1>&2
+    echo "-i   IGNORE\tIgnore package manager failures" 1>&2
+    echo 1>&2
+    echo "PROFILES:" 1>&2
+    echo -e "  PROFILE\tEdit named PROFILE" 1>&2
     echo 1>&2
     if [ "${solution[alias]}" != "salter" ]; then
         echo 1>&2
@@ -623,7 +631,8 @@ cli-options() {
 
     while getopts ":i:l:u:" option; do
         case "${option}" in
-        i)  PS1=TERM_PS1 ;;
+        i)  IGNORE = true ;;
+
         l)  case ${OPTARG} in
             'all'|'garbage'|'trace'|'debug'|'warning'|'error') DEBUGG="-l${OPTARG}" && set -xv
                ;;
