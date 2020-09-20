@@ -435,9 +435,16 @@ gitclone() {
     else
         git clone "${URI}/${ENTITY}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1 || exit 1
     fi
-    ## ensure symlink points to *this* correct namespace
+    ## ensure repo is correct
     rm -f "${SALTFS:?}"/"${ALIAS:?}" 2>/dev/null  ## ensure symlink is current
-    echo && ln -s "${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR}" "${SALTFS}/${ALIAS}" 2>/dev/null
+    echo
+    if [[ "${OSTYPE}" != 'cygwin' ]]; then
+        ## ensure symlink points to *this* correct namespace
+        ln -s "${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR}" "${SALTFS}/${ALIAS}" 2>/dev/null
+    else
+	## symlinks do not work on windows
+        cp -Rp "${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR}" "${SALTFS}/${ALIAS}" 2>/dev/null
+    fi
 }
 
 highstate() {
