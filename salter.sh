@@ -356,10 +356,7 @@ salt-bootstrap() {
                  pkg-add ${PACKAGES} 2>/dev/null
              fi
              # shellcheck disable=SC2181
-             if (( $? > 0 )); then
-                echo "Failed to add packages"
-                exit 1
-             fi
+	     (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
              wget -O bootstrap_salt.sh https://bootstrap.saltstack.com || exit 10
              (sh bootstrap_salt.sh -F -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
