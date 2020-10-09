@@ -12,7 +12,7 @@ Installation
 
 Paste this in a Terminal (on Windows run ``cygwin-terminal``` As Administrator)::
 
-    curl -LO https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && sudo bash salter.sh add bootstrap -i && sudo bash salter.sh add salter
+    DOO=sudo;[ "$OSTYPE" == 'cygwin' ] && DOO=''; curl -LO https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh && $DOO bash salter.sh add bootstrap -i && $DOO bash salter.sh add salter
 
 We assume Salt is functional on MacOS (https://github.com/saltstack-formulas/salter/issues/75)
 

@@ -139,6 +139,8 @@ pkg-add() {
                  /usr/bin/emerge --oneshot ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
                  [ -x '/usr/bin/pacman-mirrors' ] && /usr/bin/pacman-mirrors -g
+		 # /usr/bin/pacman-key --refresh-keys || true
+		 # /usr/bin/pacman -Sy archlinux-keyring || true
                  /usr/bin/pacman -Syyu --noconfirm
                  /usr/bin/pacman -S --noconfirm ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
