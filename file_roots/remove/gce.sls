@@ -1,0 +1,3 @@
+base:
+  '*':
+    - gce.clean

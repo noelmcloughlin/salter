@@ -1,0 +1,3 @@
+base:
+  '*':
+    - hostsfile.clean

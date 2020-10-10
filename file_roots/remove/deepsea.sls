@@ -1,3 +1,3 @@
 base:
   '*':
-    - deepsea.remove
+    - deepsea.clean

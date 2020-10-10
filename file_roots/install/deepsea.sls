@@ -1,4 +1,3 @@
 base:
   '*':
-    - ceph.repo
     - deepsea
