@@ -447,7 +447,7 @@ gitclone() {
 }
 
 highstate() {
-    (get-salt-master-hostname && [ -d "${solution[homedir]}" ]) || usage
+    [ -d "${solution[homedir]}" ] || usage
 
     ## prepare states
     ACTION=${1} && STATEDIR=${2} && PROFILE=${3}
