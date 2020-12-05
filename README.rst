@@ -12,7 +12,7 @@ Installation
 
 Paste this in a Terminal (on Windows run ``cygwin-terminal``` As Administrator)::
 
-    curl -LO https://raw.githubusercontent.com/noelmcloughlin/salter/master/go.sh && bash go.sh
+    curl -LO https://raw.githubusercontent.com/saltstack-formulas/salter/master/go.sh && bash go.sh
 
 We assume Salt is functional on MacOS (https://github.com/saltstack-formulas/salter/issues/75)
 
