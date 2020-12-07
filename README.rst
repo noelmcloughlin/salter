@@ -25,6 +25,7 @@ Add profiles::
 
     sudo salter add intelli -u vagrant
     sudo salter add apache
+    sudo salter add airflow
 
 Remove profile::
 
@@ -76,6 +77,7 @@ Saltstack Formulas Namespace
 
     sudo salter add accumulo
     sudo salter add aegir
+    sudo salter add airflow
     sudo salter add apache
     sudo salter add androidstudio
     sudo salter add appcode -u vagrant
