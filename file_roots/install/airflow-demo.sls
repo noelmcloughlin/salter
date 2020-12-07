@@ -1,0 +1,5 @@
+base:
+  '*':
+    - postgres
+    - redis
+    - airflow
