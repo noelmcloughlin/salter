@@ -59,49 +59,49 @@ airflow:
         # https://airflow.apache.org/docs/apache-airflow/stable/installation.html#extra-packages
         # Most things selected. I omitted what is not verified or troublesome.
         - devel             # Minimum dev tools requirements
-        - apache.atlas      # Apache Atlas to use Data Lineage feature
-        - apache.cassandra  # Cassandra related operators & hook
-        - apache.druid      # Druid related operators & hooks
-        - apache.hdfs       # HDFS hooks and operators
-        - apache.hive       # All Hive related operators
-        - apache.presto     # All Presto related operators & hooks
-        - webhdfs           # HDFS hooks and operators
+        # apache.atlas      # Apache Atlas to use Data Lineage feature
+        # apache.cassandra  # Cassandra related operators & hook
+        # apache.druid      # Druid related operators & hooks
+        # apache.hdfs       # HDFS hooks and operators
+        # apache.hive       # All Hive related operators
+        # apache.presto     # All Presto related operators & hooks
+        # webhdfs           # HDFS hooks and operators
         - amazon               # aws
         - microsoft.azure      # azure
-        - azure_blob_storage
-        - azure_cosmos
-        - azure_container_instances
-        - azure_data_lake
-        - azure_secrets
+        # azure_blob_storage
+        # azure_cosmos
+        # azure_container_instances
+        # azure_data_lake
+        # azure_secrets
         - databricks           # Databricks hooks and operators
         - datadog              # Datadog hooks and sensors
         - gcp                  # Google Cloud
-        - github_enterprise    # GitHub Enterprise auth backend
+        # github_enterprise    # GitHub Enterprise auth backend
         - google_auth          # Google auth backend
         - hashicorp            # Hashicorp Services (Vault)
-        - qds                  # Enable QDS (Qubole Data Service) support
-        - salesforce           # Salesforce hook
-        - sendgrid             # Send email using sendgrid
-        - segment              # Segment hooks and sensors
-        - sentry
+        # qds                  # Enable QDS (Qubole Data Service) support
+        # salesforce           # Salesforce hook
+        # sendgrid             # Send email using sendgrid
+        # segment              # Segment hooks and sensors
+        # sentry
         - slack                # airflow.providers.slack.operators.slack.SlackAPIOperator
-        - vertica              # Vertica hook support as an Airflow backend
+        # vertica              # Vertica hook support as an Airflow backend
         - async                # Async worker classes for Gunicorn
         - elasticsearch        # Elasticsearch hooks and Log Handler
         - mongo                # Mongo hooks and operators
         - mysql                # MySQL operators and hook, support as Airflow backend (mysql 5.6.4+)
-        - pinot                # Pinot DB hook
+        # pinot                # Pinot DB hook
         - postgres             # PostgreSQL operators and hook, support as an Airflow backend
         - rabbitmq             # RabbitMQ support as a Celery backend
         - redis                # Redis hooks and sensors
         - samba                # airflow.providers.apache.hive.transfers.hive_to_samba.HiveToSambaOperator
-        - statsd               # Needed by StatsD metrics
+        # statsd               # Needed by StatsD metrics
         - virtualenv
         - cgroups              # Needed To use CgroupTaskRunner
         - crypto               # Cryptography libraries
         - grpc                 # Grpc hooks and operators
         - ldap                 # LDAP authentication for users
-        - papermill            # Papermill hooks and operators
+        # papermill            # Papermill hooks and operators
         - jira                 # Jira hooks and operators
         - password             # Password authentication for users
         - docker               # Docker hooks and operators
