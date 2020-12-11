@@ -695,7 +695,7 @@ solution-definitions() {
     solution['entity']="saltstack-formulas"
     solution['repo']="salter"
     solution['alias']="salter"
-    solution['subdir']="./"
+    solution['subdir']=""
     solution['provider']="saltstack-formulas"
 
     ### derivatives
