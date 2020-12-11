@@ -291,15 +291,11 @@ salt-bootstrap() {
              ## Try to make git available
              which git >/dev/null 2>&1
              if (( $? > 0 )); then
-                 which choco >/dev/null 2>&1
-                 if (( $? == 0 )); then
-                     choco install git -Y
-                 elif [ -f "/cygdrive/c/ProgramData/chocolatey/bin/choco" ]; then
-                     /cygdrive/c/ProgramData/chocolatey/bin/choco install git -Y
-                 fi
-                 if [ -f "/cygdrive/c/Program\ Files/Git/bin/git.exe" ]; then
-                     export PATH="${PATH}://cygdrive/c/Program\ Files/Git/bin"
-                 fi
+                ${CHOCO} install git -Y
+                if [ -f "/cygdrive/c/Program\ Files/Git/bin/git.exe" ]; then
+                    export PATH="${PATH}:/cygdrive/c/Program\ Files/Git/bin"
+		    ln -s /cygdrive/c/Program\ Files/Git/bin/git.exe /cygdrive/c/Program\ Files/Git/bin/git
+                fi
              fi
              ;;
 
