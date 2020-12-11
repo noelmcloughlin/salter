@@ -488,7 +488,7 @@ highstate() {
     fi
 
     ## prepare formulas
-    for formula in $( grep '^.* - ' ${SALTFS}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq )
+    for formula in $( grep '^.* - ' ${SALTFS}/top.sls |awk '{print $2}' |cut -d'.' -f1 |uniq | sed 's/\r$//' )
     do
          ## adjust mismatched state/formula names
          case ${formula} in
