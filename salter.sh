@@ -430,24 +430,28 @@ gitclone() {
     URI=${1} && ENTITY=${2} && REPO=${3} && ALIAS=${4} && SUBDIR=${5}
     echo "cloning ${REPO} from ${ENTITY} ..."
     rm -fr "${SALTFS}/namespaces/${ENTITY}/${REPO}" 2>/dev/null
-
     echo "${fork[solutions]}" | grep "${REPO}" >/dev/null 2>&1
+
+    MYPWD="$( pwd )"
+    cd "${SALTFS}/namespaces/${ENTITY}"
     # shellcheck disable=SC2181
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        "${GIT}" clone "${fork[uri]}/${fork[entity]}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1
+        "${GIT}" clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" >/dev/null 2>&1
         # shellcheck disable=SC2181
         if (( $? > 0 )); then
             echo "gitclone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
             exit 1
         fi
-        cd "${SALTFS}/namespaces/${ENTITY}/${REPO}" || exit 22
+        cd "${REPO}" || exit 22
         "${GIT}" checkout "${fork[branch]}"
         # shellcheck disable=SC2181
         (( $? > 0 )) && pwd && echo "gitclone checkout ${fork[branch]} failed" && exit 1
     else
         "${GIT}" clone "${URI}/${ENTITY}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1 || exit 1
     fi
+    cd ${MYPWD}
+
     ## ensure repo is correct
     rm -f "${SALTFS:?}"/"${ALIAS:?}" 2>/dev/null  ## ensure symlink is current
     echo
