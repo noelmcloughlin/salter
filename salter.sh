@@ -60,7 +60,7 @@ elif [ "${OSNAME}" == "Darwin" ]; then
     # shellcheck disable=SC2016
     (( $? == 127 )) && su - "${USER}" -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
 elif [[ "$( uname )" == CYGWIN_NT* ]]; then
-    GIT="/cygdrive/c/Program\ Files/Git/bin/git.exe"
+    GIT='/cygdrive/c/Program\ Files/Git/bin/git.exe'
     EXTENSION=.bat
     BASE=/cygdrive/c/salt/srv
     BASE_ETC=/cygdrive/c/salt/conf
@@ -293,7 +293,7 @@ salt-bootstrap() {
              ## Try to make git available
              which ${GIT} >/dev/null 2>&1
              (( $? > 0 )) && ${CHOCO} install git -Y
-             export GIT="/cygdrive/c/Program\ Files/Git/bin/git.exe"
+             export GIT='/cygdrive/c/Program\ Files/Git/bin/git.exe'
              ;;
 
     darwin*) # MACOS #
