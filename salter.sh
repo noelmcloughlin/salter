@@ -448,7 +448,7 @@ gitclone() {
         # shellcheck disable=SC2181
         (( $? > 0 )) && pwd && echo "gitclone checkout ${fork[branch]} failed" && exit 1
     else
-        "${GIT}" clone "${URI}/${ENTITY}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1 || exit 1
+        "${GIT}" clone "${URI}/${ENTITY}/${REPO}" "${REPO}" >/dev/null 2>&1 || exit 1
     fi
     cd ${MYPWD}
 
