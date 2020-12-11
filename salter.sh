@@ -438,13 +438,13 @@ gitclone() {
         "${GIT}" clone "${fork[uri]}/${fork[entity]}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1
         # shellcheck disable=SC2181
         if (( $? > 0 )); then
-            echo "${GIT}" clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
+            echo "gitclone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
             exit 1
         fi
         cd "${SALTFS}/namespaces/${ENTITY}/${REPO}" || exit 22
         "${GIT}" checkout "${fork[branch]}"
         # shellcheck disable=SC2181
-        (( $? > 0 )) && pwd && echo "${GIT}" checkout ${fork[branch]} failed" && exit 1
+        (( $? > 0 )) && pwd && echo "gitclone checkout ${fork[branch]} failed" && exit 1
     else
         "${GIT}" clone "${URI}/${ENTITY}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1 || exit 1
     fi
