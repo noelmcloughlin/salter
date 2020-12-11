@@ -49,10 +49,10 @@ airflow:
   service:
     airflow:
       enabled:
-        - airflow-flower
+        - airflow-celery-flower
         - airflow-scheduler
         - airflow-webserver
-        - airflow-worker
+        - airflow-celery-worker
   pkg:
     airflow:
       version: 1.10.13
