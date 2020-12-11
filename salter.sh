@@ -410,7 +410,7 @@ setup-log() {
     echo "run salt: this takes a while, please be patient ..."
     if [ -f "/usr/bin/yum" ] && [ "${PROFILE}" == "salt" ]; then
         echo "if kernel got upgraded (above) in middle of this activity: kill me & reboot host first"
-    endif
+    fi 
 }
 
 gitclone() {
