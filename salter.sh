@@ -400,7 +400,7 @@ EOF
 }
 
 setup-log() {
-    LOG=${1}
+    LOG=${1} && PROFILE=${2}
     mkdir -p "${solution[logdir]}" 2>/dev/null
     salt-call${EXTENSION} --versions >> "${LOG}" 2>&1
     [ -f "${PILLARFS}/site.j2" ] && cat ${PILLARFS}/site.j2 >> "${LOG}" 2>&1
@@ -408,6 +408,9 @@ setup-log() {
     salt-call${EXTENSION} state.show_top --local | tee -a "${LOG}" 2>&1   ## slow if many pillar files = refactor
     echo >> "${LOG}" 2>&1
     echo "run salt: this takes a while, please be patient ..."
+    if [ -f "/usr/bin/yum" ] && [ "${PROFILE}" == "salt" ]; then
+        echo "if kernel got upgraded (above) in middle of this activity: kill me & reboot host first"
+    endif
 }
 
 gitclone() {
@@ -485,7 +488,7 @@ highstate() {
 
     ## run states
     LOG="${solution[logdir]}/log.$( date '+%Y%m%d%H%M' )"
-    setup-log "${LOG}"
+    setup-log "${LOG}" "${PROFILE}"
     salt-call${EXTENSION} state.highstate --local "${DEBUGG_ON}" --retcode-passthrough saltenv=base  >> "${LOG}" 2>&1
     [ -f "${LOG}" ] && (tail -6 "${LOG}" | head -4) 2>/dev/null && echo See full log in [ "${LOG}" ]
     echo
