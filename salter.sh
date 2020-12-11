@@ -408,7 +408,7 @@ setup-log() {
     salt-call${EXTENSION} state.show_top --local | tee -a "${LOG}" 2>&1   ## slow if many pillar files = refactor
     echo >> "${LOG}" 2>&1
     echo "run salt: this takes a while, please be patient ..."
-    if [ -f "/usr/bin/yum" ] && [ "${PROFILE}" == "salt" ]; then
+    if [[ -f "/usr/bin/yum" ]] && [[ "${PROFILE}" == "salt" ]]; then
         echo "if kernel got upgraded (above) in middle of this activity: kill me & reboot host first"
     fi 
 }
