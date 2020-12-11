@@ -684,9 +684,9 @@ cli-options() {
 
 developer-definitions() {
     fork['uri']="https://github.com"
-    fork['entity']="noelmcloughlin"
-    fork['branch']="latest"
-    fork['solutions']="devstack"
+    fork['entity']=""
+    fork['branch']=""
+    fork['solutions']=""
 }
 
 solution-definitions() {
