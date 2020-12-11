@@ -132,15 +132,15 @@ pkg-add() {
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
                  /usr/bin/zypper update -y
-		 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
+                 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
                  /usr/bin/zypper --non-interactive install ${PACKAGES}
-		 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
+                 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
              elif [ -f "/usr/bin/emerge" ]; then
                  /usr/bin/emerge --oneshot ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
                  [ -x '/usr/bin/pacman-mirrors' ] && /usr/bin/pacman-mirrors -g
-		 # /usr/bin/pacman-key --refresh-keys || true
-		 # /usr/bin/pacman -Sy archlinux-keyring || true
+                 # /usr/bin/pacman-key --refresh-keys || true
+                 # /usr/bin/pacman -Sy archlinux-keyring || true
                  /usr/bin/pacman -Syyu --noconfirm
                  /usr/bin/pacman -S --noconfirm ${PACKAGES} || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
@@ -276,8 +276,8 @@ salt-bootstrap() {
              curl -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
              # shellcheck disable=SC2016
              ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
-	     for f in ${BASE_ETC}/minion ${BASE_ETC}/minion.d/f_defaults.conf ${BASE_ETC}/master.d/f_defaults.conf
-	     do
+             for f in ${BASE_ETC}/minion ${BASE_ETC}/minion.d/f_defaults.conf ${BASE_ETC}/master.d/f_defaults.conf
+             do
                  sed -i"bak" 's@#file_client: remote@file_client: local@' ${f} 2>/dev/null
                  sed -i"bak" 's@^#file_roots:@file_roots:@' ${f} 2>/dev/null
                  sed -i"bak" 's@^#pillar_roots:@pillar_roots:@' ${f} 2>/dev/null
@@ -286,13 +286,20 @@ salt-bootstrap() {
                  sed -i"bak" 's@#    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
                  sed -i"bak" 's@#    - /srv/pillar@    - c:\\salt\\srv\\pillar@' ${f} 2>/dev/null
                  sed -i"bak" 's@#    - /srv/salt@    - c:\\salt@' ${f} 2>/dev/null
-		 sed -i"bak" 's@    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
-	     done
-	     which choco >/dev/null 2>&1
-	     if (( $? == 0 )); then
-                 choco install git -Y
-             elif [ -f "/cygdrive/c/ProgramData/chocolatey/bin/choco" ]; then
-                 /cygdrive/c/ProgramData/chocolatey/bin/choco install git -Y
+                 sed -i"bak" 's@    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
+             done
+             ## Try to make git available
+             which git >/dev/null 2>&1
+             if (( $? > 0 )); then
+                 which choco >/dev/null 2>&1
+                 if (( $? == 0 )); then
+                     choco install git -Y
+                 elif [ -f "/cygdrive/c/ProgramData/chocolatey/bin/choco" ]; then
+                     /cygdrive/c/ProgramData/chocolatey/bin/choco install git -Y
+                 fi
+                 if [ -f "/cygdrive/c/Program\ Files/Git/bin/git.exe" ]; then
+                     export PATH="${PATH}://cygdrive/c/Program\ Files/Git/bin"
+                 fi
              fi
              ;;
 
@@ -364,7 +371,7 @@ salt-bootstrap() {
                  pkg-add ${PACKAGES} 2>/dev/null
              fi
              # shellcheck disable=SC2181
-	     (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
+             (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
              wget -O bootstrap_salt.sh https://bootstrap.saltstack.com || exit 10
              (sh bootstrap_salt.sh -F -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
@@ -416,9 +423,9 @@ setup-log() {
     if [[ -f "/usr/bin/yum" ]] && [[ "${PROFILE}" == "salt" ]]; then
         echo >> "${LOG}" 2>&1
         echo "[RedHat] If kernel got upgraded during last activity I could hang"
-	echo "[RedHat] Solution is to kill this script, reboot into new kernel first."
+        echo "[RedHat] Solution is to kill this script, reboot into new kernel first."
         echo ".. continuing .."
-	echo
+        echo
     fi 
     echo >> "${LOG}" 2>&1
     echo "run salt: this takes a while, please be patient ..."
@@ -455,7 +462,7 @@ gitclone() {
         ## ensure symlink points to *this* correct namespace
         ln -s "${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR}" "${SALTFS}/${ALIAS}" 2>/dev/null
     else
-	## symlinks do not work on windows
+        ## symlinks do not work on windows
         cp -Rp "${SALTFS}/namespaces/${ENTITY}/${REPO}/${SUBDIR}" "${SALTFS}/${ALIAS}" 2>/dev/null
     fi
 }
