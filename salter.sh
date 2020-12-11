@@ -288,6 +288,12 @@ salt-bootstrap() {
                  sed -i"bak" 's@#    - /srv/salt@    - c:\\salt@' ${f} 2>/dev/null
 		 sed -i"bak" 's@    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
 	     done
+	     which choco >/dev/null 2>&1
+	     if (( $? == 0 )); then
+                 choco install git -Y
+             elif [ -f "/cygdrive/c/ProgramData/chocolatey/bin/choco" ]; then
+                 /cygdrive/c/ProgramData/chocolatey/bin/choco install git -Y
+             fi
              ;;
 
     darwin*) # MACOS #
