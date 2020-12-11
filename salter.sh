@@ -41,6 +41,7 @@ STATEDIR=''
 USER=
 EXTENSION=''
 CHOCO=/cygdrive/c/ProgramData/chocolatey/bin/choco
+GIT=git
 HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe
@@ -289,14 +290,11 @@ salt-bootstrap() {
                  sed -i"bak" 's@    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
              done
              ## Try to make git available
-             which git >/dev/null 2>&1
+             which ${GIT} >/dev/null 2>&1
              if (( $? > 0 )); then
                 ${CHOCO} install git -Y
-                if [ -f "/cygdrive/c/Program\ Files/Git/bin/git.exe" ]; then
-                    export PATH="${PATH}:/cygdrive/c/Program\ Files/Git/bin"
-		    ln -s /cygdrive/c/Program\ Files/Git/bin/git.exe /cygdrive/c/Program\ Files/Git/bin/git
-                fi
              fi
+             export GIT="/cygdrive/c/Program\ Files/Git/bin/git.exe"
              ;;
 
     darwin*) # MACOS #
@@ -438,18 +436,18 @@ gitclone() {
     # shellcheck disable=SC2181
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        git clone "${fork[uri]}/${fork[entity]}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1
+        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1
         # shellcheck disable=SC2181
         if (( $? > 0 )); then
-            echo "git clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
+            echo "${GIT} clone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
             exit 1
         fi
         cd "${SALTFS}/namespaces/${ENTITY}/${REPO}" || exit 22
-        git checkout "${fork[branch]}"
+        ${GIT} checkout "${fork[branch]}"
         # shellcheck disable=SC2181
-        (( $? > 0 )) && pwd && echo "git checkout ${fork[branch]} failed" && exit 1
+        (( $? > 0 )) && pwd && echo "${GIT} checkout ${fork[branch]} failed" && exit 1
     else
-        git clone "${URI}/${ENTITY}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1 || exit 1
+        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${SALTFS}/namespaces/${ENTITY}/${REPO}" >/dev/null 2>&1 || exit 1
     fi
     ## ensure repo is correct
     rm -f "${SALTFS:?}"/"${ALIAS:?}" 2>/dev/null  ## ensure symlink is current
