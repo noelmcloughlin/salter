@@ -406,8 +406,7 @@ setup-log() {
     [ -f "${PILLARFS}/site.j2" ] && cat ${PILLARFS}/site.j2 >> "${LOG}" 2>&1
     [ -n "${DEBUGG_ON}" ] && salt-call${EXTENSION} pillar.items --local >> "${LOG}" 2>&1 && echo >> "${LOG}" 2>&1
     salt-call${EXTENSION} state.show_top --local | tee -a "${LOG}" 2>&1   ## slow if many pillar files = refactor
-    echo >> "${LOG}" 2>&1
-    salt-call${EXTENSION} state.show_top --local | tee -a "${LOG}" 2>&1   ## slow if many pillar files = refactor
+    echo
     if [[ -f "/usr/bin/yum" ]] && [[ "${PROFILE}" == "salt" ]]; then
         echo >> "${LOG}" 2>&1
         echo "[RedHat] If kernel got upgraded during last activity I could hang"
