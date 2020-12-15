@@ -23,55 +23,54 @@
 # This script allows common bootstrapping for any project using salt
 #
 #-----------------------------------------------------------------------
-trap exit SIGINT SIGTERM
 if [[ "$( uname )" == CYGWIN_NT* ]]; then
+    trap exit SIGINT
     net session >/dev/null 2>&1
     (( $? > 0 )) && echo -e "\nRun As Administrator, exiting\n" && exit 1
 else
+    trap exit SIGINT SIGTERM
     [ "$(id -u)" != 0 ] && echo -e "\nRun with sudo, exiting\n" && exit 1
 fi
 
-SALT_VERSION='stable 3002.1'
+SALT_VERSION=${SALT_VERSION:-'stable 3002.1'}
 RC=0
 ACTION=
-BASE=/srv
-BASE_ETC=/etc/salt
-PY_VER=3
+BASEDIR=/srv
+BASEDIR_ETC=/etc/salt
+PY_VER=${PY_VER:-3}
 STATEDIR=''
 USER=
 EXTENSION=''
-CHOCO=/cygdrive/c/ProgramData/chocolatey/bin/choco
+CHOCO=${CHOCO:-/cygdrive/c/ProgramData/chocolatey/bin/choco}
 GIT=git
 HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
-POWERSHELL=/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe
+POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
 if [ "${OSNAME}" == "FreeBSD" ]; then
-    # FreeBSD
-    BASE=/usr/local/etc
-    BASE_ETC=/usr/local/etc/salt
+    BASEDIR=/usr/local/etc
+    BASEDIR_ETC=/usr/local/etc/salt
     STATEDIR=/states
     SUBDIR=/salt
 elif [ "${OSNAME}" == "Darwin" ]; then
-    BASE=/usr/local/srv
+    BASEDIR=/usr/local/srv
     USER=$( stat -f "%Su" /dev/console )
     # unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
-    HOMEBREW=/usr/local/bin/brew
     ${HOMEBREW} >/dev/null 2>&1
     # shellcheck disable=SC2016
     (( $? == 127 )) && su - "${USER}" -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
 elif [[ "$( uname )" == CYGWIN_NT* ]]; then
     GIT=/cygdrive/c/Program\ Files/Git/bin/git.exe
     EXTENSION=.bat
-    BASE=/cygdrive/c/salt/srv
-    BASE_ETC=/cygdrive/c/salt/conf
+    BASEDIR=/cygdrive/c/salt/srv
+    BASEDIR_ETC=/cygdrive/c/salt/conf
     if [ ! -x "${CHOCO}" ]; then
         curl -o install.ps1 -L https://chocolatey.org/install.ps1
         ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./install.ps1"
     fi
     export PATH="${PATH}:/cygdrive/c/salt:c:\\salt"
 fi
-PILLARFS=${BASE:-/srv}${SUBDIR}/pillar
-SALTFS=${BASE:-/srv}/salt${STATEDIR}
+PILLARFS=${BASEDIR:-/srv}${SUBDIR}/pillar
+SALTFS=${BASEDIR:-/srv}/salt${STATEDIR}
 SKIP_UNNECESSARY_CLONE=''
 # shellcheck disable=SC2034
 TERM_PS1=${PS1} && unset PS1
@@ -252,8 +251,8 @@ get-salt-master-hostname() {
 
 HEREDOC
     fi
-    if [[ -f "${BASE_ETC}/minion" ]]; then
-        MASTER=$( grep '^\s*master\s*:\s*' ${BASE_ETC}/minion | awk '{print $2}')
+    if [[ -f "${BASEDIR_ETC}/minion" ]]; then
+        MASTER=$( grep '^\s*master\s*:\s*' ${BASEDIR_ETC}/minion | awk '{print $2}')
         [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=${MASTER}
     fi
     [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=$( hostname )
@@ -278,7 +277,7 @@ salt-bootstrap() {
              curl -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
              # shellcheck disable=SC2016
              ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
-             for f in ${BASE_ETC}/minion ${BASE_ETC}/minion.d/f_defaults.conf ${BASE_ETC}/master.d/f_defaults.conf
+             for f in ${BASEDIR_ETC}/minion ${BASEDIR_ETC}/minion.d/f_defaults.conf ${BASEDIR_ETC}/master.d/f_defaults.conf
              do
                  sed -i"bak" 's@#file_client: remote@file_client: local@' ${f} 2>/dev/null
                  sed -i"bak" 's@^#file_roots:@file_roots:@' ${f} 2>/dev/null
@@ -329,10 +328,10 @@ salt-bootstrap() {
              sed -i"bak" 's@#  base:$@  base:@g' /etc/salt/minion 2>/dev/null
              # state directory
              sed -i"bak" 's@#file_roots:$@file_roots:@' /etc/salt/minion 2>/dev/null
-             sed -i"bak" "s@#    - /srv/salt@    - ${BASE}/salt@" /etc/salt/minion 2>/dev/null
+             sed -i"bak" "s@#    - /srv/salt@    - ${BASEDIR}/salt@" /etc/salt/minion 2>/dev/null
              # pillar directory
              sed -i"bak" 's@#pillar_roots:$@pillar_roots:@' /etc/salt/minion 2>/dev/null
-             sed -i"bak" "s@#    - /srv/pillar@    - ${BASE}/pillar@" /etc/salt/minion 2>/dev/null
+             sed -i"bak" "s@#    - /srv/pillar@    - ${BASEDIR}/pillar@" /etc/salt/minion 2>/dev/null
 
              ##Workaround https://github.com/Homebrew/brew/issues/4099
              echo '--no-alpn' >> ~/.curlrc
@@ -383,11 +382,11 @@ EOF
     [[ "$( uname )" != CYGWIN_NT* ]] && [ ! -f "/etc/arch-release" ] && pkg-add salt-api
 
     ### salt minion
-    [ ! -f "${BASE_ETC}/minion" ] && echo "File ${BASE_ETC}/minion not found" && exit 1
+    [ ! -f "${BASEDIR_ETC}/minion" ] && echo "File ${BASEDIR_ETC}/minion not found" && exit 1
     if [[ "${OSNAME}" == "FreeBSD" ]] || [[ "${OSNAME}" == "Darwin" ]]; then
-        sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/minion
+        sed -i"bak" "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASEDIR_ETC}/minion
     else
-        sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASE_ETC}/minion
+        sed -i "s@^\s*#*\s*master\s*: salt\s*\$@master: ${solution[saltmaster]}@" ${BASEDIR_ETC}/minion
     fi
     ### salt services
     if [[ "${OSTYPE}" == "linux-gnu" ]]; then
@@ -706,7 +705,7 @@ solution-definitions() {
 
     your['saltdir']="${SALTFS}/namespaces/your/file_roots"
     your['pillars']="${SALTFS}/namespaces/your/pillar_roots"
-    mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASE_ETC} 2>/dev/null
+    mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASEDIR_ETC} 2>/dev/null
 }
 
 custom-add() {
