@@ -46,6 +46,9 @@ GIT=git
 HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
+# proxy support
+GETPROXY=
+[[ -z "${https_proxy+x}" ]] || GETPROXY="-x ${https_proxy}"
 if [ "${OSNAME}" == "FreeBSD" ]; then
     BASEDIR=/usr/local/etc
     BASEDIR_ETC=/usr/local/etc/salt
@@ -57,14 +60,14 @@ elif [ "${OSNAME}" == "Darwin" ]; then
     # unattended (https://github.com/Homebrew/legacy-homebrew/issues/46779#issuecomment-162819088)
     ${HOMEBREW} >/dev/null 2>&1
     # shellcheck disable=SC2016
-    (( $? == 127 )) && su - "${USER}" -c 'echo | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
+    (( $? == 127 )) && su - "${USER}" -c 'echo | /usr/bin/ruby -e "$(curl ${GETPROXY} -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'
 elif [[ "$( uname )" == CYGWIN_NT* ]]; then
     GIT=/cygdrive/c/Program\ Files/Git/bin/git.exe
     EXTENSION=.bat
     BASEDIR=/cygdrive/c/salt/srv
     BASEDIR_ETC=/cygdrive/c/salt/conf
     if [ ! -x "${CHOCO}" ]; then
-        curl -o install.ps1 -L https://chocolatey.org/install.ps1
+        curl ${GETPROXY} -o install.ps1 -L https://chocolatey.org/install.ps1
         ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./install.ps1"
     fi
     export PATH="${PATH}:/cygdrive/c/salt:c:\\salt"
@@ -274,7 +277,7 @@ salt-bootstrap() {
     echo "Setup OS known good baseline ..."
     case "$OSTYPE" in
     cygwin)  # WINDOWS #
-             curl -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
+             curl ${GETPROXY} -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
              # shellcheck disable=SC2016
              ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
              for f in ${BASEDIR_ETC}/minion ${BASEDIR_ETC}/minion.d/f_defaults.conf ${BASEDIR_ETC}/master.d/f_defaults.conf
@@ -307,7 +310,7 @@ salt-bootstrap() {
              ### https://github.com/ohmyzsh/ohmyzsh/issues/630#issuecomment-2433637 ###
 
              ### pip https://pip.pypa.io/en/stable
-             su - "${USER}" -c "curl https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py"
+             su - "${USER}" -c "curl ${GETPROXY} https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py"
              sudo python "${PWD}"/get-pip.py 2>/dev/null
 
              /usr/local/bin/salt --version >/dev/null 2>&1
