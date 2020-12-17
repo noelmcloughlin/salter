@@ -345,17 +345,17 @@ salt-bootstrap() {
              pkg-update '' 2>/dev/null
              echo "Setup Linux/FreeBSD baseline and Salt masterless minion ..."
              if [ -f "/usr/bin/dnf" ]; then
-                 PACKAGES="--best --allowerasing git wget redhat-rpm-config"
+                 PACKAGES="--best --allowerasing git redhat-rpm-config"
              elif [ -f "/usr/bin/yum" ]; then
-                 PACKAGES="epel-release git wget redhat-rpm-config"
+                 PACKAGES="epel-release git redhat-rpm-config"
              elif [ -f "/usr/bin/zypper" ]; then
-                 PACKAGES="git wget"
+                 PACKAGES="git"
              elif [ -f "/usr/bin/apt-get" ]; then
-                 PACKAGES="git ssh wget curl software-properties-common"
+                 PACKAGES="git ssh curl software-properties-common"
              elif [ -f "/usr/bin/pacman" ]; then
-                 PACKAGES="git wget psutils"
+                 PACKAGES="git psutils"
              elif [ -f "/usr/sbin/pkg" ]; then
-                 PACKAGES="git wget psutils"
+                 PACKAGES="git psutils"
              fi
              if [ -f "/usr/bin/dnf" ]; then
                  pkg-add ${PACKAGES} 2>/dev/null
@@ -367,7 +367,7 @@ salt-bootstrap() {
              fi
              # shellcheck disable=SC2181
              (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
-             wget -O bootstrap_salt.sh https://bootstrap.saltstack.com || exit 10
+             curl ${GETPROXY} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
              (sh bootstrap_salt.sh -F -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
     esac
