@@ -47,8 +47,8 @@ HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
 # proxy support
-GETPROXY=
-[[ -z "${https_proxy+x}" ]] || GETPROXY="-x ${https_proxy}"
+GETPROXY='--ipv4'
+[[ -z "${https_proxy+x}" ]] || GETPROXY="${GETPROXY} -x ${https_proxy}"
 if [ "${OSNAME}" == "FreeBSD" ]; then
     BASEDIR=/usr/local/etc
     BASEDIR_ETC=/usr/local/etc/salt
