@@ -48,7 +48,7 @@ OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
 
 # ip/proxy support
-BS_CURL_IPV="${BS_CURL_IPV:-'--ipv4'}"
+BS_CURL_IPV="${BS_CURL_IPV:---ipv4}"
 [[ -z "${https_proxy+x}" ]] || BS_CURL_ARGS="-x ${https_proxy}"
 BS_CURL_ARGS="${BS_CURL_ARGS} ${BS_CURL_IPV}"
 
