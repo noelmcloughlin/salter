@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 echo "ready .."
-DOO=sudo && [ "$OSTYPE" == 'cygwin' ] && DOO=''
+SU=sudo && [ "$OSTYPE" == 'cygwin' ] && SU=''
 SALTER=https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh
 
-[[ -z "${https_proxy+x}" ]] || GETPROXY="-x ${https_proxy}"
-curl ${GETPROXY} -LO ${SALTER} && echo "steady .." && $DOO bash salter.sh add bootstrap -i && echo 'go ..' && $DOO bash salter.sh add salter
+[[ -z "${https_proxy+x}" ]] || export BS_CURL_ARGS="-x ${https_proxy}"
+curl ${BS_CURL_ARGS} -LO ${SALTER} && echo "steady .." && $SU bash salter.sh add bootstrap -i && echo 'go ..' && $SU bash salter.sh add salter
