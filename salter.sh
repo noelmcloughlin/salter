@@ -49,7 +49,7 @@ POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/pow
 
 # ip/proxy support
 BS_CURL_IPV="${BS_CURL_IPV:---ipv4}"
-[[ -z "${https_proxy+x}" ]] || BS_CURL_ARGS="-x ${https_proxy}"
+[[ -z "${https_proxy+x}" ]] || export BS_CURL_ARGS="-x ${https_proxy}"
 BS_CURL_ARGS="${BS_CURL_ARGS} ${BS_CURL_IPV}"
 
 if [ "${OSNAME}" == "FreeBSD" ]; then
