@@ -561,8 +561,8 @@ usage() {
     echo "      Optional log-level (default warning)" 1>&2
     echo 1>&2
     echo "Salter Installer" 1>&2
-    echo -e "  sudo salter bootstrap\t\tre-bootstrap Salt" 1>&2
-    echo -e "  sudo salter add salter\tre-bootstrap Salter" 1>&2
+    echo -e "  sudo salter bootstrap\t\t(re)bootstrap Salt" 1>&2
+    echo -e "  sudo salter add salter\t(re)bootstrap Salter" 1>&2
     echo 1>&2
     exit 1
 }
@@ -612,7 +612,7 @@ salter-engine() {
             fi
             vi "${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls"
             [ ! -f "${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls" ] && echo "you aborted" && exit 1
-            echo -e "\nNow run: sudo salter ${ACTION_DIR} ${PROFILE}"
+            echo -e "\nNow run: sudo -E salter ${ACTION_DIR} ${PROFILE}"
             ;;
 
     add)    case ${PROFILE} in
