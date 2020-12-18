@@ -2,7 +2,7 @@
 
 SU=sudo && [ "$OSTYPE" == 'cygwin' ] && SU=''
 SALTER=https://raw.githubusercontent.com/saltstack-formulas/salter/master/salter.sh
-export ARGS='BS_CURL_ARGS='
+BS_CURL_IPV="${BS_CURL_IPV:-'--ipv4'}"
 
-[[ -z "${https_proxy+x}" ]] || (BS_CURL_ARGS="-x ${https_proxy}" && ARGS="${ARGS}${BS_CURL_ARGS}")
-curl ${BS_CURL_ARGS} -LO ${SALTER} && $SU $ARGS bash salter.sh add bootstrap -i && $SU ${ARGS} bash salter.sh add salter
+[[ -z "${https_proxy+x}" ]] || BS_CURL_ARGS="-x ${https_proxy} ${BS_CURL_IPV}"
+curl ${BS_CURL_ARGS} -LO ${SALTER} && $SU bash salter.sh add bootstrap -i && $SU bash salter.sh add salter

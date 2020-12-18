@@ -46,9 +46,12 @@ GIT=git
 HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
-# proxy support
-BS_CURL_ARGS="${BS_CURL_ARGS} --ipv4"
-[[ -z "${https_proxy+x}" ]] || BS_CURL_ARGS="${BS_CURL_ARGS} -x ${https_proxy}"
+
+# ip/proxy support
+BS_CURL_IPV="${BS_CURL_IPV:-'--ipv4'}"
+[[ -z "${https_proxy+x}" ]] || (BS_CURL_ARGS="-x ${https_proxy}" && ARGS="${ARGS}${BS_CURL_ARGS}")
+BS_CURL_ARGS="${BS_CURL_ARGS} ${BS_CURL_IPV}"
+
 if [ "${OSNAME}" == "FreeBSD" ]; then
     BASEDIR=/usr/local/etc
     BASEDIR_ETC=/usr/local/etc/salt
