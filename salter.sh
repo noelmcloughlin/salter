@@ -47,11 +47,18 @@ HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
 
-# ip/proxy support
+# curl internet proxy support
 BS_CURL_IPV="${BS_CURL_IPV:---ipv4}"
 [[ -z "${https_proxy+x}" ]] || export BS_CURL_ARGS="-x ${https_proxy}"
 BS_CURL_ARGS="${BS_CURL_ARGS} ${BS_CURL_IPV}"
 
+# git internet proxy support
+if [[ -z "${BS_GIT_ARGS}" ]] && [[ ! -z "${https_proxy+x}" ]]; then
+    export BS_GIT_ARGS="--config http.proxy=${https_proxy}"
+    git config --global http.proxy ${http_proxy}
+fi
+
+# os-support
 if [ "${OSNAME}" == "FreeBSD" ]; then
     BASEDIR=/usr/local/etc
     BASEDIR_ETC=/usr/local/etc/salt
@@ -420,8 +427,8 @@ setup-log() {
     echo
     if [[ -f "/usr/bin/yum" ]] && [[ "${PROFILE}" == "salt" ]]; then
         echo >> "${LOG}" 2>&1
-        echo "[RedHat] If kernel got upgraded during last activity I could hang"
-        echo "[RedHat] Solution is to kill this script, reboot into new kernel first."
+        echo "[RedHat] If kernel got upgraded during bootstrap I hang after 10-15mins."
+        echo "[RedHat] In that scenario, kill this script after 15mins, and reboot into new kernel."
         echo ".. continuing .."
         echo
     fi 
@@ -442,18 +449,18 @@ gitclone() {
     # shellcheck disable=SC2181
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        "${GIT}" clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" >/dev/null 2>&1
+        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1
         # shellcheck disable=SC2181
         if (( $? > 0 )); then
             echo "gitclone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
             exit 1
         fi
         cd "${REPO}" || exit 22
-        "${GIT}" checkout "${fork[branch]}"
+        ${GIT} checkout "${fork[branch]}"
         # shellcheck disable=SC2181
         (( $? > 0 )) && pwd && echo "gitclone checkout ${fork[branch]} failed" && exit 1
     else
-        "${GIT}" clone "${URI}/${ENTITY}/${REPO}" "${REPO}" >/dev/null 2>&1 || exit 1
+        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1 || exit 1
     fi
     cd ${MYPWD}
 
