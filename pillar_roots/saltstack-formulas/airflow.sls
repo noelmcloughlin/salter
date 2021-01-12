@@ -33,7 +33,7 @@ airflow:
       content:
         core:
           authentication: True
-          executor: LocalExecutor
+          executor: CeleryExecutor
           load_examples: True
       state_colors:
         # https://airflow.apache.org/docs/apache-airflow/stable/howto/customize-state-colors-ui.html
