@@ -82,16 +82,15 @@ airflow:
         - apache.hdfs       # HDFS hooks and operators
         - apache.hive       # All Hive related operators
         - apache.pinot         # Pinot DB hook
-        - apache.presto     # All Presto related operators & hooks
         - webhdfs           # HDFS hooks and operators
-        ## Services
+        # apache.presto     # All Presto related operators & hooks   (not in airflow 2.0.0)
         - amazon               # aws
+        # azure_container_instances   # not in airflow 2.0.0
+        # azure_blob_storage   # not in airflow 2.0.0
+        # azure_cosmos         # not in airflow 2.0.0
+        # azure_data_lake      # not in airflow 2.0.0
+        # azure_secrets        # not in airflow 2.0.0
         - microsoft.azure      # azure
-        - azure_blob_storage
-        - azure_cosmos
-        - azure_container_instances
-        - azure_data_lake
-        - azure_secrets
         - databricks           # Databricks hooks and operators
         - datadog              # Datadog hooks and sensors
         - google               # Google Cloud
