@@ -47,7 +47,7 @@ HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
 
-SUDO='sudo -E' && [ "$OSTYPE" == 'cygwin' ] && SU=''
+SUDO='sudo -E' && [ "$OSTYPE" == 'cygwin' ] && SUDO=''
 
 # curl internet proxy support
 BS_CURL_IPV="${BS_CURL_IPV:---ipv4}"
