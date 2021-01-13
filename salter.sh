@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -xv
 #-------------------------------------------------------------------------
 # Copyright 2020 Saltstack Formulas
 #
