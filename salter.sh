@@ -182,7 +182,7 @@ pkg-update() {
 
     case ${OSTYPE} in
     cygwin)  for p in ${PACKAGES}; do
-                 ${CHOCO} upgrade ${p} -y
+                 ${CHOCO} upgrade ${p} -y --force
              done
              ;;
 
@@ -304,7 +304,7 @@ salt-bootstrap() {
              done
              ## Try to make git available
              which ${GIT} >/dev/null 2>&1
-             (( $? > 0 )) && ${CHOCO} install git -Y
+             (( $? > 0 )) && ${CHOCO} install git -Y --force
              export GIT=/cygdrive/c/Program\ Files/Git/bin/git.exe
              ;;
 
