@@ -47,6 +47,8 @@ HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
 
+SUDO='sudo -E' && [ "$OSTYPE" == 'cygwin' ] && SU=''
+
 # curl internet proxy support
 BS_CURL_IPV="${BS_CURL_IPV:---ipv4}"
 [[ -z "${https_proxy+x}" ]] || export BS_CURL_ARGS="-x ${https_proxy}"
@@ -310,9 +312,9 @@ salt-bootstrap() {
 
     darwin*) # MACOS #
              ### https://github.com/Homebrew/legacy-homebrew/issues/19670
-             sudo chown -R "${USER}":admin /usr/local/*
-             sudo chmod -R 0755 /usr/local/* /Library/Python/2.7/site-packages/pip* 2>/dev/null
-             sudo chmod -R 0755 /Users/"${USER}"/Library/Caches/pip 2>/dev/null
+             ${SUDO} chown -R "${USER}":admin /usr/local/*
+             ${SUDO} chmod -R 0755 /usr/local/* /Library/Python/2.7/site-packages/pip* 2>/dev/null
+             ${SUDO} chmod -R 0755 /Users/"${USER}"/Library/Caches/pip 2>/dev/null
 
              ### https://stackoverflow.com/questions/34386527/symbol-not-found-pycodecinfo-getincrementaldecoder
              su - "${USER}" -c 'hash -r python' 2>/dev/null
@@ -321,7 +323,7 @@ salt-bootstrap() {
 
              ### pip https://pip.pypa.io/en/stable
              su - "${USER}" -c "curl ${BS_CURL_ARGS} https://bootstrap.pypa.io/get-pip.py -o ${PWD}/get-pip.py"
-             sudo python "${PWD}"/get-pip.py 2>/dev/null
+             ${SUDO} python "${PWD}"/get-pip.py 2>/dev/null
 
              /usr/local/bin/salt --version >/dev/null 2>&1
              # shellcheck disable=SC2181
@@ -534,11 +536,11 @@ usage() {
     echo "  salter remove PROFILE... [OPTIONS]"
     echo 1>&2
     echo "SYNOPSIS:"
-    echo "  sudo $0 add PROFILE [ OPTIONS ] [ -u username ]" 1>&2
-    echo "  sudo $0 add PROFILE [ OPTIONS ]" 1>&2
-    echo "  sudo $0 remove PROFILE [ OPTIONS ]" 1>&2
-    echo "  sudo $0 edit PROFILE [ OPTIONS ]" 1>&2
-    echo "  sudo $0 show PROFILE [ OPTIONS ]" 1>&2
+    echo "  ${SUDO} $0 add PROFILE [ OPTIONS ] [ -u username ]" 1>&2
+    echo "  ${SUDO} $0 add PROFILE [ OPTIONS ]" 1>&2
+    echo "  ${SUDO} $0 remove PROFILE [ OPTIONS ]" 1>&2
+    echo "  ${SUDO} $0 edit PROFILE [ OPTIONS ]" 1>&2
+    echo "  ${SUDO} $0 show PROFILE [ OPTIONS ]" 1>&2
     echo 1>&2
     echo "OPTIONS:"
     echo "-e   PROFILE\tEdit profile named PROFILE" 1>&2
@@ -568,8 +570,8 @@ usage() {
     echo "      Optional log-level (default warning)" 1>&2
     echo 1>&2
     echo "Salter Installer" 1>&2
-    echo -e "  sudo salter bootstrap\t\t(re)bootstrap Salt" 1>&2
-    echo -e "  sudo salter add salter\t(re)bootstrap Salter" 1>&2
+    echo -e "  ${SUDO} salter bootstrap\t\t(re)bootstrap Salt" 1>&2
+    echo -e "  ${SUDO} salter add salter\t(re)bootstrap Salter" 1>&2
     echo 1>&2
     exit 1
 }
@@ -619,7 +621,7 @@ salter-engine() {
             fi
             vi "${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls"
             [ ! -f "${solution[saltdir]}/${ACTION_DIR}/${PROFILE}.sls" ] && echo "you aborted" && exit 1
-            echo -e "\nNow run: sudo -E salter ${ACTION_DIR} ${PROFILE}"
+            echo -e "\nNow run: ${SUDO} -E salter ${ACTION_DIR} ${PROFILE}"
             ;;
 
     add)    case ${PROFILE} in
