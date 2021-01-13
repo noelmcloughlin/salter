@@ -124,7 +124,7 @@ pkg-add() {
     PACKAGES=${@}
     case ${OSTYPE} in
     cygwin)  for p in ${PACKAGES}; do
-                 ${CHOCO} install ${p} -y
+                 ${CHOCO} install ${p} -y --force
              done
              ;;
 
