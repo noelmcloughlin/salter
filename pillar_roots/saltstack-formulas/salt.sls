@@ -118,3 +118,5 @@ salt_formulas:
      - prometheus-formula
      - grafana-formula
      - sysstat-formula
+     - airflow-formula
+     - redis-formula
