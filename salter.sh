@@ -123,7 +123,7 @@ pkg-query() {
 }
 
 pkg-add() {
-    PKG_LIST=$@
+    PKG_LIST=${*}
     case ${OSTYPE} in
     cygwin)  for p in ${PKG_LIST}; do
                  ${CHOCO} install "${p}" -y --force
@@ -177,7 +177,7 @@ pkg-add() {
 }
 
 pkg-update() {
-    PKG_LIST=$@
+    PKG_LIST=${*}
     [ -z "${PKG_LIST}" ] && return
 
     case ${OSTYPE} in
@@ -744,6 +744,6 @@ custom-postadd() {
 
 developer-definitions
 solution-definitions
-cli-options "$*"
-salter-engine "$*"
+cli-options ${*}
+salter-engine ${*}
 exit $?
