@@ -25,8 +25,7 @@
 #-----------------------------------------------------------------------
 if [[ "$( uname )" == CYGWIN_NT* ]]; then
     trap exit SIGINT
-    net session >/dev/null 2>&1
-    (( $? > 0 )) && echo -e "\nRun As Administrator, exiting\n" && exit 1
+    (net session >/dev/null 2>&1) || (echo -e "\nRun As Administrator, exiting\n" && exit 1)
 else
     trap exit SIGINT SIGTERM
     [ "$(id -u)" != 0 ] && echo -e "\nRun with sudo, exiting\n" && exit 1
@@ -51,13 +50,15 @@ SUDO='sudo -E' && [ "$OSTYPE" == 'cygwin' ] && SUDO=''
 
 # curl internet proxy support
 BS_CURL_IPV="${BS_CURL_IPV:---ipv4}"
+# shellcheck disable=SC2154
 [[ -z "${https_proxy+x}" ]] || export BS_CURL_ARGS="-x ${https_proxy}"
 BS_CURL_ARGS="${BS_CURL_ARGS} ${BS_CURL_IPV}"
 
 # git internet proxy support
-if [[ -z "${BS_GIT_ARGS}" ]] && [[ ! -z "${https_proxy+x}" ]]; then
+if [[ -z "${BS_GIT_ARGS}" ]] && [[ -n "${https_proxy+x}" ]]; then
     export BS_GIT_ARGS="--config http.proxy=${https_proxy}"
-    git config --global http.proxy ${http_proxy}
+    # shellcheck disable=SC2154
+    git config --global http.proxy "${http_proxy}"
 fi
 
 # os-support
@@ -78,7 +79,7 @@ elif [[ "$( uname )" == CYGWIN_NT* ]]; then
     BASEDIR=/cygdrive/c/salt/srv
     BASEDIR_ETC=/cygdrive/c/salt/conf
     if [ ! -x "${CHOCO}" ]; then
-        curl ${BS_CURL_ARGS} -o install.ps1 -L https://chocolatey.org/install.ps1
+        curl "${BS_CURL_ARGS}" -o install.ps1 -L https://chocolatey.org/install.ps1
         ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./install.ps1"
     fi
     export PATH="${PATH}:/cygdrive/c/salt:c:\\salt"
@@ -122,14 +123,14 @@ pkg-query() {
 }
 
 pkg-add() {
-    PACKAGES=${@}
+    PKG_LIST=$@
     case ${OSTYPE} in
-    cygwin)  for p in ${PACKAGES}; do
-                 ${CHOCO} install ${p} -y --force
+    cygwin)  for p in ${PKG_LIST}; do
+                 ${CHOCO} install "${p}" -y --force
              done
              ;;
 
-    darwin*) for p in ${PACKAGES}; do
+    darwin*) for p in ${PKG_LIST}; do
                  su - "${USER}" -c "${HOMEBREW} install ${p}"
                  su - "${USER}" -c "${HOMEBREW} unlink ${p} 2>/dev/null"
                  su - "${USER}" -c "${HOMEBREW} link ${p} 2>/dev/null"
@@ -146,100 +147,98 @@ pkg-add() {
 
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
-                 /usr/bin/zypper update -y
-                 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
-                 /usr/bin/zypper --non-interactive install ${PACKAGES}
-                 (( $? > 0 )) && [[ "${IGNORE}" == false ]] && exit 1
+                 ( /usr/bin/zypper update -y) || ([[ "${IGNORE}" == false ]] && exit 1)
+                 /usr/bin/zypper --non-interactive install "${PKG_LIST}" || ([[ "${IGNORE}" == false ]] && exit 1)
              elif [ -f "/usr/bin/emerge" ]; then
-                 /usr/bin/emerge --oneshot ${PACKAGES} || exit 1
+                 /usr/bin/emerge --oneshot "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
                  [ -x '/usr/bin/pacman-mirrors' ] && /usr/bin/pacman-mirrors -g
                  # /usr/bin/pacman-key --refresh-keys || true
                  # /usr/bin/pacman -Sy archlinux-keyring || true
                  /usr/bin/pacman -Syyu --noconfirm
-                 /usr/bin/pacman -S --noconfirm ${PACKAGES} || exit 1
+                 /usr/bin/pacman -S --noconfirm "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
-                 /usr/bin/dnf install -y --best --allowerasing ${PACKAGES} || exit 1
+                 /usr/bin/dnf install -y --best --allowerasing "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/yum" ]; then
                  # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
                  /usr/bin/yum update -y --skip-broken || exit 1
-                 /usr/bin/yum install -y ${PACKAGES} --skip-broken || exit 1
+                 /usr/bin/yum install -y "${PKG_LIST}" --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get update --fix-missing -y || exit 1
                  /usr/bin/apt-add-repository universe
                  /usr/bin/apt autoremove -y
                  /usr/bin/apt-get update -y
-                 /usr/bin/apt-get install -y ${PACKAGES} || exit 1
+                 /usr/bin/apt-get install -y "${PKG_LIST}" || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
                  /usr/sbin/pkg update -f --quiet || exit 1
-                 /usr/sbin/pkg install --automatic --yes ${PACKAGES} || exit 1
+                 /usr/sbin/pkg install --automatic --yes "${PKG_LIST}" || exit 1
              fi
     esac
 }
 
 pkg-update() {
-    PACKAGES=${@}
-    [ -z "${PACKAGES}" ] && return
+    PKG_LIST=$@
+    [ -z "${PKG_LIST}" ] && return
 
     case ${OSTYPE} in
-    cygwin)  for p in ${PACKAGES}; do
-                 ${CHOCO} upgrade ${p} -y --force
+    cygwin)  for p in ${PKG_LIST}; do
+                 ${CHOCO} upgrade "${p}" -y --force
              done
              ;;
 
-    darwin*) for p in ${PACKAGES}; do
+    darwin*) for p in ${PKG_LIST}; do
                  su - "${USER}" -c "${HOMEBREW} upgrade ${p}"
              done
              ;;
 
     linux*)  if [ -f "/usr/bin/zypper" ]; then
-                 /usr/bin/zypper --non-interactive up "${PACKAGES}" || exit 1
+                 /usr/bin/zypper --non-interactive up "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
-                 /usr/bin/emerge -avDuN "${PACKAGES}" || exit 1
+                 /usr/bin/emerge -avDuN "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
-                 /usr/bin/pacman -Syu --noconfirm "${PACKAGES}" || exit 1
+                 /usr/bin/pacman -Syu --noconfirm "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
-                 /usr/bin/dnf upgrade -y --allowerasing "${PACKAGES}" || exit 1
+                 /usr/bin/dnf upgrade -y --allowerasing "${PKG_LIST}" || exit 1
                  # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y "${PACKAGES}" --skip-broken || exit 1
+                 /usr/bin/yum update -y "${PKG_LIST}" --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
-                 /usr/bin/apt-get upgrade -y "${PACKAGES}" || exit 1
+                 /usr/bin/apt-get upgrade -y "${PKG_LIST}" || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
-                 /usr/sbin/pkg upgrade --yes "${PACKAGES}" || exit 1
+                 /usr/sbin/pkg upgrade --yes "${PKG_LIST}" || exit 1
              fi
     esac
     return 0
 }
 
 pkg-remove() {
-    PACKAGES=${*}
+    PKG_LIST=${*}
     case ${OSTYPE} in
-    cygwin)  for p in ${PACKAGES}; do
-                 ${CHOCO} uninstall ${p} -y
+    cygwin)  for p in ${PKG_LIST}; do
+                 ${CHOCO} uninstall "${p}" -y
              done
              ;;
 
-    darwin*) for p in ${PACKAGES}; do
+    darwin*) for p in ${PKG_LIST}; do
                  su - "${USER}" -c "${HOMEBREW} uninstall ${p} --force"
              done
              ;;
 
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
-                 /usr/bin/zypper --non-interactive rm "${PACKAGES}" || exit 1
+                 /usr/bin/zypper --non-interactive rm "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
-                 /usr/bin/emerge -C "${PACKAGES}" || exit 1
+                 /usr/bin/emerge -C "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
-                 /usr/bin/pacman -Rs --noconfirm "${PACKAGES}" || exit 1
+                 /usr/bin/pacman -Rs --noconfirm "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
-                 /usr/bin/dnf remove -y "${PACKAGES}" || exit 1
+                 /usr/bin/dnf remove -y "${PKG_LIST}" || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum remove -y "${PACKAGES}" || exit 1
+                 /usr/bin/yum remove -y "${PKG_LIST}" || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
-                 /usr/bin/apt-get remove -y "${PACKAGES}" || exit 1
+                 /usr/bin/apt-get remove -y "${PKG_LIST}" || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
-                 /usr/sbin/pkg delete --yes "${PACKAGES}" || exit 1
+                 /usr/sbin/pkg delete --yes "${PKG_LIST}" || exit 1
              fi
     esac
 }
@@ -280,7 +279,7 @@ salt-bootstrap() {
         SALT_VERSION=''
     fi
     if [ -s "${PILLARFS}" ] && [ "${PILLARFS}root" != "/root" ]; then
-        rm -fr "${PILLARFS}"/* 2>/dev/null
+        rm -fr "${PILLARFS:-/srv/pillar}"/* 2>/dev/null
     fi
     PWD=$( pwd )
     export PWD
@@ -288,7 +287,7 @@ salt-bootstrap() {
     echo "Setup OS known good baseline ..."
     case "$OSTYPE" in
     cygwin)  # WINDOWS #
-             curl ${BS_CURL_ARGS} -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
+             curl "${BS_CURL_ARGS}" -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
              # shellcheck disable=SC2016
              ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
              for f in ${BASEDIR_ETC}/minion ${BASEDIR_ETC}/minion.d/f_defaults.conf ${BASEDIR_ETC}/master.d/f_defaults.conf
@@ -304,8 +303,7 @@ salt-bootstrap() {
                  sed -i"bak" 's@    - /srv/salt@    - c:\\salt\\srv\\salt@' ${f} 2>/dev/null
              done
              ## Try to make git available
-             which ${GIT} >/dev/null 2>&1
-             (( $? > 0 )) && ${CHOCO} install git -Y --force
+             (${GIT} --version >/dev/null 2>&1) || ${CHOCO} install git -Y --force
 	     export GIT=${GIT:-/cygdrive/c/Program\ Files/Git/bin/git.exe}
              ;;
 
@@ -369,16 +367,16 @@ salt-bootstrap() {
                  PACKAGES="git psutils"
              fi
              if [ -f "/usr/bin/dnf" ]; then
-                 pkg-add ${PACKAGES} 2>/dev/null
+                 pkg-add "${PACKAGES}" 2>/dev/null
              elif [ -f "/usr/bin/yum" ]; then
                  # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
-                 pkg-add ${PACKAGES} --skip-broken 2>/dev/null
+                 pkg-add "${PACKAGES}" --skip-broken 2>/dev/null
              else
-                 pkg-add ${PACKAGES} 2>/dev/null
+                 pkg-add "${PACKAGES}" 2>/dev/null
              fi
              # shellcheck disable=SC2181
              (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
-             curl ${BS_CURL_ARGS} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
+             curl "${BS_CURL_ARGS}" -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
              (sh bootstrap_salt.sh -F -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
     esac
@@ -446,11 +444,11 @@ gitclone() {
     echo "${fork[solutions]}" | grep "${REPO}" >/dev/null 2>&1
 
     MYPWD="$( pwd )"
-    cd "${SALTFS}/namespaces/${ENTITY}"
+    cd "${SALTFS}/namespaces/${ENTITY}" || exit 222
     # shellcheck disable=SC2181
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1
+        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" "${BS_GIT_ARGS}" >/dev/null 2>&1
         # shellcheck disable=SC2181
         if (( $? > 0 )); then
             echo "gitclone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
@@ -461,9 +459,9 @@ gitclone() {
         # shellcheck disable=SC2181
         (( $? > 0 )) && pwd && echo "gitclone checkout ${fork[branch]} failed" && exit 1
     else
-        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1 || exit 1
+        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${REPO}" "${BS_GIT_ARGS}" >/dev/null 2>&1 || exit 1
     fi
-    cd ${MYPWD}
+    cd "${MYPWD}" || exit 222
 
     ## ensure repo is correct
     rm -f "${SALTFS:?}"/"${ALIAS:?}" 2>/dev/null  ## ensure symlink is current
@@ -639,7 +637,7 @@ salter-engine() {
                         interact "==> This script will add: ${solution[entity]}"
                         custom-add "${solution[alias]}" ;;
 
-            menu)       pip${PY_VER} install --pre wrapper barcodenumber npyscreen || exit 1
+            menu)       "pip${PY_VER}" install --pre wrapper barcodenumber npyscreen || exit 1
                         ([ -x "${SALTFS}/contrib/menu.py" ] && "${SALTFS}/contrib/menu.py" "${solution[saltdir]}/install") || exit 2
                         highstate add "${solution[saltdir]}" "${PROFILE}" ;;
 
@@ -746,6 +744,6 @@ custom-postadd() {
 
 developer-definitions
 solution-definitions
-cli-options $*
-salter-engine $*
+cli-options "$*"
+salter-engine "$*"
 exit $?
