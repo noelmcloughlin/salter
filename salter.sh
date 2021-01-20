@@ -79,7 +79,7 @@ elif [[ "$( uname )" == CYGWIN_NT* ]]; then
     BASEDIR=/cygdrive/c/salt/srv
     BASEDIR_ETC=/cygdrive/c/salt/conf
     if [ ! -x "${CHOCO}" ]; then
-        curl "${BS_CURL_ARGS}" -o install.ps1 -L https://chocolatey.org/install.ps1
+        curl ${BS_CURL_ARGS:''} -o install.ps1 -L https://chocolatey.org/install.ps1
         ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./install.ps1"
     fi
     export PATH="${PATH}:/cygdrive/c/salt:c:\\salt"
@@ -287,7 +287,7 @@ salt-bootstrap() {
     echo "Setup OS known good baseline ..."
     case "$OSTYPE" in
     cygwin)  # WINDOWS #
-             curl "${BS_CURL_ARGS}" -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
+             curl ${BS_CURL_ARGS:-''} -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
              # shellcheck disable=SC2016
              ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
              for f in ${BASEDIR_ETC}/minion ${BASEDIR_ETC}/minion.d/f_defaults.conf ${BASEDIR_ETC}/master.d/f_defaults.conf
@@ -376,7 +376,7 @@ salt-bootstrap() {
              fi
              # shellcheck disable=SC2181
              (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
-             curl "${BS_CURL_ARGS}" -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
+             curl ${BS_CURL_ARGS:-''} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
              (sh bootstrap_salt.sh -F -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
     esac
