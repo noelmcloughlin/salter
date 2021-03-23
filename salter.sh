@@ -287,7 +287,7 @@ salt-bootstrap() {
     echo "Setup OS known good baseline ..."
     case "$OSTYPE" in
     cygwin)  # WINDOWS #
-             curl ${BS_CURL_ARGS:-''} -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
+             curl ${BS_CURL_ARGS} -o bootstrap-salt.ps1 -L https://winbootstrap.saltstack.com
              # shellcheck disable=SC2016
              ${POWERSHELL} -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ./bootstrap-salt.ps1"
              for f in ${BASEDIR_ETC}/minion ${BASEDIR_ETC}/minion.d/f_defaults.conf ${BASEDIR_ETC}/master.d/f_defaults.conf
@@ -376,7 +376,7 @@ salt-bootstrap() {
              fi
              # shellcheck disable=SC2181
              (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
-             curl ${BS_CURL_ARGS:-''} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
+             curl ${BS_CURL_ARGS} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
              (sh bootstrap_salt.sh -F -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
     esac
@@ -448,7 +448,7 @@ gitclone() {
     # shellcheck disable=SC2181
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" ${BS_GIT_ARGS:''} >/dev/null 2>&1
+        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1
         # shellcheck disable=SC2181
         if (( $? > 0 )); then
             echo "gitclone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
@@ -459,7 +459,7 @@ gitclone() {
         # shellcheck disable=SC2181
         (( $? > 0 )) && pwd && echo "gitclone checkout ${fork[branch]} failed" && exit 1
     else
-        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${REPO}" ${BS_GIT_ARGS:-''} >/dev/null 2>&1 || exit 1
+        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1 || exit 1
     fi
     cd "${MYPWD}" || exit 222
 
