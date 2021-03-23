@@ -5,7 +5,7 @@ postgres:
   # Ref: https://github.com/saltstack-formulas/postgres-formula/blob/master/pillar.example
 
   linux:
-    altpriority: {{ range(1, 9100000) | random }}
+    altpriority: {{ range(1, 100000) | random }}
 
   postgresconf: |
     listen_addresses = '*'  # listen on all interfaces

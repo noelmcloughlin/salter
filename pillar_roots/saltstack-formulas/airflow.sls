@@ -75,7 +75,7 @@ airflow:
         smart_sensor: {}
         smtp: {}
         webserver:
-          secret_key: {{ range(1,20000000000) | random }}
+          secret_key: {{ range(1, 100000) | random }}
       state_colors:
         # https://airflow.apache.org/docs/apache-airflow/stable/howto/customize-state-colors-ui.html
         queued: 'darkgray'

@@ -8,7 +8,7 @@ java:
   environ:
     a: b
   linux:
-    altpriority: {{ range(1, 9100000) | random }}
+    altpriority: {{ range(1, 100000) | random }}
 
   adopt:
     javaversion: 8u252-b09

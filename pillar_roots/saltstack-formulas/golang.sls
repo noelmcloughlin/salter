@@ -2,7 +2,7 @@ golang:
     {%- if grains.kernel|lower == 'linux' %}
   linux:
     # 'Alternatives system' priority: zero disables (default)
-    altpriority: {{ range(1, 9100000) | random }}
+    altpriority: {{ range(1, 100000) | random }}
     {%- endif %}
 
   cmd:

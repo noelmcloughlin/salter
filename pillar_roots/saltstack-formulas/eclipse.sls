@@ -5,4 +5,4 @@ eclipse:
   identity:
     user: undefined_user
   linux:
-    altpriority: {{ range(1, 9100000) | random }}
+    altpriority: {{ range(1, 100000) | random }}

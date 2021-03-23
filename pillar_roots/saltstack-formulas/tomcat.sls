@@ -36,7 +36,7 @@ tomcat:
     linux:
       #Enable Debian alternatives feature by setting nonzero 'altpriority' value here.
       #Increase same value on each subsequent software installation.
-      altpriority: {{ range(1, 9100000) | random }}
+      altpriority: {{ range(1, 100000) | random }}
      {% endif %}
 
     connectors:
