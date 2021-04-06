@@ -148,30 +148,30 @@ pkg-add() {
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
                  ( /usr/bin/zypper update -y) || ([[ "${IGNORE}" == false ]] && exit 1)
-                 /usr/bin/zypper --non-interactive install "${PKG_LIST}" || ([[ "${IGNORE}" == false ]] && exit 1)
+                 /usr/bin/zypper --non-interactive install ${PKG_LIST} || ([[ "${IGNORE}" == false ]] && exit 1)
              elif [ -f "/usr/bin/emerge" ]; then
-                 /usr/bin/emerge --oneshot "${PKG_LIST}" || exit 1
+                 /usr/bin/emerge --oneshot ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
                  [ -x '/usr/bin/pacman-mirrors' ] && /usr/bin/pacman-mirrors -g
                  # /usr/bin/pacman-key --refresh-keys || true
                  # /usr/bin/pacman -Sy archlinux-keyring || true
                  /usr/bin/pacman -Syyu --noconfirm
-                 /usr/bin/pacman -S --noconfirm "${PKG_LIST}" || exit 1
+                 /usr/bin/pacman -S --noconfirm ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
-                 /usr/bin/dnf install -y --best --allowerasing "${PKG_LIST}" || exit 1
+                 /usr/bin/dnf install -y --best --allowerasing ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
                  # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
                  /usr/bin/yum update -y --skip-broken || exit 1
-                 /usr/bin/yum install -y "${PKG_LIST}" --skip-broken || exit 1
+                 /usr/bin/yum install -y ${PKG_LIST} --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
                  /usr/bin/apt-get update --fix-missing -y || exit 1
                  /usr/bin/apt-add-repository universe
                  /usr/bin/apt autoremove -y
                  /usr/bin/apt-get update -y
-                 /usr/bin/apt-get install -y "${PKG_LIST}" || exit 1
+                 /usr/bin/apt-get install -y ${PKG_LIST} || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
                  /usr/sbin/pkg update -f --quiet || exit 1
-                 /usr/sbin/pkg install --automatic --yes "${PKG_LIST}" || exit 1
+                 /usr/sbin/pkg install --automatic --yes ${PKG_LIST} || exit 1
              fi
     esac
 }
@@ -192,20 +192,20 @@ pkg-update() {
              ;;
 
     linux*)  if [ -f "/usr/bin/zypper" ]; then
-                 /usr/bin/zypper --non-interactive up "${PKG_LIST}" || exit 1
+                 /usr/bin/zypper --non-interactive up ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
-                 /usr/bin/emerge -avDuN "${PKG_LIST}" || exit 1
+                 /usr/bin/emerge -avDuN ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
-                 /usr/bin/pacman -Syu --noconfirm "${PKG_LIST}" || exit 1
+                 /usr/bin/pacman -Syu --noconfirm ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
-                 /usr/bin/dnf upgrade -y --allowerasing "${PKG_LIST}" || exit 1
+                 /usr/bin/dnf upgrade -y --allowerasing ${PKG_LIST} || exit 1
                  # centos/rhel has older package versions so allow newer upstream ones (skip-broken)
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum update -y "${PKG_LIST}" --skip-broken || exit 1
+                 /usr/bin/yum update -y ${PKG_LIST} --skip-broken || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
-                 /usr/bin/apt-get upgrade -y "${PKG_LIST}" || exit 1
+                 /usr/bin/apt-get upgrade -y ${PKG_LIST} || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
-                 /usr/sbin/pkg upgrade --yes "${PKG_LIST}" || exit 1
+                 /usr/sbin/pkg upgrade --yes ${PKG_LIST} || exit 1
              fi
     esac
     return 0
@@ -226,19 +226,19 @@ pkg-remove() {
 
     linux*|freebsd*)
              if [ -f "/usr/bin/zypper" ]; then
-                 /usr/bin/zypper --non-interactive rm "${PKG_LIST}" || exit 1
+                 /usr/bin/zypper --non-interactive rm ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/emerge" ]; then
-                 /usr/bin/emerge -C "${PKG_LIST}" || exit 1
+                 /usr/bin/emerge -C ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/pacman" ]; then
-                 /usr/bin/pacman -Rs --noconfirm "${PKG_LIST}" || exit 1
+                 /usr/bin/pacman -Rs --noconfirm ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/dnf" ]; then
-                 /usr/bin/dnf remove -y "${PKG_LIST}" || exit 1
+                 /usr/bin/dnf remove -y ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
-                 /usr/bin/yum remove -y "${PKG_LIST}" || exit 1
+                 /usr/bin/yum remove -y ${PKG_LIST} || exit 1
              elif [[ -f "/usr/bin/apt-get" ]]; then
-                 /usr/bin/apt-get remove -y "${PKG_LIST}" || exit 1
+                 /usr/bin/apt-get remove -y ${PKG_LIST} || exit 1
              elif [[ -f "/usr/sbin/pkg" ]]; then
-                 /usr/sbin/pkg delete --yes "${PKG_LIST}" || exit 1
+                 /usr/sbin/pkg delete --yes ${PKG_LIST} || exit 1
              fi
     esac
 }
