@@ -448,7 +448,7 @@ gitclone() {
     # shellcheck disable=SC2181
     if (( $? == 0 )) && [[ -n "${fork[uri]}" ]] && [[ -n "${fork[entity]}" ]] && [[ -n "${fork[branch]}" ]]; then
         echo "... using fork: ${fork[entity]}, branch: ${fork[branch]}"
-        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1
+        ${GIT} clone "${fork[uri]}/${fork[entity]}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null
         # shellcheck disable=SC2181
         if (( $? > 0 )); then
             echo "gitclone ${fork[uri]}/${fork[entity]}/${REPO} ${SALTFS}/namespaces/${ENTITY}/${REPO} failed"
@@ -459,7 +459,7 @@ gitclone() {
         # shellcheck disable=SC2181
         (( $? > 0 )) && pwd && echo "gitclone checkout ${fork[branch]} failed" && exit 1
     else
-        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null 2>&1 || exit 1
+        ${GIT} clone "${URI}/${ENTITY}/${REPO}" "${REPO}" ${BS_GIT_ARGS} >/dev/null || exit 1
     fi
     cd "${MYPWD}" || exit 222
 

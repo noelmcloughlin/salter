@@ -21,13 +21,64 @@ postgres:
     - ['local', 'replication', 'all', 'peer']
     - ['host', 'replication', 'all', '127.0.0.1/32', 'md5']
     - ['host', 'replication', 'all', '::1/128', 'md5']
+---
+rabbitmq:
+  vhost:
+    - /airflow
+  user:
+    airflow:
+      - password: airflow
+      - force: true
+      - tags: administrator
+      - perms:
+          - '/airflow':
+              - '.*'
+              - '.*'
+              - '.*'
+      - runas: root
+  queue:
+    airflow:
+      - user: airflow
+      - passwd: airflow
+      - durable: true
+      - auto_delete: false
+      - vhost: /airflow
+      - arguments:
+          - 'x-message-ttl': 8640000
+          - 'x-expires': 8640000
+          - 'x-dead-letter-exchange': '/airflow'
+  binding:
+    airflow:
+      - destination_type: queue
+      - destination: airflow
+      - routing_key: airflow_routing_key
+      - user: airflow
+      - passwd: password
+      - vhost: /airflow
+      - arguments:
+          - 'x-message-ttl': 8640000
+  exchange:
+    airflow:
+      - user: airflow
+      - passwd: airflow
+      - type: fanout
+      - durable: true
+      - internal: false
+      - auto_delete: false
+      - vhost: /airflow
+      - arguments:
+          - 'alternate-**exchange': 'amq.fanout'
+          - 'test-header': 'testing'
+  policy: {}
+  upstream: {}
 
+---
 airflow:
   identity:
     airflow:
-      user: airflow
-      group: airflow
-      skip_user_state: false   # local user
+      user: airflow       # local or ldap username
+      group: airflow       # local or ldap groupname
+      skip_user_state: false   # false if local user; true if ldap user
   database:
     airflow:
       user: airflow
@@ -37,21 +88,29 @@ airflow:
     airflow:
       flask:
         auth_type: AUTH_DB # AUTH_LDAP, etc
-        auth_user_registration: False
-        auth_user_registration_role: Admin
+
         #### Active Directory Example ####
         auth_ldap_server: ldap://ldapserver.new
-        auth_ldap_search_filter: (memberOf=CN=myGrpRole,OU=myOrg,DC=example,DC=com)
-        # match multiple groups: (memberOf=(CN=myGrp*),OU=myOrg,DC=example,DC=com)
         auth_ldap_append_domain: example.com
+
+        ## see https://confluence.atlassian.com/kb/how-to-write-ldap-search-filters-792496933.html
+        # auth_ldap_search_filter: (&(objectCategory=Person)(sAMAccountName=*)(|(memberOf=cn=grpRole_myteam,OU=ouEngineers_myteam,dc=example,dc=com)(memberOf=cn=grpRole_yourteam,OU=ouEngineers_yourteam,dc=example,dc=com)))
+        auth_ldap_search_filter: (memberOf=CN=myGrpRole,OU=myOrg,DC=example,DC=com)
+
+        #### Admin is initially ok for 'admins', but change to Viewer for everyone else
+        auth_user_registration_role: Admin
+        auth_user_registration: True
 
       content:
         api: {}
         celery_kubernetes_executor: {}
         celery:
           # https://docs.celeryproject.org/en/v5.0.2/getting-started/brokers
-          broker_url: redis://127.0.0.1:6379/0
+          default_queue: /airflow
+          broker_url: amqp://rabbit:rabbit@127.0.0.1:5672/airflow
+          # broker_url: redis://127.0.0.1:6379/0
           result_backend: db+postgresql://airflow:airflow@127.0.0.1/airflow
+
         cli: {}
         core:
           authentication: True  # gone in v2
@@ -63,19 +122,8 @@ airflow:
           # https://stackoverflow.com/questions/45455342
           sql_alchemy_conn: postgresql+psycopg2://airflow:airflow@127.0.0.1/airflow
           security: ''
-        dask: {}
-        elasticsearch: {}
-        kerberos: {}
-        kubernetes: {}
-        ldap: {}   # gone in v2
-        logging: {}
-        metrics: {}
-        secrets: {}
-        sentry: {}
-        smart_sensor: {}
-        smtp: {}
         webserver:
-          secret_key: {{ range(1, 100000) | random }}
+          secret_key: {{ range(1,20000) | random }}
       state_colors:
         # https://airflow.apache.org/docs/apache-airflow/stable/howto/customize-state-colors-ui.html
         queued: 'darkgray'
@@ -96,151 +144,105 @@ airflow:
         - airflow-celery-worker
   pkg:
     airflow:
-      version: 2.0.0  # 1.10.14
-      use_upstream: pip
-      # "extras" are installed via 'pip install apache-airflow[extras,]==version'
-      # "providers" are installed via 'pip install [providers,]'
-      # If you want airflow.providers instead, set empty dict (extras: {}) here
-      # and run that state by itself, on-demand. See providers dict.
+      version: 2.0.1
       extras:
+        # Read these first
         # https://airflow.apache.org/docs/apache-airflow/stable/installation.html#extra-packages
-        # NOT VERIFIED OR "I HAD ISSUES WITH THESE!"
-        # all            # All Airflow features known to man    # NOT VERIFIED
-        # all_dbs        # All databases integrations    # NOT VERIFIED
-        # devel_all      # All dev tools requirements    # NOT VERIFIED
-        # devel_hadoop   # Airflow + dependencies on the Hadoop stack    # NOT VERIFIED
-        # doc            # Packages needed to build docs    # NOT VERIFIED
-        # cloudant       # cloudant
-        # salesforce     # Salesforce hook
-        # snowflake      # Snowflake hooks and operators
-        # oracle         # Oracle hooks and operators
-        # jdbc           # JDBC hooks and operators
-        
-        # THESE WORKED
-        - devel          # Minimum dev tools requirements
-        - devel_ci       # Development requirements used in CI
-        - devel_azure    # Azure development requirements
-        - password       # Password authentication for users
-        - apache.atlas      # Apache Atlas to use Data Lineage feature
-        - apache.cassandra  # Cassandra related operators & hook
-        - apache.druid      # Druid related operators & hooks
-        - apache.hdfs       # HDFS hooks and operators
-        - apache.hive       # All Hive related operators
-        - apache.pinot         # Pinot DB hook
-        - webhdfs           # HDFS hooks and operators
-        # apache.presto     # All Presto related operators & hooks   (not in airflow 2.0.0)
-        - amazon               # aws
-        # azure_container_instances   # not in airflow 2.0.0
-        # azure_blob_storage   # not in airflow 2.0.0
-        # azure_cosmos         # not in airflow 2.0.0
-        # azure_data_lake      # not in airflow 2.0.0
-        # azure_secrets        # not in airflow 2.0.0
-        - microsoft.azure      # azure
-        - databricks           # Databricks hooks and operators
-        - datadog              # Datadog hooks and sensors
-        - google               # Google Cloud
-        - google_auth          # Google auth backend
-        - github_enterprise    # GitHub Enterprise auth backend
-        - hashicorp            # Hashicorp Services (Vault)
-        - http                 # http hooks and providers
-        - jira                 # Jira hooks and operators
-        - qubole               # Enable QDS (Qubole Data Service) support
-        - salesforce           # Salesforce hook
-        - sendgrid             # Send email using sendgrid
-        - segment              # Segment hooks and sensors
-        - sentry
-        - slack                # airflow.providers.slack.operators.slack.SlackAPIOperator
-        - vertica              # Vertica hook support as an Airflow backend
-        ## Software
-        - async                # Async worker classes for Gunicorn
-        - celery               # CeleryExecutor
-        - dask                 # DaskExecutor
-        - docker               # Docker hooks and operators
-        - elasticsearch        # Elasticsearch hooks and Log Handler
-        - cncf.kubernetes      # Kubernetes Executor and operator
-        - mongo                # Mongo hooks and operators
-        - mysql                # MySQL operators and hook, support as Airflow backend (mysql 5.6.4+)
-        - postgres             # PostgreSQL operators and hook, support as an Airflow backend
-        - rabbitmq             # RabbitMQ support as a Celery backend
-        - redis                # Redis hooks and sensors
-        - samba                # airflow.providers.apache.hive.transfers.hive_to_samba.HiveToSambaOperator
-        - statsd               # Needed by StatsD metrics
+        # https://airflow.apache.org/docs/apache-airflow/stable/extra-packages-ref.html
+
+        # Bundle Extras
+
+        # NOT VERIFIED == "I HAD ISSUES WITH THESE!"
+        # all               # All Airflow user facing features  # NOT VERIFIED
+        # all_dbs           # All database integrations  # NOT VERIFIED
+        # devel             # Minimum dev tools requirements  # NOT VERIFIED
+        # devel_hadoop      # devel + hadoop devel  # NOT VERIFIED
+        # devel_all         # Everything for development  # NOT VERIFIED
+        # devel_ci          # Development requirements used in CI
+
+        # Apache Software Extras
+        # apache.atlas      # Apache Atlas to use Data Lineage feature
+        # apache.beam
+        # apache.cassandra  # Cassandra related operators & hook
+        # apache.druid      # Druid related operators & hooks
+        # apache.hdfs       # HDFS hooks and operators
+        # apache.hive       # All Hive related operators
+        # apache.kylin
+        # apache.livy
+        # apache.pig
+        # apache.pinot      # Pinot DB hook
+        # apache.spark
+        # apache.sqoop
+
+        # Services Extras
+        - amazon
+        - azure
+        # databricks        # Databricks hooks and operators
+        - datadog           # Datadog hooks and sensors
+        # dask
+        # dingding
+        # discord
+        # facebook
+        - google            # Google Cloud
+        # github_enterprise # GitHub Enterprise auth backend
+        - google_auth       # Google auth backend
+        - hashicorp         # Hashicorp Services (Vault)
+        - jira              # Jira hooks and operators
+        # opsgenie
+        # pagerduty         # PagerDuty ..
+        # plexus
+        # qubole            # Enable QDS (Qubole Data Service) support
+        # salesforce        # Salesforce hook
+        - sendgrid          # Send email using sendgrid
+        # segment           # Segment hooks and sensors
+        # sentry
+        - slack             # airflow.providers.slack.operators.slack.SlackAPIOperator
+        # snowflake
+        # telegram
+        # vertica           # Vertica hook support as an Airflow backend
+        # yandex
+        # zendesk
+
+        ## Software Extras
+        # async             # Async worker classes for Gunicorn
+        - celery            # CeleryExecutor
+        - cncf.kubernetes   # Kubernetes Executor and operator
+        - docker            # Docker hooks and operators
+        - elasticsearch     # Elasticsearch hooks and Log Handler
+        # exasol
+        # jenkins
+        - ldap              # LDAP authentication for users
+        - mongo             # Mongo hooks and operators
+        - microsoft.mssql   # Microsoft SQL server
+        - mysql             # MySQL operators and hook, support as Airflow backend (mysql 5.6.4+)
+        # odbc
+        # openfaas
+        # oracle
+        - postgres          # PostgreSQL operators and hook, support as an Airflow backend
+        - password          # Password authentication for users
+        # presto
+        - rabbitmq          # RabbitMQ support as a Celery backend
+        - redis             # Redis hooks and sensors
+        - samba             # Samba hooks and operators
+        # singularity
+        - statsd            # Needed by StatsD metrics
+        # tableau
         - virtualenv
-        - cgroups              # Needed To use CgroupTaskRunner
-        - crypto               # Cryptography libraries
-        - grpc                 # Grpc hooks and operators
-        - kerberos             # Kerberos integration
-        - ldap                 # LDAP authentication for users
-        - imap                 # IMAP hooks and sensors
-        - papermill            # Papermill hooks and operators
-        - ssh                  # SSH hooks and Operator
-        - pagerduty            # PagerDuty ..
-        - microsoft.winrm      # WinRM hooks and operators
-      providers:
-        - apache-airflow-providers-apache-cassandra
-        - apache-airflow-providers-apache-druid
-        - apache-airflow-providers-apache-hdfs
-        - apache-airflow-providers-apache-hive
-        - apache-airflow-providers-apache-kylin
-        - apache-airflow-providers-apache-livy
-        - apache-airflow-providers-apache-pig
-        - apache-airflow-providers-apache-pinot
-        - apache-airflow-providers-apache-spark
-        - apache-airflow-providers-apache-sqoop
-        - apache-airflow-providers-celery
-        - apache-airflow-providers-cloudant
-        - apache-airflow-providers-cncf-kubernetes
-        - apache-airflow-providers-databricks
-        - apache-airflow-providers-datadog
-        - apache-airflow-providers-dingding
-        - apache-airflow-providers-discord
-        - apache-airflow-providers-docker
-        - apache-airflow-providers-elasticsearch
-        - apache-airflow-providers-exasol
-        - apache-airflow-providers-facebook
-        - apache-airflow-providers-ftp
-        - apache-airflow-providers-google
-        - apache-airflow-providers-grpc
-        - apache-airflow-providers-hashicorp
-        - apache-airflow-providers-imap
-        - apache-airflow-providers-jdbc
-        - apache-airflow-providers-jenkins
-        - apache-airflow-providers-jira
-        - apache-airflow-providers-microsoft-azure
-        - apache-airflow-providers-microsoft-mssql
-        - apache-airflow-providers-microsoft-winrm
-        - apache-airflow-providers-mongo
-        - apache-airflow-providers-mysql
-        - apache-airflow-providers-odbc
-        - apache-airflow-providers-openfaas
-        - apache-airflow-providers-opsgenie
-        - apache-airflow-providers-oracle
-        - apache-airflow-providers-pagerduty
-        - apache-airflow-providers-papermill
-        - apache-airflow-providers-plexus
-        - apache-airflow-providers-postgres
-        - apache-airflow-providers-presto
-        - apache-airflow-providers-qubole
-        - apache-airflow-providers-redis
-        - apache-airflow-providers-salesforce
-        - apache-airflow-providers-samba
-        - apache-airflow-providers-segment
-        - apache-airflow-providers-sendgrid
-        - apache-airflow-providers-sftp
-        - apache-airflow-providers-singularity
-        - apache-airflow-providers-slack
-        - apache-airflow-providers-snowflake
-        - apache-airflow-providers-sqlite
-        - apache-airflow-providers-ssh
-        - apache-airflow-providers-telegram
-        - apache-airflow-providers-vertica
-        - apache-airflow-providers-yandex
-        - apache-airflow-providers-zendesk
-        - apache-airflow-providers-amazon
+
+        ## Standard protocol Extras
+        # cgroups           # Needed To use CgroupTaskRunner
+        - ftp
+        - grpc              # Grpc hooks and operators
+        - http              # http hooks and providers
+        - imap              # IMAP hooks and sensors
+        # jdbc
+        - kerberos          # Kerberos integration
+        # papermill         # Papermill hooks and operators
+        - sftp
+        - sqlite
+        - ssh               # SSH hooks and Operator
+        - microsoft.winrm   # WinRM hooks and operators
 
   linux:
     altpriority: 0   # zero disables alternatives
-
-  # Just for testing purposes
-  winner: pillar
-  added_in_pillar: pillar_value
+...
