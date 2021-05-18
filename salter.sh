@@ -31,7 +31,7 @@ else
     [ "$(id -u)" != 0 ] && echo -e "\nRun with sudo, exiting\n" && exit 1
 fi
 
-SALT_VERSION=${SALT_VERSION:-'stable 3002.1'}
+SALT_VERSION=${SALT_VERSION:-'stable'}
 RC=0
 ACTION=
 BASEDIR=/srv
