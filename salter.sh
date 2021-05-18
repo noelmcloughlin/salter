@@ -32,6 +32,7 @@ else
 fi
 
 SALT_VERSION=${SALT_VERSION:-'stable'}
+USEPYTHON3=${USEPYTHON3:-'-x python3'}
 RC=0
 ACTION=
 BASEDIR=/srv
@@ -377,7 +378,7 @@ salt-bootstrap() {
              # shellcheck disable=SC2181
              (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
              curl ${BS_CURL_ARGS} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
-             (sh bootstrap_salt.sh -F -x python3 ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
+             (sh bootstrap_salt.sh -F ${USEPYTHON3} ${SALT_VERSION} && rm -f bootstrap_salt.sh) || exit 10
              ;;
     esac
     ### stop debian interference with services (https://wiki.debian.org/chroot)
