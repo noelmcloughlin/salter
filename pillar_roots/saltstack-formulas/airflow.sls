@@ -32,6 +32,11 @@ airflow:
         #### Admin is initially ok for 'admins', but change to Viewer for everyone else
         auth_user_registration_role: Admin
         auth_user_registration: True
+        webserver:
+          # The ip specified when starting the web server
+          web_server_host: 0.0.0.0
+          # The port on which to run the web server
+          web_server_port: 18080
 
       content:
         api: {}
