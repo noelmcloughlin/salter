@@ -16,8 +16,8 @@ airflow:
     airflow:
           {%- if grains.osfinger == 'CentOS Linux-7' %}
       venv_cmd: virtualenv-3
-      pip_cmd: pip3
           {%- endif %}
+      pip_cmd: pip3
       flask:
         auth_type: AUTH_DB # AUTH_LDAP, etc
 
