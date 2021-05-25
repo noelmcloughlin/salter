@@ -72,89 +72,47 @@ airflow:
         - airflow-celery-worker
   pkg:
     airflow:
-      version: 2.0.1
+      version: 2.1.0
+          {%- if grains.osfinger == 'CentOS Linux-7' %}
+          # because centos7 defaults to python2, need to be explicit
+      uri_c: https://raw.githubusercontent.com/apache/airflow/constraints-VERSION/constraints-3.6.txt
+      deps:
+        - python2-pip   # needed if salt was installed with python2
+          {%- endif %}
       extras:
-        # Read these first
         # https://airflow.apache.org/docs/apache-airflow/stable/installation.html#extra-packages
         # https://airflow.apache.org/docs/apache-airflow/stable/extra-packages-ref.html
 
-        # Bundle Extras
-
-        # NOT VERIFIED == "I HAD ISSUES WITH THESE!"
-        # all               # All Airflow user facing features  # NOT VERIFIED
-        # all_dbs           # All database integrations  # NOT VERIFIED
-        # devel             # Minimum dev tools requirements  # NOT VERIFIED
-        # devel_hadoop      # devel + hadoop devel  # NOT VERIFIED
-        # devel_all         # Everything for development  # NOT VERIFIED
-        # devel_ci          # Development requirements used in CI
-
-        # Apache Software Extras
-        # apache.atlas      # Apache Atlas to use Data Lineage feature
-        # apache.beam
-        # apache.cassandra  # Cassandra related operators & hook
-        # apache.druid      # Druid related operators & hooks
-        # apache.hdfs       # HDFS hooks and operators
-        # apache.hive       # All Hive related operators
-        # apache.kylin
-        # apache.livy
-        # apache.pig
-        # apache.pinot      # Pinot DB hook
-        # apache.spark
-        # apache.sqoop
-
         # Services Extras
-        - amazon
-        - azure
-        # databricks        # Databricks hooks and operators
+        - async
+        - crypto
+        - dask
         - datadog           # Datadog hooks and sensors
-        # dask
-        # dingding
-        # discord
-        # facebook
+        - devel
+        - devel_ci
+        - devel_azure
         - google            # Google Cloud
-        # github_enterprise # GitHub Enterprise auth backend
         - google_auth       # Google auth backend
         - hashicorp         # Hashicorp Services (Vault)
         - jira              # Jira hooks and operators
-        # opsgenie
-        # pagerduty         # PagerDuty ..
-        # plexus
-        # qubole            # Enable QDS (Qubole Data Service) support
-        # salesforce        # Salesforce hook
         - sendgrid          # Send email using sendgrid
-        # segment           # Segment hooks and sensors
-        # sentry
         - slack             # airflow.providers.slack.operators.slack.SlackAPIOperator
-        # snowflake
-        # telegram
-        # vertica           # Vertica hook support as an Airflow backend
-        # yandex
-        # zendesk
 
         ## Software Extras
-        # async             # Async worker classes for Gunicorn
         - celery            # CeleryExecutor
         - cncf.kubernetes   # Kubernetes Executor and operator
         - docker            # Docker hooks and operators
         - elasticsearch     # Elasticsearch hooks and Log Handler
-        # exasol
-        # jenkins
         - ldap              # LDAP authentication for users
-        - mongo             # Mongo hooks and operators
+        - microsoft.azure
         - microsoft.mssql   # Microsoft SQL server
         - mysql             # MySQL operators and hook, support as Airflow backend (mysql 5.6.4+)
-        # odbc
-        # openfaas
-        # oracle
         - postgres          # PostgreSQL operators and hook, support as an Airflow backend
         - password          # Password authentication for users
-        # presto
         - rabbitmq          # RabbitMQ support as a Celery backend
         - redis             # Redis hooks and sensors
-        - samba             # Samba hooks and operators
-        # singularity
+        - samba
         - statsd            # Needed by StatsD metrics
-        # tableau
         - virtualenv
 
         ## Standard protocol Extras
@@ -163,10 +121,9 @@ airflow:
         - grpc              # Grpc hooks and operators
         - http              # http hooks and providers
         - imap              # IMAP hooks and sensors
-        # jdbc
         - kerberos          # Kerberos integration
-        # papermill         # Papermill hooks and operators
         - sftp
+        - snowflake
         - sqlite
         - ssh               # SSH hooks and Operator
         - microsoft.winrm   # WinRM hooks and operators
