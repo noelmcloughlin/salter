@@ -1,5 +1,5 @@
 base:
   '*':
     - postgres
-    - postgres.dev
+    # postgres.dev
     - postgres.upstream
