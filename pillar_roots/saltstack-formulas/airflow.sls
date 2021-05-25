@@ -14,6 +14,10 @@ airflow:
       email: airflow@localhost
   config:
     airflow:
+          {%- if grains.osfinger == 'CentOS Linux-7' %}
+      venv_cmd: virtualenv-3
+      pip_cmd: pip3
+          {%- endif %}
       flask:
         auth_type: AUTH_DB # AUTH_LDAP, etc
 
@@ -78,6 +82,7 @@ airflow:
       uri_c: https://raw.githubusercontent.com/apache/airflow/constraints-VERSION/constraints-3.6.txt
       deps:
         - python2-pip   # needed if salt was installed with python2
+        - python3-virtualenv
           {%- endif %}
       extras:
         # https://airflow.apache.org/docs/apache-airflow/stable/installation.html#extra-packages
