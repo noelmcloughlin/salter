@@ -2,6 +2,15 @@
 # vim: ft=yaml
 ---
 rabbitmq:
+  cluster:
+    rabbitmq@locahost:
+      user: rabbitmq
+      host: rabbitmqhost  # short hostname of node to join to, not fqdn
+      ram_node: None
+      runas: rabbitmq
+      erlang_cookie:
+        name: /var/lib/rabbitmq/.erlang_cookie
+        value: shared-value-for-all-cluster-members
   vhost:
     - /airflow
   user:

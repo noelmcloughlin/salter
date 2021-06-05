@@ -14,29 +14,29 @@ airflow:
       email: airflow@localhost
   config:
     airflow:
-          {%- if grains.osfinger == 'CentOS Linux-7' %}
-      venv_cmd: virtualenv-3
-          {%- endif %}
-      pip_cmd: pip3
       flask:
         auth_type: AUTH_DB # AUTH_LDAP, etc
 
-        #### Active Directory Example ####
-        auth_ldap_server: ldap://ldapserver.new
+        ## Microsoft AD Example ##
+        # https://flask-appbuilder.readthedocs.io/en/latest/security.html#authentication-ldap
+        auth_ldap_server: ldap://ldapserver.new    # must include protocol (ldap or ldaps)
         auth_ldap_append_domain: example.com
+        auth_ldap_uid_field: sAMAccountName  # or uid or userPrincipalName or ?
+        auth_ldap_search: OU=ouEngineers_myteam,dc=example,dc=com
+        auth_ldap_group_field: memberOf
+        auth_ldap_allow_self_signed: False
 
-        ## see https://confluence.atlassian.com/kb/how-to-write-ldap-search-filters-792496933.html
-        # auth_ldap_search_filter: (&(objectCategory=Person)(sAMAccountName=*)(|(memberOf=cn=grpRole_myteam,OU=ouEngineers_myteam,dc=example,dc=com)(memberOf=cn=grpRole_yourteam,OU=ouEngineers_yourteam,dc=example,dc=com)))
-        auth_ldap_search_filter: (memberOf=CN=myGrpRole,OU=myOrg,DC=example,DC=com)
+        ## https://confluence.atlassian.com/kb/how-to-write-ldap-search-filters-792496933.html
+        auth_ldap_search_filter: (&(objectCategory=Person)(sAMAccountName=*)(|(memberOf=cn=grpRole_myteam,OU=ouEngineers_myteam,dc=example,dc=com)(memberOf=cn=grpRole_yourteam,OU=ouEngineers_yourteam,dc=example,dc=com)))
+        # auth_ldap_search_filter: (memberOf=CN=myGrpRole,OU=myOrg,DC=example,DC=com)
 
-        #### Admin is initially ok for 'admins', but change to Viewer for everyone else
-        auth_user_registration_role: Admin
-        auth_user_registration: True
+        auth_roles_sync_at_login: True
+        # permanent_session_lifetime: 1800
+        auth_user_registration_role: Admin    # change to 'Viewer' after post-install admin-onboarding
+        auth_user_registration: True  # allow users not already in FAB DB
         webserver:
-          # The ip specified when starting the web server
           web_server_host: 0.0.0.0
-          # The port on which to run the web server
-          web_server_port: 18080
+          web_server_port: 8080
 
       content:
         api: {}
@@ -60,7 +60,7 @@ airflow:
           sql_alchemy_conn: postgresql+psycopg2://airflow:airflow@127.0.0.1/airflow
           security: ''
         webserver:
-          secret_key: {{ range(1,20000) | random }}
+          secret_key: {{ range(1,2000) | random }}
       state_colors:
         # https://airflow.apache.org/docs/apache-airflow/stable/howto/customize-state-colors-ui.html
         queued: 'darkgray'
@@ -83,7 +83,7 @@ airflow:
     airflow:
       version: 2.1.0
           {%- if grains.osfinger == 'CentOS Linux-7' %}
-          # because centos7 defaults to python2, need to be explicit
+          # because centos7 OS default is python2, need to be explicit
       uri_c: https://raw.githubusercontent.com/apache/airflow/constraints-VERSION/constraints-3.6.txt
           {%- endif %}
       extras:
