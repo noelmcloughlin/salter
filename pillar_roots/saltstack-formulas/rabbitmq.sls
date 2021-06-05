@@ -12,14 +12,14 @@ rabbitmq:
         name: /var/lib/rabbitmq/.erlang_cookie
         value: shared-value-for-all-cluster-members
   vhost:
-    - /airflow
+    - airflow
   user:
     airflow:
       - password: airflow
       - force: true
       - tags: administrator
       - perms:
-          - '/airflow':
+          - 'airflow':
               - '.*'
               - '.*'
               - '.*'
@@ -30,11 +30,11 @@ rabbitmq:
       - passwd: airflow
       - durable: true
       - auto_delete: false
-      - vhost: /airflow
+      - vhost: airflow
       - arguments:
           - 'x-message-ttl': 8640000
           - 'x-expires': 8640000
-          - 'x-dead-letter-exchange': '/airflow'
+          - 'x-dead-letter-exchange': 'airflow'
   binding:
     airflow:
       - destination_type: queue
@@ -42,7 +42,7 @@ rabbitmq:
       - routing_key: airflow_routing_key
       - user: airflow
       - passwd: password
-      - vhost: /airflow
+      - vhost: airflow
       - arguments:
           - 'x-message-ttl': 8640000
   exchange:
@@ -53,7 +53,7 @@ rabbitmq:
       - durable: true
       - internal: false
       - auto_delete: false
-      - vhost: /airflow
+      - vhost: airflow
       - arguments:
           - 'alternate-**exchange': 'amq.fanout'
           - 'test-header': 'testing'
