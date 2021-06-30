@@ -26,15 +26,16 @@ rabbitmq:
       - runas: root
   queue:
     airflow:
-      - user: airflow
-      - passwd: airflow
-      - durable: true
-      - auto_delete: false
-      - vhost: airflow
-      - arguments:
-          - 'x-message-ttl': 8640000
-          - 'x-expires': 8640000
-          - 'x-dead-letter-exchange': 'airflow'
+      # note: dict
+      user: airflow
+      passwd: airflow
+      durable: true
+      auto_delete: false
+      vhost: airflow
+      arguments:
+        - 'x-message-ttl': 8640000
+        - 'x-expires': 8640000
+        - 'x-dead-letter-exchange': 'airflow'
   binding:
     airflow:
       - destination_type: queue
