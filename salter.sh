@@ -717,12 +717,12 @@ solution-definitions() {
 
     ### derivatives
     solution['homedir']="${SALTFS}/namespaces/${solution[entity]}/${solution[repo]}/${solution[subdir]}"
-    solution['saltdir']="${solution[homedir]}/file_roots"
-    solution['pillars']="${solution[homedir]}/pillar_roots"
+    solution['saltdir']="${solution[homedir]}/api"
+    solution['pillars']="${solution[homedir]}/api_config"
     solution['logdir']="/tmp/${solution[entity]}-${solution[repo]}"
 
-    your['saltdir']="${SALTFS}/namespaces/your/file_roots"
-    your['pillars']="${SALTFS}/namespaces/your/pillar_roots"
+    your['saltdir']="${SALTFS}/namespaces/your/api"
+    your['pillars']="${SALTFS}/namespaces/your/api_config"
     mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASEDIR_ETC} 2>/dev/null
 }
 
@@ -742,7 +742,7 @@ custom-postadd() {
     if (( $? == 0 )) && [[ "${1}" == "deepsea" ]]; then
        salt-call${EXTENSION} --local grains.append deepsea default ${solution['saltmaster']}
        # shellcheck disable=SC2086
-       cp "${solution['homedir']}/file_roots/add/deepsea_post.sls" "${SALTFS}/${STATES_DIR}/top.sls"
+       cp "${solution['homedir']}/api/add/deepsea_post.sls" "${SALTFS}/${STATES_DIR}/top.sls"
     fi
 }
 

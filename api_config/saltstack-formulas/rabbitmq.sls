@@ -3,39 +3,40 @@
 ---
 rabbitmq:
   cluster:
-    rabbitmq@locahost:
-      user: rabbitmq
-      host: rabbitmqhost  # short hostname of node to join to, not fqdn
+    rabbit@locahost:
+      user: rabbit       # user is confusing keyname; should be 'node: rabbit'
+      host: 127.0.0.1    # host of (primary rabbitmq cluster) node to join to
       ram_node: None
       runas: rabbitmq
       erlang_cookie:
-        name: /var/lib/rabbitmq/.erlang_cookie
+        name: /var/lib/rabbitmq/.erlang.cookie
         value: shared-value-for-all-cluster-members
   vhost:
     - airflow
   user:
     airflow:
-      - password: airflow
+      - password: 'airflow'
       - force: true
-      - tags: administrator
+      - tags:
+        - management
+        - administrator
       - perms:
           - 'airflow':
-              - '.*'
-              - '.*'
-              - '.*'
-      - runas: root
+            - '.*'
+            - '.*'
+            - '.*'
+      - runas: rabbitmq
   queue:
     airflow:
-      # note: dict
-      user: airflow
-      passwd: airflow
-      durable: true
-      auto_delete: false
-      vhost: airflow
-      arguments:
-        - 'x-message-ttl': 8640000
-        - 'x-expires': 8640000
-        - 'x-dead-letter-exchange': 'airflow'
+      - user: airflow
+      - passwd: airflow
+      - durable: true
+      - auto_delete: false
+      - vhost: airflow
+      - arguments:
+          - 'x-message-ttl': 8640000
+          - 'x-expires': 8640000
+          - 'x-dead-letter-exchange': 'airflow'
   binding:
     airflow:
       - destination_type: queue
@@ -60,3 +61,4 @@ rabbitmq:
           - 'test-header': 'testing'
   policy: {}
   upstream: {}
+...

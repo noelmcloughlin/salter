@@ -66,15 +66,15 @@ if (( RC > 0 )) && [ "$( uname )" = "Darwin" ]; then
 fi
 # no problem
 if (( RC == 0 )); then
-    FILE_ROOTS=/srv/salt
-    [ -d /usr/local/etc/salt/states ] && FILE_ROOTS=/usr/local/etc/salt/states
-    [ -d /usr/local/srv/salt ] && FILE_ROOTS=/usr/local/srv/salt
-    TARGET_DIR=${FILE_ROOTS}/namespaces/your
-    mkdir -p ${TARGET_DIR}/contrib ${TARGET_DIR}/file_roots ${TARGET_DIR}/pillar_roots 2>/dev/null
+    API=/srv/salt
+    [ -d /usr/local/etc/salt/states ] && API=/usr/local/etc/salt/states
+    [ -d /usr/local/srv/salt ] && API=/usr/local/srv/salt
+    TARGET_DIR=${API}/namespaces/your
+    mkdir -p ${TARGET_DIR}/contrib ${TARGET_DIR}/api ${TARGET_DIR}/api_config 2>/dev/null
 
     cp -Rp ./scripts/* ${TARGET_DIR}/contrib/ 2>/dev/null         # Your contrib
-    cp -Rp ./profiles/* ${TARGET_DIR}/file_roots/ 2>/dev/null     # Your profiles/highstatesa ..
-    cp -Rp ./configs/* ${TARGET_DIR}/pillar_roots/ 2>/dev/null    # Your pillar data ..
+    cp -Rp ./profiles/* ${TARGET_DIR}/api/ 2>/dev/null     # Your profiles/highstatesa ..
+    cp -Rp ./configs/* ${TARGET_DIR}/api_config/ 2>/dev/null    # Your pillar data ..
     rm -fr ./scripts ./profiles ./configs 2>/dev/null             # cleanup local dirs
     ${GIT} init                                                   # forget what just happened
 else
@@ -104,9 +104,9 @@ if [ -d "${SOURCE_DIR}" ]; then
     do
         if [ -d "${SOURCE_DIR}/${formula}-formula/${formula}" ]; then
             # cleanup, integrate, symlink
-            rm -fr ${TARGET_DIR:?}/"${formula}"-formula ${FILE_ROOTS:?}/"${formula}" 2>/dev/null
+            rm -fr ${TARGET_DIR:?}/"${formula}"-formula ${API:?}/"${formula}" 2>/dev/null
             mv "${SOURCE_DIR}/${formula}-formula" "${TARGET_DIR}/"
-            ln -s  "${TARGET_DIR}/${formula}-formula/${formula}" "${FILE_ROOTS}/${formula}" 2>/dev/null
+            ln -s  "${TARGET_DIR}/${formula}-formula/${formula}" "${API}/${formula}" 2>/dev/null
         fi
     done
 fi

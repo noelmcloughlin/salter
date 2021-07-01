@@ -15,7 +15,7 @@ The command line interface is described now.
   - This script deploys a profile to the host. The profile, a yaml format, drives the automated cloning and deployment by Salt orchestrator. This script supports the following arguments-
 
     <code>-i  profilename</code>
-        Mandatory. Specify scenario (i.e. 'macbook') corresponding to a SLS file in <code>/srv/salt/file_roots/</code> directory. 
+        Mandatory. Specify scenario (i.e. 'macbook') corresponding to a SLS file in <code>/srv/salt/api/</code> directory. 
 
     <code>-u  loginname</code>
         Mandatory for developer profiles.
@@ -24,7 +24,7 @@ The command line interface is described now.
 
 ### Example Default configuation values
 
-The configuration is stored in <code>/srv/salt/pillar_roots</code> directory. These files are salt-desktop verification of saltstack-formuals, plus customizations.
+The configuration is stored in <code>/srv/salt/api_config</code> directory. These files are salt-desktop verification of saltstack-formuals, plus customizations.
 
 ### GUI
 
@@ -39,9 +39,9 @@ The Graphical user interfaces is now described.
 
 # Profile API
 
-Profile definitions are SLS / yaml format files located in <code>/srv/salt/desktop/file_roots/</code> directory. Each profile contains a list of salt states individually documented at github.com/saltstack-formulas/[formula-name]-formula/README file. The following illustrates a profile (salt highstate)-
+Profile definitions are SLS / yaml format files located in <code>/srv/salt/desktop/api/</code> directory. Each profile contains a list of salt states individually documented at github.com/saltstack-formulas/[formula-name]-formula/README file. The following illustrates a profile (salt highstate)-
 
-> cat /srv/salt/desktop/file_roots/dev:
+> cat /srv/salt/desktop/api/dev:
 
     <code>
         #supported states are documented in the upstream formula README file.
