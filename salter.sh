@@ -42,7 +42,7 @@ STATEDIR=''
 USER=
 EXTENSION=''
 CHOCO=${CHOCO:-/cygdrive/c/ProgramData/chocolatey/bin/choco}
-GIT=git
+GIT=${GIT:-git}
 HOMEBREW=/usr/local/bin/brew
 OSNAME=$(uname)
 POWERSHELL=${POWERSHELL:-/cygdrive/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell.exe}
@@ -54,13 +54,6 @@ BS_CURL_IPV="${BS_CURL_IPV:---ipv4}"
 # shellcheck disable=SC2154
 [[ -z "${https_proxy+x}" ]] || export BS_CURL_ARGS="-x ${https_proxy}"
 BS_CURL_ARGS="${BS_CURL_ARGS} ${BS_CURL_IPV}"
-
-# git internet proxy support
-if [[ -z "${BS_GIT_ARGS}" ]] && [[ -n "${https_proxy+x}" ]]; then
-    export BS_GIT_ARGS="--config http.proxy=${https_proxy}"
-    # shellcheck disable=SC2154
-    git config --global http.proxy "${http_proxy}"
-fi
 
 # os-support
 if [ "${OSNAME}" == "FreeBSD" ]; then
@@ -274,6 +267,7 @@ HEREDOC
 }
 
 salt-bootstrap() {
+    internet_proxy_support
     get-salt-master-hostname
     if [ -f "/usr/bin/zypper" ] || [ -f "/usr/sbin/pkg" ] || [ -f "/usr/bin/pacman" ]; then
         # No major version pegged packages support for suse/freebsd/arch
@@ -306,6 +300,7 @@ salt-bootstrap() {
              ## Try to make git available
              (${GIT} --version >/dev/null 2>&1) || ${CHOCO} install git -Y --force
 	     export GIT=${GIT:-/cygdrive/c/Program\ Files/Git/bin/git.exe}
+	     internet_proxy_support
              ;;
 
     darwin*) # MACOS #
@@ -375,6 +370,7 @@ salt-bootstrap() {
              else
                  pkg-add "${PACKAGES}" 2>/dev/null
              fi
+             internet_proxy_support
              # shellcheck disable=SC2181
              (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
              curl ${BS_CURL_ARGS} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
@@ -595,6 +591,15 @@ explain_add_salter() {
 interact() {
     echo -e "$*\npress return to continue or control-c to abort"
     [ -n "$PS1" ] && read -r
+}
+
+internet_proxy_support() {
+    if [[ -z "${BS_GIT_ARGS}" ]] && [[ -n "${https_proxy+x}" ]]; then
+        export BS_GIT_ARGS="--config http.proxy=${https_proxy}"
+        # shellcheck disable=SC2154
+        ${GIT} config --global http.proxy "${http_proxy}" 2>/dev/null
+    fi
+    return 0
 }
 
 salter-engine() {
