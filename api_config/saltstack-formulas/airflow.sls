@@ -15,9 +15,6 @@ airflow:
       email: airflow@127.0.0.1
   config:
     airflow:
-          {%- if grains.osfinger == 'CentOS Linux-7' %}
-      venv_cmd: virtualenv-3
-          {%- endif %}
       pip_cmd: pip3
       flask:
         # https://flask-appbuilder.readthedocs.io/en/latest/security.html#authentication-ldap
@@ -84,10 +81,6 @@ airflow:
   pkg:
     airflow:
       version: 2.1.0
-          {%- if grains.osfinger == 'CentOS Linux-7' %}
-          # because centos7 defaults to python2, need to be explicit
-      uri_c: https://raw.githubusercontent.com/apache/airflow/constraints-VERSION/constraints-3.6.txt
-          {%- endif %}
       extras:
         # https://airflow.apache.org/docs/apache-airflow/stable/installation.html#extra-packages
         # https://airflow.apache.org/docs/apache-airflow/stable/extra-packages-ref.html
