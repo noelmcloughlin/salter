@@ -6,7 +6,7 @@ airflow:
     airflow:
       user: airflow
       group: airflow
-      skip_user_state: true  # _airflow already exists
+      # skip_user_state: true  # ldap
   database:
     airflow:
       install: true        # see docs/README
