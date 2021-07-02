@@ -26,12 +26,17 @@ airflow:
         auth_ldap_append_domain: example.com
         auth_ldap_uid_field: 'sAMAccountName'  # or 'userPrincipalName'
 
+        auth_ldap_search: OU=myOrg,DC=example,DC=com
         ## https://confluence.atlassian.com/kb/how-to-write-ldap-search-filters-792496933.html
         auth_ldap_search_filter: (&(objectCategory=Person)(sAMAccountName=*)(|memberOf=CN=myGrpRole,OU=myOrg,DC=example,DC=com)
 
         # auth_ldap_search: 'OU=ouEngineers_myteam,dc=example,dc=com'
         auth_user_registration_role: "Admin" # role, in addition to any AUTH_ROLES_MAPPING
         auth_user_registration: True   # allow users who are not already in the FAB DB
+        auth_roles_mapping:
+          cn=fab_users,ou=groups,dc=example,dc=com: User
+          cn=fab_admins,ou=groups,dc=example,dc=com: Admin
+        auth_roles_sync_at_login: True
         webserver:
           web_server_host: 0.0.0.0
           web_server_port: 18080
