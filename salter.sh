@@ -718,11 +718,11 @@ solution-definitions() {
     ### derivatives
     solution['homedir']="${SALTFS}/namespaces/${solution[entity]}/${solution[repo]}/${solution[subdir]}"
     solution['saltdir']="${solution[homedir]}/api"
-    solution['pillars']="${solution[homedir]}/api_config"
+    solution['pillars']="${solution[homedir]}/api/config"
     solution['logdir']="/tmp/${solution[entity]}-${solution[repo]}"
 
     your['saltdir']="${SALTFS}/namespaces/your/api"
-    your['pillars']="${SALTFS}/namespaces/your/api_config"
+    your['pillars']="${SALTFS}/namespaces/your/api/config"
     mkdir -p ${solution[saltdir]} ${solution[pillars]} ${your[saltdir]} ${your[pillars]} ${solution[logdir]} ${PILLARFS} ${BASEDIR_ETC} 2>/dev/null
 }
 
