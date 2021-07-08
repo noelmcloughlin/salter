@@ -120,3 +120,5 @@ salt_formulas:
      - sysstat-formula
      - airflow-formula
      - redis-formula
+     - rabbitmq-formula
+     - hostsfile-formula
