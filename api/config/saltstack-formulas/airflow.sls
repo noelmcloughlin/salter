@@ -89,9 +89,6 @@ airflow:
         - crypto
         - dask
         - datadog           # Datadog hooks and sensors
-        - devel
-        - devel_ci
-        - devel_azure
         - jira              # Jira hooks and operators
         - sendgrid          # Send email using sendgrid
         - slack             # airflow.providers.slack.operators.slack.SlackAPIOperator
