@@ -4,23 +4,20 @@
 rabbitmq:
   nodes:
     rabbit:  # default node name
-      clustered: false
-      user: rabbit    # 'node' would make more sense here
-      host: localhost  # short hostname of node to join to, not fqdn
       nodeport: 5672
       distport: 25672
       erlang_cookie: shared-secret
       config:
+        auth_backends.1: internal   # default
         listeners.tcp.1: 0.0.0.0:5672
         # https://www.rabbitmq.com/ldap.html
-        # auth_backends.1: ldap
-        # auth_backends.2: internal
-        # auth_ldap.servers.1: ldap.eng.megacorp.local
-        # auth_ldap.servers.2: 192.168.0.100
-        # auth_ldap.user_dn_pattern: cn=${username},ou=People,dc=example,dc=com
-        # auth_ldap.use_ssl: false
-        # auth_ldap.port: 389
+        # auth_backends.2: ldap
+        # auth_ldap.servers.1: ldapserver.new
+        # auth_ldap.servers.2: ldapserver.old
+        # auth_ldap.user_dn_pattern: cn=${username},OU=myOrg,DC=example,DC=com
         # auth_ldap.log: false
+        # auth_ldap.dn_lookup_attribute: sAMAccountName  # or userPrincipalName
+        # auth_ldap.dn_lookup_base: OU=myOrg,DC=example,DC=com
       service: true
       plugins:
         - rabbitmq_management
@@ -110,23 +107,22 @@ rabbitmq:
           - ack_mode: on-confirm
 
     rabbit2:
-      clustered: false
-      user: rabbit2    # 'node' would make more sense here
-      host: localhost  # short hostname of node to join to, not fqdn
       nodeport: 5673
       distport: 25673
       erlang_cookie: shared-secret
+      clustered: false              # true
+      join_node: rabbit@localhost   # create multinode cluster on localhost
       config:
+        auth_backends.1: internal   # default
         listeners.tcp.1: 0.0.0.0:5673
         # https://www.rabbitmq.com/ldap.html
-        # auth_backends.1: ldap
-        # auth_backends.2: internal
-        # auth_ldap.servers.1: ldap.eng.megacorp.local
-        # auth_ldap.servers.2: 192.168.0.100
-        # auth_ldap.user_dn_pattern: cn=${username},ou=People,dc=example,dc=com
-        # auth_ldap.use_ssl: false
-        # auth_ldap.port: 389
+        # auth_backends.2: ldap
+        # auth_ldap.servers.1: ldapserver.new
+        # auth_ldap.servers.2: ldapserver.old
+        # auth_ldap.user_dn_pattern: cn=${username},OU=myOrg,DC=example,DC=com
         # auth_ldap.log: false
+        # auth_ldap.dn_lookup_attribute: sAMAccountName  # or userPrincipalName
+        # auth_ldap.dn_lookup_base: OU=myOrg,DC=example,DC=com
       service: true
       plugins: []
       vhosts:
