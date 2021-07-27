@@ -109,7 +109,6 @@ airflow:
         - http              # http hooks and providers
         - kerberos          # Kerberos integration
         - sftp
-        - snowflake
         - sqlite
         - ssh               # SSH hooks and Operator
         - microsoft.winrm   # WinRM hooks and operators
