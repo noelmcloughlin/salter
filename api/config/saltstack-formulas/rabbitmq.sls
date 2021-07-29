@@ -38,26 +38,26 @@ rabbitmq:
             - x-dead-letter-exchange: my-exchange
       bindings:
         my-binding:
-          - destination_type: queue
-          - destination: my-queue
-          - routing_key: a_routing_key_string
-          - user: saltstack_mq
-          - passwd: 'password'
-          - vhost: default_vhost
-          - arguments:
-              - 'x-message-ttl': 8640000
+          destination_type: queue
+          destination: my-queue
+          routing_key: a_routing_key_string
+          user: saltstack_mq
+          passwd: 'password'
+          vhost: default_vhost
+          arguments:
+            - 'x-message-ttl': 8640000
       exchanges:
         my-exchange:
-          - user: saltstack_mq
-          - passwd: 'password'
-          - type: fanout
-          - durable: true
-          - internal: false
-          - auto_delete: false
-          - vhost: default_vhost
-          - arguments:
-              - 'alternate-**exchange': 'amq.fanout'
-              - 'test-header': 'testing'
+          user: saltstack_mq
+          passwd: 'password'
+          type: fanout
+          durable: true
+          internal: false
+          auto_delete: false
+          vhost: default_vhost
+          arguments:
+            - 'alternate-**exchange': 'amq.fanout'
+            - 'test-header': 'testing'
       remove_guest_user: true
       users:
         user1:
@@ -95,14 +95,14 @@ rabbitmq:
               - '.*'
       policies:
         my-rabbitmq-policy:
-          - name: HA
-          - pattern: '.*'
-          - definition: '{"ha-mode": "all"}'
+          name: HA
+          pattern: '.*'
+          definition: '{"ha-mode": "all"}'
       upstreams:
         my-upstream1:
-          - uri: amqp://saltstack_mq:password@localhost
-          - trust_user_id: true
-          - ack_mode: on-confirm
+          uri: amqp://saltstack_mq:password@localhost
+          trust_user_id: true
+          ack_mode: on-confirm
 
     rabbit2:
       nodeport: 5673
@@ -138,26 +138,26 @@ rabbitmq:
             - x-dead-letter-exchange: my-exchange
       bindings:
         my-binding:
-          - destination_type: queue
-          - destination: my-queue
-          - routing_key: a_routing_key_string
-          - user: saltstack_mq
-          - passwd: 'password'
-          - vhost: rabbit2_vhost
-          - arguments:
+          destination_type: queue
+          destination: my-queue
+          routing_key: a_routing_key_string
+          user: saltstack_mq
+          passwd: 'password'
+          vhost: rabbit2_vhost
+          arguments:
               - 'x-message-ttl': 8640000
       exchanges:
         my-exchange:
-          - user: saltstack_mq
-          - passwd: 'password'
-          - type: fanout
-          - durable: true
-          - internal: false
-          - auto_delete: false
-          - vhost: rabbit2_vhost
-          - arguments:
-              - 'alternate-**exchange': 'amq.fanout'
-              - 'test-header': 'testing'
+          user: saltstack_mq
+          passwd: 'password'
+          type: fanout
+          durable: true
+          internal: false
+          auto_delete: false
+          vhost: rabbit2_vhost
+          arguments:
+            - 'alternate-**exchange': 'amq.fanout'
+            - 'test-header': 'testing'
       remove_guest_user: true
       users:
         user1:
