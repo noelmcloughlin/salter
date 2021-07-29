@@ -20,11 +20,12 @@ rabbitmq:
         - rabbitmq_management
         - rabbitmq_federation
         - rabbitmq_federation_management
-        # rabbitmq_auth_backend_ldap
+        - rabbitmq_auth_backend_ldap
+        - rabbitmq_shovel
       vhosts:
         - default_vhost
-      queue:
-        my-new-queue:
+      queues:
+        my-queue:
           ## note : dict format
           user: saltstack_mq
           passwd: password
@@ -34,19 +35,19 @@ rabbitmq:
           arguments:
             - x-message-ttl: 8640000
             - x-expires: 8640000
-            - x-dead-letter-exchange: my-new-exchange
-      binding:
-        my-new-binding:
+            - x-dead-letter-exchange: my-exchange
+      bindings:
+        my-binding:
           - destination_type: queue
-          - destination: my-new-queue
+          - destination: my-queue
           - routing_key: a_routing_key_string
           - user: saltstack_mq
           - passwd: 'password'
           - vhost: default_vhost
           - arguments:
               - 'x-message-ttl': 8640000
-      exchange:
-        my-new-exchange:
+      exchanges:
+        my-exchange:
           - user: saltstack_mq
           - passwd: 'password'
           - type: fanout
@@ -92,13 +93,13 @@ rabbitmq:
               - '.*'
               - '.*'
               - '.*'
-      policy:
-        my-new-rabbitmq-policy:
+      policies:
+        my-rabbitmq-policy:
           - name: HA
           - pattern: '.*'
           - definition: '{"ha-mode": "all"}'
-      upstream:
-        my-new-upstream1:
+      upstreams:
+        my-upstream1:
           - uri: amqp://saltstack_mq:password@localhost
           - trust_user_id: true
           - ack_mode: on-confirm
@@ -123,8 +124,8 @@ rabbitmq:
       plugins: []
       vhosts:
         - rabbit2_vhost
-      queue:
-        my-new-queue:
+      queues:
+        my-queue:
           ## note : dict format
           user: saltstack_mq
           passwd: password
@@ -134,19 +135,19 @@ rabbitmq:
           arguments:
             - x-message-ttl: 8640000
             - x-expires: 8640000
-            - x-dead-letter-exchange: my-new-exchange
-      binding:
-        my-new-binding:
+            - x-dead-letter-exchange: my-exchange
+      bindings:
+        my-binding:
           - destination_type: queue
-          - destination: my-new-queue
+          - destination: my-queue
           - routing_key: a_routing_key_string
           - user: saltstack_mq
           - passwd: 'password'
           - vhost: rabbit2_vhost
           - arguments:
               - 'x-message-ttl': 8640000
-      exchange:
-        my-new-exchange:
+      exchanges:
+        my-exchange:
           - user: saltstack_mq
           - passwd: 'password'
           - type: fanout
@@ -191,17 +192,17 @@ rabbitmq:
               - '.*'
               - '.*'
               - '.*'
-      policy:
-        my-new-rabbitmq-policy:
-          - name: HA
-          - pattern: '.*'
-          - definition: '{"ha-mode": "all"}'
-      upstream:
-        my-new-upstream1:
-          - uri: amqp://saltstack_mq:password@localhost
-          - trust_user_id: true
-          - ack_mode: on-confirm
-          - max_hops: 1
+      policies:
+        my-policy:
+          name: HA
+          pattern: '.*'
+          definition: '{"ha-mode": "all"}'
+      upstreams:
+        my-upstream1:
+          uri: amqp://saltstack_mq:password@localhost
+          trust_user_id: true
+          ack_mode: on-confirm
+          max_hops: 1
 
   pkg:
     # https://github.com/rabbitmq/rabbitmq-server/releases/tag/v3.8.14
