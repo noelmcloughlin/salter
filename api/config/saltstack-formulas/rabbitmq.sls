@@ -22,6 +22,7 @@ rabbitmq:
         - rabbitmq_federation_management
         - rabbitmq_auth_backend_ldap
         - rabbitmq_shovel
+        - rabbitmq_shovel_management
       vhosts:
         - default_vhost
       queues:
@@ -29,8 +30,8 @@ rabbitmq:
           ## note : dict format
           user: saltstack_mq
           passwd: password
-          durable: true
-          auto_delete: false
+          durable: 'true'
+          auto_delete: 'false'
           vhost: default_vhost
           arguments:
             - x-message-ttl: 8640000
@@ -38,22 +39,21 @@ rabbitmq:
             - x-dead-letter-exchange: my-exchange
       bindings:
         my-binding:
+          source: 'amq.topic'
           destination_type: queue
           destination: my-queue
           routing_key: a_routing_key_string
           user: saltstack_mq
           passwd: 'password'
           vhost: default_vhost
-          arguments:
-            - 'x-message-ttl': 8640000
       exchanges:
         my-exchange:
           user: saltstack_mq
           passwd: 'password'
           type: fanout
-          durable: true
-          internal: false
-          auto_delete: false
+          durable: 'true'
+          internal: 'false'
+          auto_delete: 'false'
           vhost: default_vhost
           arguments:
             - 'alternate-**exchange': 'amq.fanout'
@@ -94,15 +94,21 @@ rabbitmq:
               - '.*'
               - '.*'
       policies:
-        my-rabbitmq-policy:
-          name: HA
-          pattern: '.*'
-          definition: '{"ha-mode": "all"}'
+        my-ha-policy:
+          - name: HA
+          - pattern: '.*'
+          - definition: '{"ha-mode":"nodes","ha-params":["rabbit", "rabbit2"]}'
+        my-federate-policy:
+          - name: federate-me
+          - pattern: '^federated\.'
+          - definition: '{"federation-upstream-set":"all"}'
+          - priority: 1
       upstreams:
         my-upstream1:
-          uri: amqp://saltstack_mq:password@localhost
-          trust_user_id: true
-          ack_mode: on-confirm
+          - uri: 'amqp://saltstack_mq:password@localhost'
+          - trust_user_id: true
+          - ack_mode: on-confirm
+          - max_hops: 1
 
     rabbit2:
       nodeport: 5673
@@ -129,8 +135,8 @@ rabbitmq:
           ## note : dict format
           user: saltstack_mq
           passwd: password
-          durable: true
-          auto_delete: false
+          durable: 'true'
+          auto_delete: 'false'
           vhost: rabbit2_vhost
           arguments:
             - x-message-ttl: 8640000
@@ -138,22 +144,21 @@ rabbitmq:
             - x-dead-letter-exchange: my-exchange
       bindings:
         my-binding:
+          source: 'amq.topic'
           destination_type: queue
           destination: my-queue
           routing_key: a_routing_key_string
           user: saltstack_mq
           passwd: 'password'
           vhost: rabbit2_vhost
-          arguments:
-              - 'x-message-ttl': 8640000
       exchanges:
         my-exchange:
           user: saltstack_mq
           passwd: 'password'
           type: fanout
-          durable: true
-          internal: false
-          auto_delete: false
+          durable: 'true'
+          internal: 'false'
+          auto_delete: 'false'
           vhost: rabbit2_vhost
           arguments:
             - 'alternate-**exchange': 'amq.fanout'
@@ -193,16 +198,21 @@ rabbitmq:
               - '.*'
               - '.*'
       policies:
-        my-policy:
-          name: HA
-          pattern: '.*'
-          definition: '{"ha-mode": "all"}'
+        my-ha-policy:
+          - name: HA
+          - pattern: '.*'
+          - definition: '{"ha-mode":"nodes","ha-params":["rabbit", "rabbit2"]}'
+        my-federate-policy:
+          - name: federate-me
+          - pattern: '^federated\.'
+          - definition: '{"federation-upstream-set":"all"}'
+          - priority: 1
       upstreams:
         my-upstream1:
-          uri: amqp://saltstack_mq:password@localhost
-          trust_user_id: true
-          ack_mode: on-confirm
-          max_hops: 1
+          - uri: 'amqp://saltstack_mq:password@localhost'
+          - trust_user_id: true
+          - ack_mode: on-confirm
+          - max_hops: 1
 
   pkg:
     # https://github.com/rabbitmq/rabbitmq-server/releases/tag/v3.8.14
