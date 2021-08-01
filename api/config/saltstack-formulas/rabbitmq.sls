@@ -27,16 +27,11 @@ rabbitmq:
         - default_vhost
       queues:
         my-queue:
-          ## note : dict format
           user: saltstack_mq
           passwd: password
           durable: 'true'
           auto_delete: 'false'
           vhost: default_vhost
-          arguments:
-            - x-message-ttl: 8640000
-            - x-expires: 8640000
-            - x-dead-letter-exchange: my-exchange
       bindings:
         my-binding:
           source: 'amq.topic'
@@ -56,8 +51,8 @@ rabbitmq:
           auto_delete: 'false'
           vhost: default_vhost
           arguments:
-            - 'alternate-**exchange': 'amq.fanout'
-            - 'test-header': 'testing'
+            alternate-**exchange: 'amq.fanout'
+            test-header: 'testing'
       remove_guest_user: true
       users:
         user1:
@@ -94,21 +89,30 @@ rabbitmq:
               - '.*'
               - '.*'
       policies:
-        my-ha-policy:
-          - name: HA
-          - pattern: '.*'
-          - definition: '{"ha-mode":"nodes","ha-params":["rabbit", "rabbit2"]}'
         my-federate-policy:
-          - name: federate-me
-          - pattern: '^federated\.'
-          - definition: '{"federation-upstream-set":"all"}'
-          - priority: 1
-      upstreams:
+          definition: '{"federation-upstream-set":"all"}'
+          pattern: '^federated\.'
+          priority: 1
+          vhost: default_vhost
+        my-ha-policy:
+          definition: '{"ha-mode":"nodes","ha-params":["rabbit", "rabbit2"]}'
+          pattern: '.*'
+          vhost: default_vhost
+        my-tricky-one:
+          apply_to: queues
+          definition: '{"federation-upstream-set":"all"}'
+          pattern: '^something$'
+          priority: 1
+          vhost: default_vhost
+      parameters:
         my-upstream1:
-          - uri: 'amqp://saltstack_mq:password@localhost'
-          - trust_user_id: true
-          - ack_mode: on-confirm
-          - max_hops: 1
+          component: federation-upstream
+          params:
+            uri: 'amqp://saltstack_mq:password@localhost'
+            ack-mode: on-confirm
+            trust-user-id: true
+            max-hops: 1
+          vhost: default_vhost
 
     rabbit2:
       nodeport: 5673
@@ -132,16 +136,15 @@ rabbitmq:
         - rabbit2_vhost
       queues:
         my-queue:
-          ## note : dict format
           user: saltstack_mq
           passwd: password
           durable: 'true'
           auto_delete: 'false'
           vhost: rabbit2_vhost
           arguments:
-            - x-message-ttl: 8640000
-            - x-expires: 8640000
-            - x-dead-letter-exchange: my-exchange
+            x-dead-letter-exchange: my-exchange
+            x-expires: 8640000
+            x-queue-type: quorum
       bindings:
         my-binding:
           source: 'amq.topic'
@@ -161,8 +164,8 @@ rabbitmq:
           auto_delete: 'false'
           vhost: rabbit2_vhost
           arguments:
-            - 'alternate-**exchange': 'amq.fanout'
-            - 'test-header': 'testing'
+            alternate-**exchange: 'amq.fanout'
+            test-header: 'testing'
       remove_guest_user: true
       users:
         user1:
@@ -198,21 +201,30 @@ rabbitmq:
               - '.*'
               - '.*'
       policies:
-        my-ha-policy:
-          - name: HA
-          - pattern: '.*'
-          - definition: '{"ha-mode":"nodes","ha-params":["rabbit", "rabbit2"]}'
         my-federate-policy:
-          - name: federate-me
-          - pattern: '^federated\.'
-          - definition: '{"federation-upstream-set":"all"}'
-          - priority: 1
-      upstreams:
+          definition: '{"federation-upstream-set":"all"}'
+          pattern: '^federated\.'
+          priority: 1
+          vhost: rabbit2_vhost
+        my-ha-policy:
+          definition: '{"ha-mode":"nodes","ha-params":["rabbit", "rabbit2"]}'
+          pattern: '.*'
+          vhost: rabbit2_vhost
+        my-tricky-one:
+          apply_to: queues
+          definition: '{"federation-upstream-set":"all"}'
+          pattern: '^something$'
+          priority: 1
+          vhost: rabbit2_vhost
+      parameters:
         my-upstream1:
-          - uri: 'amqp://saltstack_mq:password@localhost'
-          - trust_user_id: true
-          - ack_mode: on-confirm
-          - max_hops: 1
+          component: federation-upstream
+          params:
+            uri: 'amqp://saltstack_mq:password@localhost'
+            ack-mode: on-confirm
+            trust-user-id: true
+            max-hops: 1
+          vhost: rabbit2_vhost
 
   pkg:
     # https://github.com/rabbitmq/rabbitmq-server/releases/tag/v3.8.14
