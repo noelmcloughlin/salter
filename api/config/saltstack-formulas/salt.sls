@@ -122,3 +122,4 @@ salt_formulas:
      - redis-formula
      - rabbitmq-formula
      - hostsfile-formula
+     - sudoers-formula
