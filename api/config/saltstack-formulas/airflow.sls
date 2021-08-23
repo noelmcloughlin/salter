@@ -63,11 +63,14 @@ airflow:
           # this is your database host
           sql_alchemy_conn: postgresql+psycopg2://airflow:airflow@127.0.0.1/airflow
           security: ''
+          sensitive_var_conn_names: 'treadstone,myfetish'
+        logging: {}
+          # log_file_template: dagid/hh/ts_tid_trynumber.log
         operators:
           default_queue: airflow
         webserver:
           # yamllint disable-line rule:braces
-          secret_key: {{ range(1, 2000)|random }}
+          secret_key: thisMUSTbeSAMEacrossALLhosts
       state_colors:
         # yamllint disable-line rule:line-length
         # https://airflow.apache.org/docs/apache-airflow/stable/howto/customize-state-colors-ui.html
@@ -89,9 +92,6 @@ airflow:
         - airflow-celery-worker
       # https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html
       queues: []
-      # http://airflow.apache.org/docs/apache-airflow/stable/security/workload.html#impersonation
-      impersonation: []
-      # airflow-celery-worker
   pkg:
     airflow:
       version: 2.1.0
