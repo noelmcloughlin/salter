@@ -88,7 +88,7 @@ DEBUGG=
 IGNORE=false
 
 # bash version must be modern
-declare -A your solution fork 2>/dev/null || RC=$?
+declare -A are we modern 2>/dev/null || RC=$?
 if (( RC > 0 )); then
     echo "[warning] your bash version is pretty old ..."
     if [ "${OSNAME}" == "Darwin" ]; then
@@ -689,7 +689,8 @@ cli-options() {
         esac
     done
     shift $((OPTIND-1))
-    if [ "$OSTYPE" == "linux" ] && [ -z "${USER}" ]; then
+    echo "${OSTYPE}" | grep -i linux >/dev/null 2>&1
+    if (( $? > 0 )) && [ -z "${USER}" ]; then
         echo "Please pass some username to command (-u option)"
         exit 1
     fi
