@@ -243,7 +243,7 @@ pkg-remove() {
 
 get-salt-master-hostname() {
    if [ -x "/usr/bin/zypper" ] || [ -x "/usr/bin/pacman" ]; then
-       pkg-add net-tools lsb-release 2>/dev/null
+       pkg-add net-tools lsb-release hostname 2>/dev/null
        [ -x "/usr/bin/pacman" ] && pkg-add inetutils
    fi
    hostname -f >/dev/null 2>&1
@@ -690,7 +690,7 @@ cli-options() {
     done
     shift $((OPTIND-1))
     if [ "$OSTYPE" == "linux" ] && [ -z "${USER}" ]; then
-        print "Please pass some username to command (-u option)"
+        echo "Please pass some username to command (-u option)"
         exit 1
     fi
 }
