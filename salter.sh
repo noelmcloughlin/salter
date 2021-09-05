@@ -150,7 +150,7 @@ pkg-add() {
                  # /usr/bin/pacman-key --refresh-keys || true
                  # /usr/bin/pacman -Sy archlinux-keyring || true
                  /usr/bin/pacman -Syyu --noconfirm
-                 /usr/bin/pacman -S --noconfirm ${PKG_LIST} || exit 1
+                 /usr/bin/pacman -S --noconfirm ${PKG_LIST} || true
              elif [ -f "/usr/bin/dnf" ]; then
                  /usr/bin/dnf install -y --best --allowerasing ${PKG_LIST} || exit 1
              elif [ -f "/usr/bin/yum" ]; then
@@ -257,13 +257,13 @@ get-salt-master-hostname() {
    part of the FQDN) in the /etc/hosts. Meanwhile, I'll use short hostname.
 
 HEREDOC
-    fi
-    if [[ -f "${BASEDIR_ETC}/minion" ]]; then
-        MASTER=$( grep '^\s*master\s*:\s*' ${BASEDIR_ETC}/minion | awk '{print $2}')
-        [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=${MASTER}
-    fi
-    [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=$( hostname )
-    salt-key${EXTENSION} -A --yes >/dev/null 2>&1 || true
+   fi
+   if [[ -f "${BASEDIR_ETC}/minion" ]]; then
+       MASTER=$( grep '^\s*master\s*:\s*' ${BASEDIR_ETC}/minion | awk '{print $2}')
+       [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=${MASTER}
+   fi
+   [[ -z "${solution[saltmaster]}" ]] && solution[saltmaster]=$( hostname )
+   salt-key${EXTENSION} -A --yes >/dev/null 2>&1 || true
 }
 
 salt-bootstrap() {
@@ -300,7 +300,6 @@ salt-bootstrap() {
              ## Try to make git available
              (${GIT} --version >/dev/null 2>&1) || ${CHOCO} install git -Y --force
 	     export GIT=${GIT:-/cygdrive/c/Program\ Files/Git/bin/git.exe}
-	     internet_proxy_support
              ;;
 
     darwin*) # MACOS #
@@ -370,7 +369,6 @@ salt-bootstrap() {
              else
                  pkg-add "${PACKAGES}" 2>/dev/null
              fi
-             internet_proxy_support
              # shellcheck disable=SC2181
              (( $? > 0 )) && [[ "${IGNORE}" == false ]] && echo "Failed to add packages (or nothing to do)" && exit 1
              curl ${BS_CURL_ARGS} -o bootstrap_salt.sh -L https://bootstrap.saltstack.com || exit 10
