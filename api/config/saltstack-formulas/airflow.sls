@@ -8,7 +8,7 @@ airflow:
     airflow:
       user: airflow
       group: airflow
-      # skip_user_state: true  # if airflow user already exists
+      create_user_group: true  # false if ldap/oauth/etc
   database:
     airflow:
       install: true        # see docs/README
@@ -65,7 +65,7 @@ airflow:
           security: ''
           sensitive_var_conn_names: 'treadstone,myfetish'
         logging: {}
-          # log_file_template: dagid/hh/ts_tid_trynumber.log
+        # log_file_template: dagid/hh/ts_tid_trynumber.log
         operators:
           default_queue: airflow
         webserver:
@@ -92,12 +92,22 @@ airflow:
         - airflow-celery-worker
       # https://airflow.apache.org/docs/apache-airflow/stable/executor/celery.html
       queues: []
+      firewall:
+        zone: public
+        ports:
+          - 4369/tcp  # epmd
+          - 5432/tcp  # postgres
+          - 5555/tcp  # celeryflower
+          - 5672/tcp  # rabbitmq-amqp
+          - 8793/tcp  # airflow-logs
+          - 15672/tcp  # rabbitmq-ui
+          - 25672/tcp  # rabbitmq
+          - 18080/tcp  # airflow-ui
   pkg:
     airflow:
-      version: 2.1.0
+      version: 2.1.2
       # https://github.com/pypa/pip/issues/9187
       # https://pip.pypa.io/en/latest/user_guide/#dependency-resolution-backtracking
-      # no_pips_deps: true  # for salt.virtualenv.managed.no_deps flag
       extras:
         # yamllint disable rule:line-length
         # https://airflow.apache.org/docs/apache-airflow/stable/installation.html#extra-packages

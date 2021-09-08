@@ -1,0 +1,65 @@
+# -*- coding: utf-8 -*-
+# vim: ft=yaml
+---
+# This formula works with no-pillars but here are some example configurations.
+# If you want custom values review default.yaml and add desired values below.
+
+kubernetes:
+  supported:
+    - server
+    - client
+    - node
+    - k3s
+    - operator
+    - operators
+    - devlibs
+    - devtools
+    - sigs
+    - crimgr
+  sigs:
+    wanted:
+      - kind
+      - krew
+      - kubebuilder
+  operators:
+    wanted:
+      - grafana-operator
+      - prometheus-operator
+      - akka-cluster-operator
+      - istio-operator
+  devlibs:
+    wanted:
+      - java
+      - python
+      - csharp
+      - javascript
+      - kopf
+      - k8s
+      - python
+      - javascript
+  operator:
+    wanted:
+      - sdk
+    sdk:
+      wanted:
+        - ansible-operator
+        - helm-operator
+        - operator-sdk
+  devtools:
+    wanted:
+      - audit2rbac
+      - cue
+      - devspace
+      - dive
+      - istio
+      - kubectx
+      - kubens
+      - kudo
+      - linkerd2
+      - minikube
+      - octant
+      - skaffold
+      - stern
+
+  linux:
+    altpriority: 1000
