@@ -38,8 +38,7 @@ kubernetes:
       - python
       - javascript
   operator:
-    wanted:
-      - sdk
+    wanted: []   # disable until fixed
     sdk:
       wanted:
         - ansible-operator
@@ -62,4 +61,4 @@ kubernetes:
       - stern
 
   linux:
-    altpriority: 1000
+    altpriority: 100
