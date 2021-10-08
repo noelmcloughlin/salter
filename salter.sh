@@ -25,7 +25,7 @@
 #-----------------------------------------------------------------------
 if [[ "$( uname )" == CYGWIN_NT* ]]; then
     trap exit SIGINT
-    (net session >/dev/null 2>&1) || (echo -e "\nRun As Administrator, exiting\n" && exit 1)
+    net session >/dev/null 2>&1 || { echo -e "\nRun As Administrator, exiting\n"; exit 1; }
 else
     trap exit SIGINT SIGTERM
     [ "$(id -u)" != 0 ] && echo -e "\nRun with sudo, exiting\n" && exit 1
