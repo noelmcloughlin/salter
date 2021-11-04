@@ -1,4 +1,4 @@
 base:
   '*':
     - maven
-    - maven.env
+    - maven.linuxenv

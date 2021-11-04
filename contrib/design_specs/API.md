@@ -50,7 +50,7 @@ Profile definitions are SLS / yaml format files located in <code>/srv/salt/deskt
         base:
           '*':
             - maven
-            - maven.env
+            - maven.linuxenv
             - java.clean
             - java
       </code>
